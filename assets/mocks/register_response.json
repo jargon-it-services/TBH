@@ -1,0 +1,10 @@
+{
+  "status": true,
+  "message": "Business registered successfully",
+  "data": {
+    "token": "mock_auth_token_9f83a2c1",
+    "business_name": "Meridian Trading Co.",
+    "business_id": "BIZ-100234",
+    "verification_status": "pending_review"
+  }
+}

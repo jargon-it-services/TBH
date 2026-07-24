@@ -1,0 +1,77 @@
+{
+    "success": true,
+    "data": {
+      "transaction": {
+        "id": "TXN006",
+        "status": "paid",
+        "paymentMode": "upi",
+        "type": "expense",
+        "category": "Breakfast",
+  
+        "priceBreakdown": {
+          "services": [
+            {
+              "id": 101,
+              "title": "Hair Cut",
+              "quantity": 1,
+              "baseAmount": 13,
+              "taxPercentage": 1,
+              "taxAmount": 0.13,
+              "discountPercentage": 1,
+              "discountAmount": 0.13,
+              "grossAmount": 13.13,
+              "netAmount": 13
+            },
+            {
+              "id": 102,
+              "title": "Beard Cut",
+              "quantity": 1,
+              "baseAmount": 13,
+              "taxPercentage": 1,
+              "taxAmount": 0.13,
+              "discountPercentage": 1,
+              "discountAmount": 0.13,
+              "grossAmount": 13.13,
+              "netAmount": 13
+            }
+          ],
+  
+          "coupon": {
+            "code": "WELCOME10",
+            "type": "percentage",
+            "value": 10,
+            "discountAmount": 2.6
+          },
+  
+          "summary": {
+            "subtotal": 26.0,
+            "taxPercentage": 1,
+            "taxAmount": 0.26,
+            "couponDiscount": 2.6,
+            "total": 23.4,
+            "currency": "INR"
+          }
+        },
+  
+        "dateTime": {
+          "iso": "2024-12-23T10:00:00+05:30",
+          "display": "December 23, 2024\n10:00 AM"
+        },
+  
+        "firm": {
+          "id": "FIRM001",
+          "name": "Beauty Hub Uptown",
+          "location": "Uptown"
+        },
+  
+        "staff": {
+          "id": "STAFF12",
+          "name": "Alex"
+        },
+  
+        "remark": "Monthly utility payment processed on time. Receipt saved in accounting folder."
+      }
+    },
+    "error": null
+  }
+  

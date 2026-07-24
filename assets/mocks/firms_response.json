@@ -1,0 +1,42 @@
+{
+    "status": true,
+    "data": {
+      "meta": {
+        "currency": "INR",
+        "periods": ["Daily", "Weekly", "Monthly", "Yearly"],
+        "counts":{
+          "totalFirms":4
+        }
+      },
+      
+      "firms": [
+        {
+          "id": 1,
+          "name": "Beauty Hub Downtown",
+          "description": "BH-Downtown",
+          "revenue": 2850,
+          "transactions": 23,
+          "percent": 12.5
+        },
+        {
+          "id": 2,
+          "name": "Beauty Hub Uptown",
+          "description": "BH-Uptown",
+          "revenue": 3200,
+          "transactions": 28,
+          "percent": 8.3
+        },
+        {
+          "id": 3,
+          "name": "Beauty Hub Westside",
+          "description": "BH-Westtown",
+          "revenue": 1950,
+          "transactions": 18,
+          "percent": -5.2
+        }
+      ]
+      
+    }
+  }
+  
+  

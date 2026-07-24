@@ -1,0 +1,11 @@
+{
+  "status": true,
+  "message": "OK",
+  "data": {
+    "maintenance": false,
+    "minimum_build": 1,
+    "latest_build": 1,
+    "store_url": "https://play.google.com/store/apps/details?id=com.example.app",
+    "message": "Please update the application."
+  }
+}

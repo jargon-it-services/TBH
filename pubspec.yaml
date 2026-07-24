@@ -1,0 +1,68 @@
+name: tbh
+description: "A new Flutter project."
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  rename_app: ^1.6.5
+  animated_text_kit: ^4.3.0
+  introduction_screen: ^4.0.0
+  lottie: ^3.2.0
+  slider_button: ^3.1.0
+  animate_do: ^5.1.0
+  animated_notch_bottom_bar: ^1.0.3
+  action_slider: ^0.7.0
+  fl_chart: ^1.2.0
+  connectivity_plus: ^7.3.1
+  dio: ^5.4.0
+  flutter_secure_storage: ^10.3.1
+  shimmer: ^3.0.0
+  google_nav_bar: ^5.0.7
+  avatar_stack: ^3.0.0
+  image_picker: ^1.0.7
+  razorpay_flutter: ^1.4.0
+  url_launcher: ^6.3.1
+  package_info_plus: ^10.2.1
+  app_links: ^7.2.1
+  share_plus: ^13.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/animations/
+    - assets/images/
+    - assets/india_states_cities.json
+    - assets/mocks/dashboard_admin_response.json
+    - assets/mocks/trend_prev.json
+    - assets/mocks/trend_next.json
+    - assets/mocks/transactions_list_response.json
+    - assets/mocks/transaction_detail.json
+    - assets/mocks/firms_response.json
+    - assets/mocks/firm_details_response.json
+    - assets/mocks/razorpay_create_order_response.json
+    - assets/mocks/register_response.json
+    - assets/mocks/login_response.json
+    - assets/mocks/refresh_token_response.json
+    - assets/mocks/logout_response.json
+    - assets/mocks/forgot_password_verify_org_response.json
+    - assets/mocks/forgot_password_send_otp_response.json
+    - assets/mocks/forgot_password_verify_otp_response.json
+    - assets/mocks/forgot_password_reset_response.json
+    - assets/mocks/app_version_response.json
+    - assets/mocks/referral_invite_link_response.json

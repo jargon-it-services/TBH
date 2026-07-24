@@ -1,0 +1,16 @@
+{
+    "status": true,
+    "data": {
+      "orderId": "order_mock_123456",
+      "entity": "order",
+      "amount": 99900,
+      "amount_paid": 0,
+      "amount_due": 99900,
+      "currency": "INR",
+      "receipt": "rcpt_mock_001",
+      "status": "created",
+      "attempts": 0,
+      "created_at": 1700000000
+    }
+  }
+  

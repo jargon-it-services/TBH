@@ -1,0 +1,133 @@
+{
+    "status": true,
+    "data": {
+      "meta": {
+        "currency": "INR",
+        "periods": ["Daily", "Weekly", "Monthly", "Yearly"],
+        "firmInfo":{
+            "id": 1,
+            "name": "Beauty Hub Downtown",
+            "description": "BH-Downtown",
+            "revenue": 2850,
+            "transactions": 23,
+            "percent": 12.5,
+            "gstin": "27ABCDE1234F1Z5",
+            "regNo":"REG123456",
+            "email":"firm@email.com",
+            "contact":"+91 9876543210"
+        }
+      },
+      "overviewTrend":{
+        "period": "Monthly",
+        "limit": 6,
+        "hasMoreData": true,
+        "range": "Apr 2024 – Mar 2025",
+        "points": [
+          { "key": "2025-08", "label": "Aug'25", "value": 2000 },
+          { "key": "2025-09", "label": "Sep'25", "value": 3000 },
+          { "key": "2025-10", "label": "Oct'25", "value": 8000 },
+          { "key": "2025-11", "label": "Nov'25", "value": 1000 },
+          { "key": "2025-12", "label": "Dec'25", "value": 5000 },
+          { "key": "2026-01", "label": "Jan'26", "value": 12000 }
+          
+        ],
+        "prevCursor": "2024-03",
+        "nextCursor": null
+      },
+      "firms": [
+        {
+          "id": 1,
+          "name": "Beauty Hub Downtown",
+          "description": "BH-Downtown",
+          "revenue": 2850,
+          "transactions": 23,
+          "percent": 12.5
+        },
+        {
+          "id": 2,
+          "name": "Beauty Hub Uptown",
+          "description": "BH-Uptown",
+          "revenue": 3200,
+          "transactions": 28,
+          "percent": 8.3
+        },
+        {
+          "id": 3,
+          "name": "Beauty Hub Westside",
+          "description": "BH-Westtown",
+          "revenue": 1950,
+          "transactions": 18,
+          "percent": -5.2
+        }
+      ],
+      "staff": [
+        {
+          "id": 101,
+          "name": "Krushna Satbhai",
+          "firmId": 3,
+          "firmName": "Beauty Hub Westside",
+          "revenue": 2850,
+          "transactions": 23,
+          "percent": 12.5
+        },
+        {
+          "id": 102,
+          "name": "Sharad Rumane",
+          "firmId": 3,
+          "firmName": "Beauty Hub Westside",
+          "revenue": 3200,
+          "transactions": 28,
+          "percent": 8.3
+        },
+        {
+          "id": 103,
+          "name": "Alex Patel",
+          "firmId": 2,
+          "firmName": "Beauty Hub Uptown",
+          "revenue": 1950,
+          "transactions": 18,
+          "percent": -5.2
+        }
+      ],
+      "services": [
+        {
+          "id": 101,
+          "name": "Hair Cut",
+          "firmId": 3,
+          "firmName": "Beauty Hub Westside",
+          "revenue": 2850,
+          "transactions": 23,
+          "percent": 12.5
+        },
+        {
+          "id": 102,
+          "name": "Full Body Massage",
+          "firmId": 3,
+          "firmName": "Beauty Hub Westside",
+          "revenue": 2200,
+          "transactions": 28,
+          "percent": 8.3
+        },
+        {
+          "id": 103,
+          "name": "Beard Cut",
+          "firmId": 2,
+          "firmName": "Beauty Hub Uptown",
+          "revenue": 1000,
+          "transactions": 18,
+          "percent": -5.2
+        },
+        {
+          "id": 103,
+          "name": "Fecial Message (Gold)",
+          "firmId": 2,
+          "firmName": "Beauty Hub Uptown",
+          "revenue": 3320,
+          "transactions": 18,
+          "percent": 5.9
+        }
+      ]
+    }
+  }
+  
+  

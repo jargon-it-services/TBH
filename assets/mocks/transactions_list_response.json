@@ -1,0 +1,104 @@
+{
+    "success": true,
+    "message": "Transactions fetched successfully",
+    "data": {
+      "filters": {
+        "firms": ["Beauty Hub Downtown", "Beauty Hub Uptown"],
+        "services": ["Hair Coloring", "Manicure", "Pedicure"],
+        "staff": ["Riya", "Aman", "John"],
+        "statuses": ["paid", "pending", "cancelled"],
+        "types": ["service", "expense"],
+        "paymentMode":["UPI", "CASH", "CARD"],
+        "currency": "INR",
+        "periods": ["Yesterday","Todays", "This Month", "This Year", "Custom"]
+      },
+      "transactions": [
+        {
+          "id": "txn_001",
+          "title": "Hair Coloring",
+          "firm": "Beauty Hub Downtown",
+          "firmId": 1,
+          "service": "Hair Coloring",
+          "serviceId": 1,
+          "staff": "Riya",
+          "staffId": 3,
+          "status": "paid",
+          "type": "service",
+          "amount": 150,
+          "paymentMode": "UPI",
+          "customerName":"Krushna",
+          "customerId":2,
+          "createdAt": "2026-01-10T12:30:00Z"
+        },
+        {
+          "id": "txn_002",
+          "title": "Product Purchase",
+          "firm": "Beauty Hub Uptown",
+          "firmId": 1,
+          "service": "Manicure",
+          "serviceId": 1,
+          "staff": "John",
+          "staffId": 3,
+          "status": "paid",
+          "type": "expense",
+          "amount": 320,
+          "paymentMode": "CASH",
+          "customerName":"Krushna",
+          "customerId":2,
+          "createdAt": "2026-01-10T14:10:00Z"
+        }
+        ,{
+            "id": "txn_002",
+            "title": "Product Purchase",
+            "firm": "Beauty Hub Uptown",
+            "firmId": 1,
+            "service": "Manicure",
+            "serviceId": 1,
+            "staff": "John",
+            "staffId": 3,
+            "status": "paid",
+            "type": "expense",
+            "amount": 320,
+            "paymentMode": "CASH",
+            "customerName":"Krushna",
+            "customerId":2,
+            "createdAt": "2026-01-10T14:10:00Z"
+          },
+          {
+            "id": "txn_002",
+            "title": "Product Purchase",
+            "firm": "Beauty Hub Uptown",
+            "firmId": 1,
+            "service": "Manicure",
+            "serviceId": 1,
+            "staff": "John",
+            "staffId": 3,
+            "status": "paid",
+            "type": "expense",
+            "amount": 1110,
+            "paymentMode": "UPI",
+            "customerName":"Krushna",
+            "customerId":2,
+            "createdAt": "2026-01-10T14:10:00Z"
+          },
+          {
+            "id": "txn_002",
+            "title": "Product Purchase",
+            "firm": "Beauty Hub Uptown",
+            "firmId": 1,
+            "service": "Manicure",
+            "serviceId": 1,
+            "staff": "John",
+            "staffId": 3,
+            "status": "paid",
+            "type": "expense",
+            "amount": 370,
+            "paymentMode": "CARD",
+            "customerName":"Krushna",
+            "customerId":2,
+            "createdAt": "2026-01-10T14:10:00Z"
+          }
+      ]
+    }
+  }
+  

@@ -1,0 +1,34 @@
+import 'dart:io';
+
+/// Holds every field across the 4-step registration flow (Account, Owner,
+/// Account Setup, Review). Business/firm details are collected separately
+/// in the Add Firm flow, so they don't live here.
+class RegistrationData {
+  // ---- Step 1: Account Information ----
+  String accountName = '';
+  String address = '';
+  String city = '';
+  String state = '';
+  String zip = '';
+  String phone = '';
+  String accountEmail = '';
+
+  // ---- Step 2: Owner ----
+  String ownerName = '';
+  String designation = '';
+  String idProofType = 'Select ID Type';
+  String idProofNumber = '';
+  File? idProofDocument;
+
+  // ---- Step 3: Account ----
+  String loginEmail = '';
+  String password = '';
+
+  static const idProofTypes = [
+    'PAN Card',
+    'Aadhaar Card',
+    'Passport',
+    'Driving License',
+    'Voter ID',
+  ];
+}
