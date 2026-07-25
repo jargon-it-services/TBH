@@ -1,0 +1,16 @@
+{
+  "status": true,
+  "message": "Dashboard header loaded",
+  "data": {
+    "org_name": "Beauty Hub Chain",
+    "account_code": "TBH2024",
+    "role_label": "Employee",
+    "notification_count": 0,
+    "profile_initials": "EJ",
+    "organizations": [],
+    "branches": [],
+    "assigned_branch": { "id": "3", "name": "Powai Branch", "code": "BH-POW" },
+    "selected_organization_id": null,
+    "selected_branch_id": null
+  }
+}

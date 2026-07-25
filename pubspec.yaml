@@ -66,3 +66,8 @@ flutter:
     - assets/mocks/forgot_password_reset_response.json
     - assets/mocks/app_version_response.json
     - assets/mocks/referral_invite_link_response.json
+    - assets/mocks/dashboard_header_super_admin_response.json
+    - assets/mocks/dashboard_header_account_admin_response.json
+    - assets/mocks/dashboard_header_branch_admin_response.json
+    - assets/mocks/dashboard_header_manager_response.json
+    - assets/mocks/dashboard_header_employee_response.json
