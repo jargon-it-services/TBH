@@ -88,10 +88,20 @@ class DashboardCounts {
   final int totalServices;
   final int totalStaff;
 
+  /// Number of distinct customers served in the selected period.
+  ///
+  /// New field — not yet returned by the backend. Left nullable (no
+  /// default of 0) on purpose: until the API actually sends
+  /// `totalCustomers`, the KPI card should show "—" rather than a
+  /// fabricated count. See API_CHANGES_totalCustomers.md for the
+  /// response-field addition this needs on the backend.
+  final int? totalCustomers;
+
   DashboardCounts({
     required this.totalFirms,
     required this.totalServices,
     required this.totalStaff,
+    this.totalCustomers,
   });
 
   factory DashboardCounts.fromJson(Map<String, dynamic> json) {
@@ -99,6 +109,7 @@ class DashboardCounts {
       totalFirms: json['totalFirms'] ?? 0,
       totalServices: json['totalServices'] ?? 0,
       totalStaff: json['totalStaff'] ?? 0,
+      totalCustomers: json['totalCustomers'] as int?,
     );
   }
 }

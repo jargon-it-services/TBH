@@ -35,13 +35,26 @@ import '../../../core/widgets/sticky_org_header.dart';
 /// online" — no new architecture introduced.
 class DashboardStickyHeader extends StatefulWidget
     implements PreferredSizeWidget {
-  const DashboardStickyHeader({super.key});
+  const DashboardStickyHeader({super.key, this.onScopeChanged});
+
+  /// Optional, purely additive notification fired whenever the header's
+  /// switcher selection changes — i.e. whenever the selected organization
+  /// (Super Admin) or branch (Account Admin) changes. Callers that don't
+  /// pass this (every existing usage) see no behavior change at all: the
+  /// header keeps driving its own `_selectedScope` state exactly as
+  /// before, this is only an extra notification on top of that.
+  ///
+  /// Intended consumer: [DashboardPage], so the dashboard body can refetch
+  /// when scoped to a different organization/branch. Wiring that up is a
+  /// separate, additive change to [DashboardPage] itself (out of scope
+  /// here — see the role dashboards' top-of-file notes).
+  final ValueChanged<BranchModel>? onScopeChanged;
 
   @override
   State<DashboardStickyHeader> createState() => _DashboardStickyHeaderState();
 
   @override
-  Size get preferredSize => const Size.fromHeight(152);
+  Size get preferredSize => const Size.fromHeight(140);
 }
 
 class _DashboardStickyHeaderState extends State<DashboardStickyHeader>
@@ -139,10 +152,7 @@ class _DashboardStickyHeaderState extends State<DashboardStickyHeader>
 
   void _onScopeChanged(BranchModel scope) {
     setState(() => _selectedScope = scope);
-    // TODO(dashboard-body): once the dashboard body is wired to a
-    // scope, notify it here (e.g. via DashboardRegistry) so switching
-    // org/branch refreshes branch-scoped data. Out of scope for this
-    // task, which covers the header only.
+    widget.onScopeChanged?.call(scope);
   }
 
   @override
@@ -317,5 +327,5 @@ class _DashboardHeaderErrorBar extends StatelessWidget
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(152);
+  Size get preferredSize => const Size.fromHeight(140);
 }

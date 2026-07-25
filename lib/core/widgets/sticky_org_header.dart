@@ -229,7 +229,7 @@ class StickyOrgHeader extends StatelessWidget implements PreferredSizeWidget {
             ).clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -300,7 +300,7 @@ class StickyOrgHeader extends StatelessWidget implements PreferredSizeWidget {
   /// Approximate collapsed height; tune to taste if used inside a
   /// SliverAppBar / AppBar `bottom`.
   @override
-  Size get preferredSize => const Size.fromHeight(152);
+  Size get preferredSize => const Size.fromHeight(140);
 }
 
 class _OrgLogo extends StatelessWidget {

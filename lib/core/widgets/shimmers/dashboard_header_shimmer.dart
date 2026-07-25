@@ -69,5 +69,5 @@ class DashboardHeaderShimmer extends StatelessWidget
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(152);
+  Size get preferredSize => const Size.fromHeight(140);
 }
