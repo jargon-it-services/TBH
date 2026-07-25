@@ -1,127 +1,142 @@
 {
-    "status": true,
-    "data": {
-      "meta": {
-        "currency": "INR",
-        "periods": ["Daily", "Weekly", "Monthly", "Yearly"],
-        "counts":{
-          "totalFirms":4,
-          "totalServices":10,
-          "totalStaff":10,
-          "totalCustomers":7
-        }
-      },
-      "overviewTrend":{
-        "period": "Monthly",
-        "limit": 6,
-        "hasMoreData": true,
-        "range": "Apr 2024 – Mar 2025",
-        "points": [
-          { "key": "2025-08", "label": "Aug'25", "value": 2000 },
-          { "key": "2025-09", "label": "Sep'25", "value": 3000 },
-          { "key": "2025-10", "label": "Oct'25", "value": 8000 },
-          { "key": "2025-11", "label": "Nov'25", "value": 1000 },
-          { "key": "2025-12", "label": "Dec'25", "value": 5000 },
-          { "key": "2026-01", "label": "Jan'26", "value": 12000 }
-          
-        ],
-        "prevCursor": "2024-03",
-        "nextCursor": null
-      },
-      "firms": [
-        {
-          "id": 1,
-          "name": "Beauty Hub Downtown",
-          "description": "BH-Downtown",
-          "revenue": 2850,
-          "transactions": 23,
-          "percent": 12.5
-        },
-        {
-          "id": 2,
-          "name": "Beauty Hub Uptown",
-          "description": "BH-Uptown",
-          "revenue": 3200,
-          "transactions": 28,
-          "percent": 8.3
-        },
-        {
-          "id": 3,
-          "name": "Beauty Hub Westside",
-          "description": "BH-Westtown",
-          "revenue": 1950,
-          "transactions": 18,
-          "percent": -5.2
-        }
+  "status": true,
+  "message": "Dashboard loaded successfully.",
+  "data": {
+    "meta": {
+      "currency": "INR",
+      "currency_symbol": "₹",
+      "date_format": "dd MMM yyyy",
+      "timezone": "Asia/Kolkata",
+      "periods": [
+        { "key": "daily", "label": "Daily" },
+        { "key": "weekly", "label": "Weekly" },
+        { "key": "monthly", "label": "Monthly" },
+        { "key": "yearly", "label": "Yearly" }
       ],
-      "staff": [
+      "selected_period": "daily"
+    },
+    "dashboard_header": {
+      "account_name": "Beauty Hub Chain",
+      "account_code": "TBH2024",
+      "role_label": "Account Admin",
+      "notification_count": 3,
+      "profile_initials": "RS",
+      "branches": [
+        { "id": "1", "name": "Andheri Branch", "code": "BH-AND" },
+        { "id": "2", "name": "Bandra Branch", "code": "BH-BAN" },
+        { "id": "3", "name": "Powai Branch", "code": "BH-POW" },
+        { "id": "4", "name": "Thane Branch", "code": "BH-THN" }
+      ]
+    },
+    "important_alerts": [
+      {
+        "id": 1,
+        "type": "warning",
+        "title": "Subscription expires in 5 days",
+        "description": "Renew your subscription to continue uninterrupted service.",
+        "action": { "label": "Renew Now", "screen": "subscription" }
+      },
+      {
+        "id": 2,
+        "type": "info",
+        "title": "Pending Employee Approvals",
+        "description": "3 employee registrations are awaiting your approval.",
+        "action": { "label": "Review", "screen": "employee_approval" }
+      }
+    ],
+    "quick_insights": {
+      "title": "Quick Insights",
+      "items": [
         {
-          "id": 101,
-          "name": "Krushna Satbhai",
-          "firmId": 3,
-          "firmName": "Beauty Hub Westside",
-          "revenue": 2850,
-          "transactions": 23,
-          "percent": 12.5
+          "key": "services",
+          "title": "Total Services Served",
+          "icon": "design_services",
+          "values": { "services": 352, "customers": 218 }
         },
         {
-          "id": 102,
-          "name": "Sharad Rumane",
-          "firmId": 3,
-          "firmName": "Beauty Hub Westside",
-          "revenue": 3200,
-          "transactions": 28,
-          "percent": 8.3
+          "key": "revenue",
+          "title": "Total Revenue",
+          "icon": "payments",
+          "value": 1567500
         },
         {
-          "id": 103,
-          "name": "Alex Patel",
-          "firmId": 2,
-          "firmName": "Beauty Hub Uptown",
-          "revenue": 1950,
-          "transactions": 18,
-          "percent": -5.2
-        }
-      ],
-      "services": [
-        {
-          "id": 101,
-          "name": "Hair Cut",
-          "firmId": 3,
-          "firmName": "Beauty Hub Westside",
-          "revenue": 2850,
-          "transactions": 23,
-          "percent": 12.5
+          "key": "expenses",
+          "title": "Total Expenses",
+          "icon": "receipt_long",
+          "value": 962000
         },
         {
-          "id": 102,
-          "name": "Full Body Massage",
-          "firmId": 3,
-          "firmName": "Beauty Hub Westside",
-          "revenue": 2200,
-          "transactions": 28,
-          "percent": 8.3
-        },
-        {
-          "id": 103,
-          "name": "Beard Cut",
-          "firmId": 2,
-          "firmName": "Beauty Hub Uptown",
-          "revenue": 1000,
-          "transactions": 18,
-          "percent": -5.2
-        },
-        {
-          "id": 103,
-          "name": "Fecial Message (Gold)",
-          "firmId": 2,
-          "firmName": "Beauty Hub Uptown",
-          "revenue": 3320,
-          "transactions": 18,
-          "percent": 5.9
+          "key": "profit",
+          "title": "Total Profit",
+          "icon": "trending_up",
+          "value": 605500
         }
       ]
-    }
+    },
+    "business_summary": {
+      "title": "Business Summary",
+      "items": [
+        { "title": "Total Revenue", "value": 1567500, "icon": "payments" },
+        { "title": "Total Transactions", "value": 8450, "icon": "receipt_long" },
+        { "title": "Top Branch", "value": "Andheri Branch", "icon": "store" },
+        { "title": "Top Service", "value": "Hair Spa", "icon": "spa" }
+      ]
+    },
+    "overview_trend": {
+      "title": "Revenue Trend",
+      "period": "monthly",
+      "visible_points": 6,
+      "has_more_data": true,
+      "range": "Aug 2025 - Jan 2026",
+      "points": [
+        { "key": "2025-08", "label": "Aug'25", "value": 2000 },
+        { "key": "2025-09", "label": "Sep'25", "value": 3000 },
+        { "key": "2025-10", "label": "Oct'25", "value": 8000 },
+        { "key": "2025-11", "label": "Nov'25", "value": 1000 },
+        { "key": "2025-12", "label": "Dec'25", "value": 5000 },
+        { "key": "2026-01", "label": "Jan'26", "value": 12000 }
+      ],
+      "prev_cursor": "2025-02",
+      "next_cursor": null
+    },
+    "revenue_contribution": {
+      "title": "Revenue Contribution",
+      "items": [
+        { "id": 1, "label": "Hair Spa", "value": 425000 },
+        { "id": 2, "label": "Hair Cut", "value": 355000 },
+        { "id": 3, "label": "Facial", "value": 298000 },
+        { "id": 4, "label": "Massage", "value": 215000 },
+        { "id": 5, "label": "Other Services", "value": 274500 }
+      ]
+    },
+    "recent_transactions": {
+      "title": "Recent Transactions",
+      "count": 5,
+      "items": [
+        {
+          "id": "TXN1001",
+          "invoice_no": "INV-1001",
+          "customer_name": "Rahul Sharma",
+          "service": "Hair Spa",
+          "branch": "Andheri Branch",
+          "amount": 1500,
+          "payment_mode": "UPI",
+          "status": "Completed",
+          "transaction_date": "2026-07-25T10:45:00"
+        },
+        {
+          "id": "TXN1002",
+          "invoice_no": "INV-1002",
+          "customer_name": "Priya Mehta",
+          "service": "Hair Cut",
+          "branch": "Bandra Branch",
+          "amount": 800,
+          "payment_mode": "Cash",
+          "status": "Completed",
+          "transaction_date": "2026-07-25T11:10:00"
+        }
+      ]
+    },
+    "last_updated": "2026-07-25T16:30:00"
   }
-  
-  
+}

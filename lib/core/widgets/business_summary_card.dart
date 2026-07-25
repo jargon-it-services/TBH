@@ -33,7 +33,7 @@ class BusinessSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "This summary is based on the current $periodLabel's data",
+            "This summary is based on the current $periodLabel data",
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
