@@ -11,6 +11,7 @@ import '../../../core/widgets/alert_slider.dart';
 import '../../../core/widgets/animated_empty_state.dart';
 import '../../../core/widgets/card_wrapper.dart';
 import '../../../core/widgets/no_internet_page.dart';
+import '../dashboard_quick_actions.dart';
 
 /// =====================================================================
 /// SHARED DASHBOARD-BODY BUILDING BLOCKS (merged-response roles)
@@ -26,6 +27,136 @@ import '../../../core/widgets/no_internet_page.dart';
 ///
 /// [AlertSlider], [AnimatedEmptyState], [CardWrapper] and
 /// [NoInternetPage] are reused as-is from `core/widgets`.
+
+/// ---------------------------------------------------------------------
+/// Quick Actions — role-wise, always a single horizontal row
+/// ---------------------------------------------------------------------
+
+/// Lays out [actions] evenly spaced and centered across the available
+/// width whenever they fit — the professional, "app home screen" look
+/// — and only falls back to a horizontally scrollable row if the tile
+/// count genuinely doesn't fit (e.g. a future role with many actions,
+/// or a narrow device). Still always a single row, per spec — it never
+/// wraps to a grid.
+///
+/// Tapping a tile currently has an intentionally empty `onTap` — the
+/// same "wire real navigation once each destination exists" precedent
+/// already used for alert actions and KPI tiles elsewhere in this
+/// dashboard (see [DashboardAlertCard]), since none of these actions
+/// (Add Branch, View Payslip, Reports, ...) have a corresponding
+/// screen/route in the app yet.
+class QuickActionsRow extends StatelessWidget {
+  final List<QuickActionSpec> actions;
+  final ValueChanged<QuickActionSpec>? onActionTap;
+
+  const QuickActionsRow({
+    super.key,
+    required this.actions,
+    this.onActionTap,
+  });
+
+  static const double _tileWidth = 76;
+
+  @override
+  Widget build(BuildContext context) {
+    if (actions.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 92,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tiles = [
+            for (final action in actions)
+              _QuickActionTile(
+                action: action,
+                onTap: () => onActionTap?.call(action),
+              ),
+          ];
+
+          // Minimum width needed to lay every tile out with at least
+          // some breathing room between them.
+          final minRequiredWidth =
+              (actions.length * _tileWidth) + ((actions.length - 1) * 12);
+
+          if (constraints.maxWidth >= minRequiredWidth) {
+            // Everything fits: center the whole group and spread the
+            // tiles evenly across the row instead of hugging the left
+            // edge.
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: tiles,
+            );
+          }
+
+          // Doesn't fit: scroll horizontally rather than compress or
+          // wrap the tiles.
+          return ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: tiles.length,
+            separatorBuilder: (_, __) =>
+                const SizedBox(width: AppSpacing.horizontalMedium),
+            itemBuilder: (context, index) => tiles[index],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  final QuickActionSpec action;
+  final VoidCallback onTap;
+
+  const _QuickActionTile({required this.action, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: QuickActionsRow._tileWidth,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.large),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 56,
+                  width: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.large),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.15),
+                    ),
+                  ),
+                  child: Icon(action.icon, color: AppColors.primary, size: 24),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  action.label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    height: 1.15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// ---------------------------------------------------------------------
 /// Period selector — driven entirely by `meta.periods[]`

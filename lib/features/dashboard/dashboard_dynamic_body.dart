@@ -4,11 +4,13 @@ import '../../core/network/apis/dashboard_api.dart';
 import '../../core/services/DataModels/dashboard_models.dart';
 import '../../core/services/dashboard_date_formatter.dart';
 import '../../core/services/dashboard_icon_mapper.dart';
+import '../../core/session/session_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/business_summary_card.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/revenue_trend_chart.dart';
+import 'dashboard_quick_actions.dart';
 import 'widgets/dashboard_shared_widgets.dart';
 import 'widgets/dashboard_transaction_tile.dart';
 
@@ -103,6 +105,9 @@ class _DashboardDynamicBodyState extends State<DashboardDynamicBody> {
     setState(() => _loadingTrend = false);
   }
 
+  List<QuickActionSpec> get _quickActions =>
+      DashboardQuickActions.forRole(SessionManager.instance.role);
+
   String _selectedPeriodLabel(DashboardMeta meta) {
     for (final period in meta.periods) {
       if (period.key == widget.selectedPeriodKey) return period.label;
@@ -140,6 +145,10 @@ class _DashboardDynamicBodyState extends State<DashboardDynamicBody> {
             if (alerts != null && alerts.isNotEmpty) ...[
               importantAlertsSection(alerts),
               const SizedBox(height: AppSpacing.verticalSmall),
+            ],
+            if (_quickActions.isNotEmpty) ...[
+              QuickActionsRow(actions: _quickActions),
+              const SizedBox(height: AppSpacing.verticalMedium),
             ],
             if (meta.periods.isNotEmpty) ...[
               DashboardPeriodSelector(
