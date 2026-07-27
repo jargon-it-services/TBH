@@ -40,6 +40,7 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -72,3 +73,34 @@ flutter:
     - assets/mocks/dashboard_header_branch_admin_response.json
     - assets/mocks/dashboard_header_manager_response.json
     - assets/mocks/dashboard_header_employee_response.json
+
+# ---------------------------------------------------------------------
+# flutter_launcher_icons config
+# Generates the Android + iOS launcher icons from the logo.
+# - image_path: upscaled to 1024x1024 + lightly sharpened (source was
+#   500x500) so all generated densities, including iOS's 1024x1024 App
+#   Store icon, come out crisp. Used as-is for iOS and legacy/round
+#   Android icons.
+# - adaptive_icon_foreground: a separate transparent-background,
+#   safe-zone-padded version for Android's adaptive icon layer.
+# Run with: dart run flutter_launcher_icons
+# (does not touch app name, theme, splash screen, or any other assets)
+# ---------------------------------------------------------------------
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+
+  # Android adaptive icon (Android 8.0+). The foreground is a
+  # transparent-background, safe-zone-padded version of the same logo
+  # (content scaled to ~66% of the 432x432 canvas, centered) so it
+  # floats over the background color instead of showing as a hard-edged
+  # white square inside circular/rounded masks. Background color
+  # matches the logo's own white background.
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+
+  # iOS App Store icons must not contain an alpha channel; strips it
+  # defensively even though the source PNG is already fully opaque.
+  remove_alpha_ios: true
