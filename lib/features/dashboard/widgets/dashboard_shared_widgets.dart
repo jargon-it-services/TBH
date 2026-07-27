@@ -11,6 +11,7 @@ import '../../../core/widgets/alert_slider.dart';
 import '../../../core/widgets/animated_empty_state.dart';
 import '../../../core/widgets/card_wrapper.dart';
 import '../../../core/widgets/no_internet_page.dart';
+import '../../subscriptions/subscription_plans_page.dart';
 import '../dashboard_quick_actions.dart';
 
 /// =====================================================================
@@ -41,10 +42,10 @@ import '../dashboard_quick_actions.dart';
 ///
 /// Tapping a tile currently has an intentionally empty `onTap` — the
 /// same "wire real navigation once each destination exists" precedent
-/// already used for alert actions and KPI tiles elsewhere in this
-/// dashboard (see [DashboardAlertCard]), since none of these actions
-/// (Add Branch, View Payslip, Reports, ...) have a corresponding
-/// screen/route in the app yet.
+/// used elsewhere in this dashboard (e.g. `DashboardAlertCard` before
+/// its `action.screen` values had real destinations), since none of
+/// these actions (Add Branch, View Payslip, Reports, ...) have a
+/// corresponding screen/route in the app yet.
 class QuickActionsRow extends StatelessWidget {
   final List<QuickActionSpec> actions;
   final ValueChanged<QuickActionSpec>? onActionTap;
@@ -461,58 +462,85 @@ IconData _alertIcon(String type) {
 
 /// Renders one [DashboardAlertItem] exactly as the previous fixed alert
 /// card design did, just fed from the wire model directly instead of a
-/// hand-built view model. The action button (if any) has an
-/// intentionally empty `onTap` for now -- same "wire real navigation
-/// once each alert has a destination" precedent already used
-/// throughout this dashboard's KPI/summary tiles -- since `action.screen`
-/// values (e.g. `"subscription"`) don't yet correspond to any route in
-/// the app.
+/// hand-built view model.
+///
+/// Tapping the card (or its action button, if present) resolves
+/// `alert.action.screen` and navigates accordingly -- currently just
+/// `"subscription"`, which reuses the existing [SubscriptionPlansPage]
+/// (and its existing Razorpay/payment flow) as-is via a plain
+/// `Navigator.push`, the same direct-push pattern already used
+/// elsewhere in this app (see `TransactionsPage` -> `TransactionDetailsPage`)
+/// rather than a named route. Any other/unrecognized `screen` value is a
+/// no-op for now -- same "wire real navigation once each destination
+/// exists" precedent already used throughout this dashboard.
 class DashboardAlertCard extends StatelessWidget {
   final DashboardAlertItem alert;
 
   const DashboardAlertCard({super.key, required this.alert});
 
+  void _handleTap(BuildContext context) {
+    switch (alert.action?.screen) {
+      case 'subscription':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SubscriptionPlansPage()),
+        );
+        break;
+      default:
+        // No destination wired up yet for this screen key -- no-op.
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = _alertColor(alert.type);
     final action = alert.action;
+    final hasAction = action?.screen != null && action!.screen!.isNotEmpty;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.page),
-      decoration: BoxDecoration(
-        color: _alertBg(alert.type),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: hasAction ? () => _handleTap(context) : null,
         borderRadius: BorderRadius.circular(AppRadius.large),
-        border: Border.all(color: color.withOpacity(0.4)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(_alertIcon(alert.type), color: color, size: 26),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  alert.title,
-                  style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(alert.description, style: AppTextStyles.bodySmall),
-                if (action != null && action.label.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text(action.label),
-                  ),
-                ],
-              ],
-            ),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.page),
+          decoration: BoxDecoration(
+            color: _alertBg(alert.type),
+            borderRadius: BorderRadius.circular(AppRadius.large),
+            border: Border.all(color: color.withOpacity(0.4)),
           ),
-        ],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(_alertIcon(alert.type), color: color, size: 26),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      alert.title,
+                      style: AppTextStyles.body.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(alert.description, style: AppTextStyles.bodySmall),
+                    if (action != null && action.label.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      TextButton(
+                        onPressed: hasAction ? () => _handleTap(context) : null,
+                        child: Text(action.label),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
