@@ -1,158 +1,224 @@
 import 'package:flutter/material.dart';
 
 import '../../core/network/apis/razorpay_api_service.dart';
+import '../../core/network/apis/subscription_api.dart';
 import '../../core/services/DataModels/razorpay_payment_payload_model.dart';
+import '../../core/services/DataModels/subscription_models.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
+import '../../core/widgets/animated_empty_state.dart';
 import '../../core/widgets/app_snackbar.dart';
-import '../../core/widgets/slide_action_button.dart';
-import '../subscriptions/razorpay_service.dart';
-import '../subscriptions/subscription_controller.dart';
-import 'subscription_plan_interface.dart';
+import '../../core/widgets/network_state_view.dart';
+import 'razorpay_service.dart';
+import 'subscription_controller.dart';
+import 'subscription_cta_resolver.dart';
+import 'widgets/billing_cycle_toggle.dart';
+import 'widgets/current_plan_card.dart';
+import 'widgets/plan_card.dart';
+import 'widgets/plan_comparison_table.dart';
+import 'widgets/purchase_summary_sheet.dart';
+import 'widgets/sticky_selection_bar.dart';
+import 'widgets/subscription_banner.dart';
+import 'widgets/subscription_shimmer.dart';
 
+/// The Subscription Management screen -- backend-driven plan tiers,
+/// current subscription state, and lifecycle actions (subscribe,
+/// upgrade, downgrade, renew, reactivate), covering all 7 states from
+/// subscription-api-responses.md.
+///
+/// Kept as the same public widget (name + no required constructor args)
+/// as the simple 3-tier picker it replaces, since `DashboardAlertCard`
+/// already navigates here via `const SubscriptionPlansPage()` for the
+/// "subscription" alert action -- that call site needed no changes.
 class SubscriptionPlansPage extends StatefulWidget {
-  const SubscriptionPlansPage({super.key});
+  /// Which lifecycle fixture to load in mock mode -- has no effect
+  /// once the app talks to a real backend. Defaults to Trial, the
+  /// most common "why am I here" entry point.
+  final SubscriptionMockScenario mockScenario;
+
+  const SubscriptionPlansPage({
+    super.key,
+    this.mockScenario = SubscriptionMockScenario.trial,
+  });
 
   @override
   State<SubscriptionPlansPage> createState() => _SubscriptionPlansPageState();
 }
 
 class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
-  final SubscriptionController _controller = SubscriptionController();
+  late final SubscriptionScreenController _controller;
   final RazorpayService _razorpayService = RazorpayService();
+  final RazorpayApiService _razorpayApi = RazorpayApiService();
+  final SubscriptionApi _subscriptionApi = SubscriptionApi();
 
-  bool isLoading = false;
-
-  final List<SubscriptionPlan> plans = const [
-    SubscriptionPlan(
-      id: PlanId.starter,
-      title: "Starter",
-      price: "₹499",
-      billingNote: "per month",
-      features: ["Basic reports", "Up to 5 users", "Email support"],
-    ),
-    SubscriptionPlan(
-      id: PlanId.growth,
-      title: "Growth",
-      price: "₹999",
-      billingNote: "per month",
-      isPopular: true,
-      features: [
-        "Advanced reports",
-        "Up to 25 users",
-        "Priority support",
-        "Auto backups",
-      ],
-    ),
-    SubscriptionPlan(
-      id: PlanId.enterprise,
-      title: "Enterprise",
-      price: "Custom",
-      billingNote: "Contact sales",
-      features: [
-        "Unlimited users",
-        "Dedicated manager",
-        "Custom integrations",
-      ],
-    ),
-  ];
+  /// `Scaffold.bottomNavigationBar` is persistent chrome that paints
+  /// *above* a `showModalBottomSheet` route, not behind it -- left
+  /// alone, [StickySelectionBar] stays visible and overlapping the
+  /// purchase sheet the moment it opens (this is what produced the
+  /// blank/gray-looking sheet: the sheet was rendering correctly, just
+  /// squeezed behind the still-visible sticky bar). Tracked here so
+  /// [_bottomBar] can hide it for the sheet's lifetime.
+  bool _isSheetOpen = false;
 
   @override
   void initState() {
     super.initState();
+    _controller = SubscriptionScreenController(
+      mockScenario: widget.mockScenario,
+    );
+    _controller.addListener(_onControllerChanged);
     _razorpayService.init();
+    _controller.load();
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onControllerChanged);
+    _controller.dispose();
     _razorpayService.dispose();
     super.dispose();
   }
 
-  /// --------------------------------------------------
-  /// Razorpay status resolver (SAFE & REAL)
-  /// --------------------------------------------------
-  String _resolvePaymentStatus(RazorpayPaymentResult result) {
-    if (result.success) return "SUCCESS";
-
-    // Razorpay uses errorCode == 2 for user cancelled
-    if (result.errorCode == 2) {
-      return "CANCELLED";
-    }
-
-    return "FAILED";
+  void _onControllerChanged() {
+    if (mounted) setState(() {});
   }
 
-  Future<void> _startSelectedPlanPayment() async {
-    final plan = _controller.selectedPlan;
-    if (plan == null) return;
+  /// Same Razorpay status resolution as before this rewrite --
+  /// unchanged.
+  String _resolvePaymentStatus(RazorpayPaymentResult result) {
+    if (result.success) return 'SUCCESS';
+    if (result.errorCode == 2) return 'CANCELLED'; // user-cancelled
+    return 'FAILED';
+  }
 
-    setState(() => isLoading = true);
-    _controller.startPayment();
+  void _openPurchaseSheet(PlanCatalogItem plan, SubscriptionCta cta) {
+    _controller.selectPlan(plan.planId);
 
-    final amount = plan.id == PlanId.starter ? 499 : 999;
+    setState(() => _isSheetOpen = true);
 
-    final razorpayApi = RazorpayApiService();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => PurchaseSummarySheet(
+        plan: plan,
+        billingCycle: _controller.billingCycle,
+        ctaLabel: cta.label,
+        onConfirm: () => _handlePurchase(plan, sheetContext),
+      ),
+    ).whenComplete(() {
+      // Runs whether the sheet closed via a successful purchase
+      // (Navigator.pop in _handlePurchase), swipe-to-dismiss, or a tap
+      // outside it -- the sticky bar should reappear (if a plan is
+      // still selected) in every one of those cases.
+      if (mounted) setState(() => _isSheetOpen = false);
+    });
+  }
 
-    /// 1️⃣ Create order from backend
-    final orderResponse = await razorpayApi.createOrder(
+  Future<void> _handlePurchase(
+    PlanCatalogItem plan,
+    BuildContext sheetContext,
+  ) async {
+    if (plan.isFree) {
+      await _handleFreeTrialActivation(sheetContext);
+      return;
+    }
+    await _handlePaidPurchase(plan, sheetContext);
+  }
+
+  /// Free plans skip payment entirely and call activation directly
+  /// (contract §9).
+  Future<void> _handleFreeTrialActivation(BuildContext sheetContext) async {
+    _controller.startPurchase();
+
+    final result = await _subscriptionApi.activateFreeTrial(
+      orgId: _controller.orgId,
+    );
+
+    _controller.finishPurchase();
+    if (!mounted) return;
+
+    if (result.isSuccess) {
+      Navigator.of(sheetContext).pop();
+      _controller.clearSelection();
+      await _controller.refreshStatus();
+      if (!mounted) return;
+      AppSnackbar.success(context, 'Free trial started 🎉');
+    } else {
+      AppSnackbar.error(context, result.error ?? 'Unable to start your trial');
+    }
+  }
+
+  /// Same 4-step order -> checkout -> save-result -> feedback flow the
+  /// previous `SubscriptionPlansPage` used, reusing
+  /// `RazorpayApiService`/`RazorpayService` completely unchanged --
+  /// only the plan/amount source (the new catalog + billing cycle,
+  /// instead of the old hardcoded 3-tier list) is different.
+  Future<void> _handlePaidPurchase(
+    PlanCatalogItem plan,
+    BuildContext sheetContext,
+  ) async {
+    _controller.startPurchase();
+
+    final isAnnual = _controller.billingCycle == BillingCycle.annual;
+    final amount = isAnnual
+        ? (plan.billing.annual?.price ?? 0)
+        : (plan.billing.monthly?.price ?? 0);
+
+    final orderResponse = await _razorpayApi.createOrder(
       amountInPaise: amount * 100,
-      currency: "INR",
-      planId: plan.id.name,
+      currency: 'INR',
+      planId: plan.planId.apiValue,
     );
 
     if (!orderResponse.isSuccess || orderResponse.data == null) {
-      setState(() => isLoading = false);
-      AppSnackbar.error(context, orderResponse.error ?? "Unable to create order");
+      _controller.finishPurchase();
+      if (!mounted) return;
+      AppSnackbar.error(
+        context,
+        orderResponse.error ?? 'Unable to create order',
+      );
       return;
     }
 
     final order = orderResponse.data!;
 
-    /// 2️⃣ Start Razorpay checkout
-    final RazorpayPaymentResult result = await _razorpayService.startPayment(
+    final result = await _razorpayService.startPayment(
       amountInRupees: amount,
-      planName: plan.title,
+      planName: plan.name,
       orderId: order.orderId,
     );
 
     if (!mounted) return;
 
-    /// 3️⃣ Always persist payment result (SUCCESS / FAILED / CANCELLED)
     final status = _resolvePaymentStatus(result);
 
-    await razorpayApi.savePaymentResult(
+    await _razorpayApi.savePaymentResult(
       payload: RazorpayPaymentPayload(
         orderId: order.orderId,
         status: status,
         amount: amount * 100,
-        planId: plan.id.name,
-        platform: "flutter",
+        planId: plan.planId.apiValue,
+        platform: 'flutter',
         createdAt: DateTime.now(),
-
-        // success fields
         paymentId: result.paymentId,
         signature: result.signature,
-
-        // failure fields (ONLY what exists)
         errorCode: result.errorCode,
         errorReason: result.errorMessage,
       ),
     );
 
-    setState(() => isLoading = false);
+    _controller.finishPurchase();
+    if (!mounted) return;
 
-    /// 4️⃣ UI feedback
     if (result.success) {
-      _controller.paymentSuccess();
-
-      AppSnackbar.success(context, "Subscription activated 🎉");
-
-      Navigator.pop(context);
+      Navigator.of(sheetContext).pop();
+      _controller.clearSelection();
+      await _controller.refreshStatus();
+      if (!mounted) return;
+      AppSnackbar.success(context, 'Subscription activated 🎉');
     } else {
-      _controller.paymentFailed();
-
-      AppSnackbar.error(context, "Payment failed");
+      AppSnackbar.error(context, 'Payment failed');
     }
   }
 
@@ -162,43 +228,113 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
       backgroundColor: AppColors.pageBackground,
       appBar: AppBar(
         title: Text(
-          "Choose Your Plan",
+          'Subscription',
           style: AppTextStyles.h2.copyWith(color: Colors.white),
         ),
         backgroundColor: AppColors.primary,
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
       ),
+      // bottomNavigationBar: _bottomBar(),
+      body: SafeArea(child: _body()),
+    );
+  }
 
-      /// ---------- BOTTOM BAR ----------
-      bottomNavigationBar: _controller.selectedPlan == null
-          ? null
-          : Padding(
-              padding: const EdgeInsets.all(AppSpacing.page),
-              child: SlideActionButton(
-                label:
-                    "Slide to pay ${_controller.selectedPlan!.price}/- Only",
-                submitting: isLoading,
-                onSlide: (controller) async {
-                  if (isLoading) return;
-                  await _startSelectedPlanPayment();
-                },
-              ),
-            ),
+  // Widget? _bottomBar() {
+  //   final selectedPlan = _controller.selectedPlan;
+  //   if (_controller.phase != SubscriptionLoadPhase.loaded ||
+  //       selectedPlan == null ||
+  //       _isSheetOpen) {
+  //     return null;
+  //   }
+  //   final cta = _controller.ctaFor(selectedPlan);
+  //   return StickySelectionBar(
+  //     plan: selectedPlan,
+  //     billingCycle: _controller.billingCycle,
+  //     ctaLabel: cta.label,
+  //     onContinue: () => _openPurchaseSheet(selectedPlan, cta),
+  //     onDismiss: _controller.clearSelection,
+  //   );
+  // }
 
-      /// ---------- BODY ----------
-      body: IgnorePointer(
-        ignoring: isLoading,
+  Widget _body() {
+    switch (_controller.phase) {
+      case SubscriptionLoadPhase.loading:
+        return const SubscriptionShimmer();
+
+      case SubscriptionLoadPhase.error:
+        return NetworkStateView(
+          isOffline: _controller.isOffline,
+          message: _controller.errorMessage,
+          onRetry: _controller.load,
+        );
+
+      case SubscriptionLoadPhase.loaded:
+        final catalog = _controller.catalog;
+        if (catalog == null || catalog.plans.isEmpty) {
+          return const AnimatedEmptyState(
+            icon: Icons.workspace_premium_outlined,
+            title: 'Nothing to show yet',
+            message: 'No subscription plans available.',
+          );
+        }
+        return _loadedContent(catalog.plans, _controller.status!);
+    }
+  }
+
+  Widget _loadedContent(
+    List<PlanCatalogItem> plans,
+    SubscriptionStatusResponse status,
+  ) {
+    final ui = status.ui;
+    final organization = status.organization;
+    final isSuspended = ui.locked == 'support';
+    final showCurrentPlanCard = organization != null && ui.lastPlan == null;
+
+    // At least one paid plan's annual discount, for the toggle's badge
+    // — read off the catalog rather than hardcoded, so it stays correct
+    // if the discount ever differs per plan.
+    final annualDiscount = plans
+        .map((p) => p.billing.annual?.discountPercentage)
+        .firstWhere((d) => d != null, orElse: () => null);
+
+    return IgnorePointer(
+      ignoring: _controller.isPurchasing,
+      child: Opacity(
+        opacity: _controller.isPurchasing ? 0.6 : 1,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.page),
           children: [
-            Text(
-              "Unlock more features and scale your business effortlessly.",
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
+            if (ui.showBanner && ui.banner != null) ...[
+              SubscriptionBanner(banner: ui.banner!),
+              const SizedBox(height: AppSpacing.verticalMedium),
+            ],
+            if (showCurrentPlanCard) ...[
+              CurrentPlanCard(
+                organization: organization!,
+                remainingDays: ui.remainingDays,
+                totalDays: ui.totalDays,
+              ),
+              const SizedBox(height: AppSpacing.verticalMedium),
+            ],
+            BillingCycleToggle(
+              value: _controller.billingCycle,
+              onChanged: _controller.setBillingCycle,
+              annualDiscountPercentage: annualDiscount,
             ),
-            const SizedBox(height: 24),
-            ...plans.map(_planCard),
+            const SizedBox(height: AppSpacing.verticalMedium),
+            for (final plan in plans) ...[
+              _planCardFor(plan, isSuspended),
+              const SizedBox(height: AppSpacing.verticalMedium),
+            ],
+            Text(
+              'Compare plans',
+              style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: AppSpacing.verticalSmall),
+            isSuspended
+                ? const PlanComparisonLockedNotice()
+                : PlanComparisonTable(plans: plans),
             const SizedBox(height: 80),
           ],
         ),
@@ -206,97 +342,20 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
     );
   }
 
-  Widget _mostPopularBadge() {
-    return Align(
-      alignment: Alignment.topRight,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.secondary,
-              AppColors.secondary.withOpacity(0.85),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Text(
-          "MOST POPULAR",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.4,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _planCardFor(PlanCatalogItem plan, bool isSuspended) {
+    final cta = _controller.ctaFor(plan);
+    final isCurrentPlan = cta.label == 'Current Plan';
+    final isSelected = _controller.selectedPlanId == plan.planId;
 
-  /// ---------- PLAN CARD ----------
-  Widget _planCard(SubscriptionPlan plan) {
-    final bool isSelected = _controller.selectedPlan?.id == plan.id;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _controller.selectPlan(plan);
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: plan.isPopular
-              ? AppColors.primary.withOpacity(0.04)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            width: 2,
-            color: isSelected ? AppColors.secondary : AppColors.border,
-          ),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: plan.isPopular ? 18 : 12,
-              color: Colors.black.withOpacity(0.06),
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (plan.isPopular) _mostPopularBadge(),
-            if (plan.isPopular) const SizedBox(height: 10),
-            Text(plan.title, style: AppTextStyles.h3),
-            const SizedBox(height: 4),
-            Text(
-              plan.price,
-              style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              plan.billingNote,
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 12),
-            ...plan.features.map(
-              (f) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle,
-                        size: 16, color: Colors.green),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(f)),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return PlanCard(
+      plan: plan,
+      billingCycle: _controller.billingCycle,
+      cta: cta,
+      isSelected: isSelected,
+      isCurrentPlan: isCurrentPlan,
+      isLocked: isSuspended,
+      onSelectCard: () => _controller.selectPlan(plan.planId),
+      onCtaTap: () => _openPurchaseSheet(plan, cta),
     );
   }
 }

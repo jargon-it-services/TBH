@@ -1,0 +1,92 @@
+{
+  "plans": [
+    {
+      "planId": "trial",
+      "name": "Trial",
+      "description": "Explore full Growth-level features free while you get set up.",
+      "isFree": true,
+      "recommended": false,
+      "badge": null,
+      "billing": { "monthly": null, "annual": null },
+      "limits": { "maxUsers": 50, "maxBranches": 5 },
+      "features": {
+        "fullReportsPnl": true,
+        "emailInvites": true,
+        "whiteLabelBranding": false,
+        "apiAccess": false
+      }
+    },
+    {
+      "planId": "starter",
+      "name": "Starter",
+      "description": "For single-branch teams getting started.",
+      "isFree": false,
+      "recommended": false,
+      "badge": null,
+      "billing": {
+        "monthly": { "price": 999, "currency": "INR" },
+        "annual": {
+          "price": 9990,
+          "strikePrice": 11988,
+          "discountPercentage": 17,
+          "currency": "INR"
+        }
+      },
+      "limits": { "maxUsers": 10, "maxBranches": 1 },
+      "features": {
+        "fullReportsPnl": false,
+        "emailInvites": false,
+        "whiteLabelBranding": false,
+        "apiAccess": false
+      }
+    },
+    {
+      "planId": "growth",
+      "name": "Growth",
+      "description": "Full reports and multi-branch support for scaling chains.",
+      "isFree": false,
+      "recommended": true,
+      "badge": "Most Popular",
+      "billing": {
+        "monthly": { "price": 2999, "currency": "INR" },
+        "annual": {
+          "price": 29990,
+          "strikePrice": 35988,
+          "discountPercentage": 17,
+          "currency": "INR"
+        }
+      },
+      "limits": { "maxUsers": 50, "maxBranches": 5 },
+      "features": {
+        "fullReportsPnl": true,
+        "emailInvites": true,
+        "whiteLabelBranding": false,
+        "apiAccess": false
+      }
+    },
+    {
+      "planId": "enterprise",
+      "name": "Enterprise",
+      "description": "Unlimited scale, white-label branding & API access.",
+      "isFree": false,
+      "recommended": false,
+      "badge": null,
+      "billing": {
+        "monthly": { "price": 9999, "currency": "INR" },
+        "annual": {
+          "price": 99990,
+          "strikePrice": 119988,
+          "discountPercentage": 17,
+          "currency": "INR"
+        }
+      },
+      "limits": { "maxUsers": null, "maxBranches": null },
+      "features": {
+        "fullReportsPnl": true,
+        "emailInvites": true,
+        "whiteLabelBranding": true,
+        "apiAccess": true
+      }
+    }
+  ]
+}

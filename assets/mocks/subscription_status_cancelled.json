@@ -1,0 +1,34 @@
+{
+  "organization": {
+    "id": "ORG_1006",
+    "code": "SALON06",
+    "name": "Style Studio",
+    "plan": "starter",
+    "status": "cancelled",
+    "trialExpiresAt": null,
+    "planExpiresAt": "2026-07-15T23:59:59Z",
+    "userCount": 8,
+    "branchCount": 1
+  },
+  "subscription": {
+    "id": "SUB_9006",
+    "orgId": "ORG_1006",
+    "adminId": "USR_2006",
+    "plan": "monthly",
+    "status": "readOnly",
+    "isReadOnly": true,
+    "startDate": "2026-06-15",
+    "expiryDate": "2026-07-15"
+  },
+  "ui": {
+    "lastPlan": { "planId": "starter", "expiredOn": "2026-07-15" },
+    "showBanner": true,
+    "banner": {
+      "type": "info",
+      "title": "Subscription cancelled",
+      "description": "Your account is read-only. Reactivate anytime to resume."
+    },
+    "locked": "renew",
+    "renewVerb": "Reactivate"
+  }
+}

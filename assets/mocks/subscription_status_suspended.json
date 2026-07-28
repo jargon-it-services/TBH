@@ -1,0 +1,34 @@
+{
+  "organization": {
+    "id": "ORG_1005",
+    "code": "SALON05",
+    "name": "Mane Attraction",
+    "plan": "growth",
+    "status": "suspended",
+    "trialExpiresAt": null,
+    "planExpiresAt": "2026-08-10T23:59:59Z",
+    "userCount": 15,
+    "branchCount": 3
+  },
+  "subscription": {
+    "id": "SUB_9005",
+    "orgId": "ORG_1005",
+    "adminId": "USR_2005",
+    "plan": "monthly",
+    "status": "readOnly",
+    "isReadOnly": true,
+    "startDate": "2026-07-10",
+    "expiryDate": "2026-08-10"
+  },
+  "ui": {
+    "remainingDays": 14,
+    "totalDays": 30,
+    "showBanner": true,
+    "banner": {
+      "type": "danger",
+      "title": "Organisation suspended",
+      "description": "A platform administrator suspended this account. Contact support to resolve."
+    },
+    "locked": "support"
+  }
+}

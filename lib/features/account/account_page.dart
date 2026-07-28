@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../../core/constants/app_lables_messages.dart';
 import '../../../core/navigation/app_navigator.dart';
 import '../../../core/network/apis/logout_api.dart';
@@ -9,9 +11,8 @@ import '../../../core/session/session_manager.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_fonts.dart';
 import '../../../core/widgets/app_snackbar.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../firms/firms_list_page.dart';
+import '../subscriptions/subscription_plans_page.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -21,6 +22,13 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
+  Future<void> _handleSubscription() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SubscriptionPlansPage()),
+    );
+  }
+
   /// Profile → Logout → Confirmation Dialog → Logout API → Delete JWT →
   /// Delete Refresh Token → Delete Session → Clear Authentication State
   /// → (onboarding_completed untouched) → Navigate Login → Clear Nav Stack.
@@ -249,9 +257,10 @@ class _AccountPageState extends State<AccountPage> {
                         icon: Icons.credit_card_outlined,
                         title: "Payment History",
                       ),
-                      const _AccountTile(
+                      _AccountTile(
                         icon: Icons.subject_outlined,
                         title: "Subscriptions",
+                        onTap: _handleSubscription,
                       ),
                       const _AccountTile(
                         icon: Icons.delete_outline,

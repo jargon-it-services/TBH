@@ -1,0 +1,29 @@
+{
+  "organization": {
+    "id": "ORG_1003",
+    "code": "SALON03",
+    "name": "Blush Beauty Bar",
+    "plan": "growth",
+    "status": "active",
+    "trialExpiresAt": null,
+    "planExpiresAt": "2027-03-01T23:59:59Z",
+    "userCount": 31,
+    "branchCount": 5
+  },
+  "subscription": {
+    "id": "SUB_9003",
+    "orgId": "ORG_1003",
+    "adminId": "USR_2003",
+    "plan": "annual",
+    "status": "active",
+    "isReadOnly": false,
+    "startDate": "2026-03-01",
+    "expiryDate": "2027-03-01"
+  },
+  "ui": {
+    "remainingDays": 220,
+    "totalDays": 365,
+    "showBanner": false,
+    "banner": null
+  }
+}

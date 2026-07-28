@@ -1,0 +1,12 @@
+{
+  "organization": null,
+  "subscription": null,
+  "ui": {
+    "showBanner": true,
+    "banner": {
+      "type": "info",
+      "title": "Choose a plan for your organisation",
+      "description": "Registration Step 2 of 2. You can change this anytime later."
+    }
+  }
+}

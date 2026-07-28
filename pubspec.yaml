@@ -73,6 +73,14 @@ flutter:
     - assets/mocks/dashboard_header_branch_admin_response.json
     - assets/mocks/dashboard_header_manager_response.json
     - assets/mocks/dashboard_header_employee_response.json
+    - assets/mocks/subscription_plans_catalog.json
+    - assets/mocks/subscription_status_first_purchase.json
+    - assets/mocks/subscription_status_trial.json
+    - assets/mocks/subscription_status_active_expiring.json
+    - assets/mocks/subscription_status_active_healthy.json
+    - assets/mocks/subscription_status_expired.json
+    - assets/mocks/subscription_status_suspended.json
+    - assets/mocks/subscription_status_cancelled.json
 
 # ---------------------------------------------------------------------
 # flutter_launcher_icons config

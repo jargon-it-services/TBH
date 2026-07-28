@@ -1,0 +1,33 @@
+{
+  "organization": {
+    "id": "ORG_1001",
+    "code": "SALON01",
+    "name": "Glow & Co Salon",
+    "plan": "trial",
+    "status": "trial",
+    "trialExpiresAt": "2026-08-01T23:59:59Z",
+    "planExpiresAt": null,
+    "userCount": 6,
+    "branchCount": 2
+  },
+  "subscription": {
+    "id": "SUB_9001",
+    "orgId": "ORG_1001",
+    "adminId": "USR_2001",
+    "plan": "trial",
+    "status": "active",
+    "isReadOnly": false,
+    "startDate": "2026-07-18",
+    "expiryDate": "2026-08-01"
+  },
+  "ui": {
+    "remainingDays": 5,
+    "totalDays": 14,
+    "showBanner": true,
+    "banner": {
+      "type": "warning",
+      "title": "Your trial ends in 5 days",
+      "description": "Pick a plan to keep uninterrupted access for your team."
+    }
+  }
+}

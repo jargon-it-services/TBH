@@ -1,0 +1,33 @@
+{
+  "organization": {
+    "id": "ORG_1002",
+    "code": "SALON02",
+    "name": "Urban Cuts",
+    "plan": "growth",
+    "status": "active",
+    "trialExpiresAt": null,
+    "planExpiresAt": "2026-07-31T23:59:59Z",
+    "userCount": 22,
+    "branchCount": 4
+  },
+  "subscription": {
+    "id": "SUB_9002",
+    "orgId": "ORG_1002",
+    "adminId": "USR_2002",
+    "plan": "monthly",
+    "status": "active",
+    "isReadOnly": false,
+    "startDate": "2026-07-01",
+    "expiryDate": "2026-07-31"
+  },
+  "ui": {
+    "remainingDays": 4,
+    "totalDays": 30,
+    "showBanner": true,
+    "banner": {
+      "type": "warning",
+      "title": "Your Growth plan expires in 4 days",
+      "description": "Renew now to avoid interruption to reports and P&L access."
+    }
+  }
+}

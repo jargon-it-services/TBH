@@ -1,0 +1,34 @@
+{
+  "organization": {
+    "id": "ORG_1004",
+    "code": "SALON04",
+    "name": "The Clip House",
+    "plan": "growth",
+    "status": "active",
+    "trialExpiresAt": null,
+    "planExpiresAt": "2026-07-20T23:59:59Z",
+    "userCount": 18,
+    "branchCount": 3
+  },
+  "subscription": {
+    "id": "SUB_9004",
+    "orgId": "ORG_1004",
+    "adminId": "USR_2004",
+    "plan": "monthly",
+    "status": "expired",
+    "isReadOnly": true,
+    "startDate": "2026-06-20",
+    "expiryDate": "2026-07-20"
+  },
+  "ui": {
+    "lastPlan": { "planId": "growth", "expiredOn": "2026-07-20" },
+    "showBanner": true,
+    "banner": {
+      "type": "danger",
+      "title": "Your subscription expired",
+      "description": "Your account is read-only. Renew to restore full access."
+    },
+    "locked": "renew",
+    "renewVerb": "Renew"
+  }
+}
