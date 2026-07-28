@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/services/DataModels/subscription_models.dart';
-import '../../../core/theme/app_fonts.dart';
-import '../../../core/widgets/slide_action_button.dart';
+import '../../../../core/services/DataModels/subscription_models.dart';
+import '../../../../core/theme/app_fonts.dart';
+import '../../../../core/widgets/slide_action_button.dart';
 import '../subscription_tokens.dart';
 
 String _formatMoney(int amount, String currency) {
@@ -36,7 +36,14 @@ class PurchaseSummarySheet extends StatefulWidget {
   final PlanCatalogItem plan;
   final BillingCycle billingCycle;
   final String ctaLabel;
-  final Future<void> Function() onConfirm;
+
+  /// Runs the purchase attempt. Returns `null` on success (the caller
+  /// pops the sheet itself in that case), or a user-facing error
+  /// message on failure/cancellation -- which this sheet then displays
+  /// inline. Returning `void` previously gave the sheet no way to know
+  /// an attempt had even happened, so the error text below had no
+  /// choice but to render unconditionally.
+  final Future<String?> Function() onConfirm;
 
   const PurchaseSummarySheet({
     super.key,
@@ -53,6 +60,12 @@ class PurchaseSummarySheet extends StatefulWidget {
 class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
   bool _submitting = false;
 
+  /// Null on initial open (nothing attempted yet) and after a
+  /// successful purchase (the sheet is popped by the caller before
+  /// this would ever be read). Only set when [onConfirm] resolves with
+  /// a non-null error message -- i.e. payment failed or was cancelled.
+  String? _errorMessage;
+
   /// GST isn't specified anywhere in the API contract or SRS -- 18% is
   /// assumed here (the standard Indian GST rate for SaaS
   /// subscriptions) purely so the breakdown has a complete, sensible
@@ -64,7 +77,8 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
   int get _basePrice {
     final plan = widget.plan;
     if (plan.isFree) return 0;
-    if (widget.billingCycle == BillingCycle.annual && plan.billing.annual != null) {
+    if (widget.billingCycle == BillingCycle.annual &&
+        plan.billing.annual != null) {
       return plan.billing.annual!.price;
     }
     return plan.billing.monthly?.price ?? 0;
@@ -72,7 +86,8 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
 
   String get _currency {
     final plan = widget.plan;
-    if (widget.billingCycle == BillingCycle.annual && plan.billing.annual != null) {
+    if (widget.billingCycle == BillingCycle.annual &&
+        plan.billing.annual != null) {
       return plan.billing.annual!.currency;
     }
     return plan.billing.monthly?.currency ?? 'INR';
@@ -83,9 +98,18 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
 
   Future<void> _handleConfirm() async {
     if (_submitting) return;
-    setState(() => _submitting = true);
-    await widget.onConfirm();
-    if (mounted) setState(() => _submitting = false);
+    setState(() {
+      _submitting = true;
+      // Clear any previous failure so a retry doesn't show stale
+      // error text while the new attempt is in flight.
+      _errorMessage = null;
+    });
+    final error = await widget.onConfirm();
+    if (!mounted) return;
+    setState(() {
+      _submitting = false;
+      _errorMessage = error;
+    });
   }
 
   @override
@@ -93,11 +117,15 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
     final plan = widget.plan;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.large)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.large),
+          ),
         ),
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.page,
@@ -109,7 +137,7 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
           top: false,
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
                 child: Container(
@@ -127,11 +155,16 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
                   Expanded(
                     child: Text(
                       '${plan.name} Plan',
-                      style: AppTextStyles.h3.copyWith(color: SubscriptionTokens.ink),
+                      style: AppTextStyles.h3.copyWith(
+                        color: SubscriptionTokens.ink,
+                      ),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: SubscriptionTokens.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -152,9 +185,11 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
                 plan.isFree
                     ? '14-day free trial · no payment required'
                     : widget.billingCycle == BillingCycle.annual
-                        ? 'Billed annually'
-                        : 'Billed monthly',
-                style: AppTextStyles.bodySmall.copyWith(color: SubscriptionTokens.sub),
+                    ? 'Billed annually'
+                    : 'Billed monthly',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: SubscriptionTokens.sub,
+                ),
               ),
               const SizedBox(height: 20),
               if (!plan.isFree) ...[
@@ -176,9 +211,20 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
                   _formatMoney(_payableTotal, _currency),
                   bold: true,
                 ),
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 22),
+                  Text(
+                    _errorMessage!,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: SubscriptionTokens.danger,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 22),
                 SlideActionButton(
-                  label: 'Slide to pay ${_formatMoney(_payableTotal, _currency)}',
+                  label:
+                      'Slide to pay ${_formatMoney(_payableTotal, _currency)}',
                   submitting: _submitting,
                   onSlide: (_) => _handleConfirm(),
                 ),
@@ -186,7 +232,9 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
                 Text(
                   'Start your free trial today. You can choose a paid plan '
                   'anytime before it ends — no card required now.',
-                  style: AppTextStyles.bodySmall.copyWith(color: SubscriptionTokens.sub),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: SubscriptionTokens.sub,
+                  ),
                 ),
                 const SizedBox(height: 22),
                 SizedBox(
@@ -208,7 +256,9 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Text(
@@ -225,7 +275,12 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
     );
   }
 
-  Widget _row(String label, String value, {bool bold = false, Color? valueColor}) {
+  Widget _row(
+    String label,
+    String value, {
+    bool bold = false,
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -233,7 +288,9 @@ class _PurchaseSummarySheetState extends State<PurchaseSummarySheet> {
         children: [
           Text(
             label,
-            style: AppTextStyles.bodySmall.copyWith(color: SubscriptionTokens.sub),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: SubscriptionTokens.sub,
+            ),
           ),
           Text(
             value,

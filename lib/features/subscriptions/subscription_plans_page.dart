@@ -115,20 +115,20 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
     });
   }
 
-  Future<void> _handlePurchase(
+  Future<String?> _handlePurchase(
     PlanCatalogItem plan,
     BuildContext sheetContext,
-  ) async {
+  ) {
     if (plan.isFree) {
-      await _handleFreeTrialActivation(sheetContext);
-      return;
+      return _handleFreeTrialActivation(sheetContext);
     }
-    await _handlePaidPurchase(plan, sheetContext);
+    return _handlePaidPurchase(plan, sheetContext);
   }
 
   /// Free plans skip payment entirely and call activation directly
-  /// (contract §9).
-  Future<void> _handleFreeTrialActivation(BuildContext sheetContext) async {
+  /// (contract §9). Returns `null` on success, or an error message the
+  /// sheet should display on failure.
+  Future<String?> _handleFreeTrialActivation(BuildContext sheetContext) async {
     _controller.startPurchase();
 
     final result = await _subscriptionApi.activateFreeTrial(
@@ -136,16 +136,19 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
     );
 
     _controller.finishPurchase();
-    if (!mounted) return;
+    if (!mounted) return null;
 
     if (result.isSuccess) {
       Navigator.of(sheetContext).pop();
       _controller.clearSelection();
       await _controller.refreshStatus();
-      if (!mounted) return;
+      if (!mounted) return null;
       AppSnackbar.success(context, 'Free trial started 🎉');
+      return null;
     } else {
-      AppSnackbar.error(context, result.error ?? 'Unable to start your trial');
+      final message = result.error ?? 'Unable to start your trial';
+      AppSnackbar.error(context, message);
+      return message;
     }
   }
 
@@ -154,7 +157,9 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
   /// `RazorpayApiService`/`RazorpayService` completely unchanged --
   /// only the plan/amount source (the new catalog + billing cycle,
   /// instead of the old hardcoded 3-tier list) is different.
-  Future<void> _handlePaidPurchase(
+  /// Returns `null` on success, or an error message the sheet should
+  /// display on failure/cancellation.
+  Future<String?> _handlePaidPurchase(
     PlanCatalogItem plan,
     BuildContext sheetContext,
   ) async {
@@ -173,12 +178,10 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
 
     if (!orderResponse.isSuccess || orderResponse.data == null) {
       _controller.finishPurchase();
-      if (!mounted) return;
-      AppSnackbar.error(
-        context,
-        orderResponse.error ?? 'Unable to create order',
-      );
-      return;
+      if (!mounted) return null;
+      final message = orderResponse.error ?? 'Unable to create order';
+      AppSnackbar.error(context, message);
+      return message;
     }
 
     final order = orderResponse.data!;
@@ -189,7 +192,7 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
       orderId: order.orderId,
     );
 
-    if (!mounted) return;
+    if (!mounted) return null;
 
     final status = _resolvePaymentStatus(result);
 
@@ -209,16 +212,23 @@ class _SubscriptionPlansPageState extends State<SubscriptionPlansPage> {
     );
 
     _controller.finishPurchase();
-    if (!mounted) return;
+    if (!mounted) return null;
 
     if (result.success) {
       Navigator.of(sheetContext).pop();
       _controller.clearSelection();
       await _controller.refreshStatus();
-      if (!mounted) return;
+      if (!mounted) return null;
       AppSnackbar.success(context, 'Subscription activated 🎉');
+      return null;
     } else {
-      AppSnackbar.error(context, 'Payment failed');
+      // Distinct copy for a user-cancelled checkout vs. an actual
+      // payment failure, per contract's CANCELLED/FAILED statuses.
+      final message = status == 'CANCELLED'
+          ? 'Payment cancelled. You can try again when you\'re ready.'
+          : 'Payment Failed, Please try after sometime.';
+      // AppSnackbar.error(context, 'Payment failed');
+      return message;
     }
   }
 
