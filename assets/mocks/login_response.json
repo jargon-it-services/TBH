@@ -33,10 +33,6 @@
       "total_services": 200
     },
 
-    "feature_lock": [
-      "report",
-      "payment_slip",
-      "pnl"
-    ]
+    "feature_lock": []
   }
 }

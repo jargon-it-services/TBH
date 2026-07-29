@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -213,6 +215,165 @@ class _AccountPageState extends State<AccountPage> {
 
   _openTermsWebsite() => _launchExternal(AppConstantData.terms);
 
+  /// Builds the menu section cards shown below the subscription card,
+  /// scoped to the signed-in user's role (`SessionManager.instance.role`).
+  ///
+  /// Role → sections:
+  /// - Account Admin: Report (full) · Account Setup · Account Management
+  ///   (+ Subscription, Payment History, Delete Account) · Support · Logout
+  /// - Branch Admin: Report (full) · Account Setup (Branch editable:
+  ///   logo & address) · Account Management (Account Info, Update
+  ///   Password only) · Support · Logout
+  /// - Manager / Employee: Report (Payslip only) · Account Management
+  ///   (Account Info, Update Password only) · Support · Logout
+  ///
+  /// "Report" is always rendered (its own lock state comes from
+  /// `isFeatureLocked('report')`, same as before); "Account Setup" and
+  /// the admin-only Account Management items are only included for the
+  /// two admin roles.
+  List<Widget> _buildRoleMenuSections(BuildContext context) {
+    final roleLabel = SessionManager.instance.role.displayName;
+    final isAccountAdmin = roleLabel == 'Account Admin';
+    final isBranchAdmin = roleLabel == 'Branch Admin';
+    final hasAccountSetup = isAccountAdmin || isBranchAdmin;
+    const fullReports = [
+      _AccountTile(icon: Icons.receipt_long_outlined, title: "Payslip"),
+      _AccountTile(icon: Icons.subject_outlined, title: "PnL"),
+      _AccountTile(
+        icon: Icons.summarize_outlined,
+        title: "Revenue & Expense Summary",
+      ),
+
+      _AccountTile(
+        icon: Icons.pie_chart_outline,
+        title: "Payment Mode Breakdown Charts",
+      ),
+      _AccountTile(
+        icon: Icons.insights_outlined,
+        title: "Employee Performance Report",
+      ),
+    ];
+    const reportPayslipOnly = [
+      _AccountTile(icon: Icons.receipt_long_outlined, title: "Payslip"),
+    ];
+    final reports = hasAccountSetup ? fullReports : reportPayslipOnly;
+
+    final isLocked =
+        SessionManager.instance.currentSession?.isFeatureLocked('report') ??
+        false;
+
+    return [
+      // ---- Report (locked as one unit via isFeatureLocked('report')) ----
+      // _ReportSectionCard(isFullReportSet: hasAccountSetup),
+      // const SizedBox(height: AppSpacing.verticalMedium),
+      // ---- Account Management ----
+      _SectionCard(
+        title: "Report",
+        items: isLocked ? [LockedReportCard()] : reports,
+      ),
+      const SizedBox(height: AppSpacing.verticalMedium),
+
+      // ---- Account Setup (Account Admin & Branch Admin only) ----
+      if (hasAccountSetup) ...[
+        _SectionCard(
+          title: "Account Setup",
+          items: [
+            _AccountTile(
+              icon: Icons.storefront_outlined,
+              title: "Branch",
+              subtitle: isBranchAdmin ? "Allowed to edit logo & address" : null,
+            ),
+            const _AccountTile(icon: Icons.people_outline, title: "Staff"),
+            const _AccountTile(
+              icon: Icons.miscellaneous_services_outlined,
+              title: "Services",
+            ),
+            const _AccountTile(
+              icon: Icons.rule_folder_outlined,
+              title: "Salary Rule",
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.verticalMedium),
+      ],
+
+      // ---- Account Management ----
+      _SectionCard(
+        title: "Account Management",
+        items: [
+          _AccountTile(
+            icon: Icons.admin_panel_settings_outlined,
+            title: "Account Info",
+            subtitle: _accountSubtitle(
+              SessionManager.instance.currentSession?.account,
+            ),
+          ),
+          if (isAccountAdmin) ...[
+            _AccountTile(
+              icon: Icons.subject_outlined,
+              title: "Subscription",
+              onTap: _handleSubscription,
+            ),
+            _AccountTile(
+              icon: Icons.credit_card_outlined,
+              title: "Payment History",
+              onTap: _handlePaymentHistory,
+            ),
+          ],
+          if (!hasAccountSetup)
+            const _AccountTile(
+              icon: Icons.miscellaneous_services_outlined,
+              title: "Services",
+            ),
+          const _AccountTile(
+            icon: Icons.lock_reset_outlined,
+            title: "Update Password",
+          ),
+          if (isAccountAdmin)
+            const _AccountTile(
+              icon: Icons.delete_outline,
+              title: "Delete Account",
+              isDestructive: true,
+            ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.verticalMedium),
+
+      // ---- Support ----
+      _SectionCard(
+        title: "Support",
+        items: [
+          _AccountTile(
+            icon: Icons.contact_support_outlined,
+            title: "Contact Us",
+            onTap: _openContactWebsite,
+          ),
+          _AccountTile(
+            icon: Icons.policy_outlined,
+            title: "Terms & Conditions",
+            onTap: _openTermsWebsite,
+          ),
+          _AccountTile(
+            icon: Icons.share_outlined,
+            title: "Invite Friends",
+            onTap: _handleInviteFriend,
+          ),
+          _AccountTile(
+            icon: Icons.info_outline,
+            title: "App Info",
+            onTap: () => _showAppInfo(),
+          ),
+          const _AccountTile(icon: Icons.star_outline, title: "Rate Us"),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.verticalLarge),
+
+      // ---- Logout (standalone terminal action, not tucked inside a
+      // section) ----
+      _LogoutTile(onTap: _handleLogout),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -249,97 +410,7 @@ class _AccountPageState extends State<AccountPage> {
               const SizedBox(height: AppSpacing.verticalLarge),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const _SectionCard(
-                    title: "Firm Management",
-                    items: [
-                      _AccountTile(
-                        icon: Icons.document_scanner_outlined,
-                        title: "Report",
-                        featureId: "report",
-                      ),
-                      _AccountTile(
-                        icon: Icons.payment_outlined,
-                        title: "Payment Slip",
-                        featureId: "payment_slip",
-                      ),
-                      _AccountTile(
-                        icon: Icons.subject_outlined,
-                        title: "PnL",
-                        featureId: "pnl",
-                      ),
-                      _AccountTile(
-                        icon: Icons.add_comment_outlined,
-                        title: "Incentive Config",
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.verticalMedium),
-                  _SectionCard(
-                    title: "Account Management",
-                    items: [
-                      _AccountTile(
-                        icon: Icons.admin_panel_settings_outlined,
-                        title: "Account Info / Settings",
-                        subtitle: _accountSubtitle(
-                          SessionManager.instance.currentSession?.account,
-                        ),
-                      ),
-                      _AccountTile(
-                        icon: Icons.credit_card_outlined,
-                        title: "Payment History",
-                        onTap: _handlePaymentHistory,
-                      ),
-                      _AccountTile(
-                        icon: Icons.subject_outlined,
-                        title: "Subscriptions",
-                        onTap: _handleSubscription,
-                      ),
-                      const _AccountTile(
-                        icon: Icons.delete_outline,
-                        title: "Delete Account",
-                        isDestructive: true,
-                      ),
-                      _AccountTile(
-                        icon: Icons.logout,
-                        title: "Logout",
-                        onTap: _handleLogout,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.verticalMedium),
-                  _SectionCard(
-                    title: "Support",
-                    items: [
-                      _AccountTile(
-                        icon: Icons.contact_page,
-                        title: "Contact",
-                        onTap: _openContactWebsite,
-                      ),
-                      _AccountTile(
-                        icon: Icons.policy,
-                        title: "Terms & Policy",
-                        onTap: _openTermsWebsite,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.verticalMedium),
-                  _SectionCard(
-                    title: "Others",
-                    items: [
-                      _AccountTile(
-                        icon: Icons.share_outlined,
-                        title: "Invite Friends",
-                        onTap: _handleInviteFriend,
-                      ),
-                      _AccountTile(
-                        icon: Icons.info_outline,
-                        title: "App Info",
-                        onTap: () => _showAppInfo(),
-                      ),
-                    ],
-                  ),
-                ],
+                children: _buildRoleMenuSections(context),
               ),
             ],
           ),
@@ -455,6 +526,301 @@ class _AccountTile extends StatelessWidget {
           : (onTap ?? () {}),
       contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
       dense: true,
+    );
+  }
+}
+
+/// One row inside the expandable Report section.
+class _ReportItem {
+  final IconData icon;
+  final String title;
+
+  const _ReportItem(this.icon, this.title);
+}
+
+/// The "Report" menu entry, rendered as a single expandable card so the
+/// whole group can be locked/unlocked together via
+/// `isFeatureLocked('report')` — matching the lock pattern [_AccountTile]
+/// already uses for individual tiles elsewhere on this page.
+///
+/// [isFullReportSet] switches between the 5-report list (Account Admin /
+/// Branch Admin) and the Payslip-only list (Manager / Employee).
+// class _ReportSectionCard extends StatefulWidget {
+//   final bool isFullReportSet;
+
+//   const _ReportSectionCard({required this.isFullReportSet});
+
+//   @override
+//   State<_ReportSectionCard> createState() => _ReportSectionCardState();
+// }
+
+// class _ReportSectionCardState extends State<_ReportSectionCard> {
+//   bool _expanded = false;
+
+//   static const _fullReports = [
+//     _ReportItem(Icons.receipt_long_outlined, "Payslip"),
+//     _ReportItem(Icons.subject_outlined, "PnL"),
+//     _ReportItem(Icons.summarize_outlined, "Revenue & Expense Summary"),
+//     _ReportItem(Icons.pie_chart_outline, "Payment Mode Breakdown Charts"),
+//     _ReportItem(Icons.insights_outlined, "Employee Performance Report"),
+//   ];
+
+//   static const _payslipOnly = [
+//     _ReportItem(Icons.receipt_long_outlined, "Payslip"),
+//   ];
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final isLocked =
+//         SessionManager.instance.currentSession?.isFeatureLocked('report') ??
+//         false;
+//     final reports = widget.isFullReportSet ? _fullReports : _payslipOnly;
+//     final showChildren = _expanded && !isLocked;
+
+//     return Card(
+//       color: Colors.white,
+//       shape: RoundedRectangleBorder(
+//         borderRadius: BorderRadius.circular(AppRadius.medium),
+//       ),
+//       elevation: 1,
+//       clipBehavior: Clip.antiAlias,
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.stretch,
+//         children: [
+//           InkWell(
+//             onTap: isLocked
+//                 ? () => AppSnackbar.warning(
+//                     context,
+//                     'Report isn\'t available on your current plan. '
+//                     'Upgrade your plan to unlock it.',
+//                   )
+//                 : () => setState(() => _expanded = !_expanded),
+//             child: Padding(
+//               padding: const EdgeInsets.symmetric(
+//                 horizontal: AppSpacing.page,
+//                 vertical: AppSpacing.verticalSmall,
+//               ),
+//               child: Row(
+//                 children: [
+//                   Icon(
+//                     Icons.document_scanner_outlined,
+//                     color: Colors.black87,
+//                     size: AppIcons.defaultSize,
+//                   ),
+//                   const SizedBox(width: AppSpacing.horizontalSmall),
+//                   Expanded(
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         Text(
+//                           "Report",
+//                           style: AppTextStyles.body.copyWith(
+//                             fontWeight: FontWeight.w600,
+//                             color: AppColors.primary,
+//                           ),
+//                         ),
+//                         if (isLocked)
+//                           Text(
+//                             'Not available on your plan',
+//                             style: AppTextStyles.bodySmall.copyWith(
+//                               color: AppColors.error,
+//                             ),
+//                           ),
+//                       ],
+//                     ),
+//                   ),
+//                   Icon(
+//                     isLocked
+//                         ? Icons.lock_outline
+//                         : (_expanded ? Icons.expand_less : Icons.expand_more),
+//                     size: 18,
+//                     color: Colors.grey.shade600,
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ),
+//           AnimatedCrossFade(
+//             duration: const Duration(milliseconds: 200),
+//             crossFadeState: showChildren
+//                 ? CrossFadeState.showFirst
+//                 : CrossFadeState.showSecond,
+//             firstChild: Column(
+//               crossAxisAlignment: CrossAxisAlignment.stretch,
+//               children: [
+//                 Divider(color: Colors.grey.shade200, height: 0.5),
+//                 ...reports.map(
+//                   (report) => ListTile(
+//                     leading: Icon(
+//                       report.icon,
+//                       color: Colors.black87,
+//                       size: AppIcons.defaultSize,
+//                     ),
+//                     title: Text(report.title, style: AppTextStyles.body),
+//                     trailing: Icon(
+//                       Icons.chevron_right,
+//                       size: 18,
+//                       color: Colors.grey.shade600,
+//                     ),
+//                     contentPadding: const EdgeInsets.only(
+//                       left: AppSpacing.page + AppSpacing.horizontalMedium,
+//                       right: AppSpacing.page,
+//                     ),
+//                     dense: true,
+//                     onTap: () {},
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             secondChild: const SizedBox(width: double.infinity, height: 0),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+class LockedReportCard extends StatelessWidget {
+  final VoidCallback? onUpgrade;
+
+  const LockedReportCard({super.key, this.onUpgrade});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          //--------------------------------------------------
+          // Blur the Report Card
+          //--------------------------------------------------
+          IgnorePointer(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+              child: Opacity(
+                opacity: .9,
+                child: _SectionCard(title: "Report", items: const []),
+              ),
+            ),
+          ),
+
+          //--------------------------------------------------
+          // Frosted Glass
+          //--------------------------------------------------
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(.45),
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
+
+          //--------------------------------------------------
+          // Lock UI
+          //--------------------------------------------------
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                //------------------------------------------
+                // Glass Lock Circle
+                //------------------------------------------
+                Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withOpacity(.55),
+                        Colors.white.withOpacity(.18),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(.65),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(.08),
+                        blurRadius: 25,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.lock_rounded,
+                    color: Colors.black,
+                    size: AppIcons.defaultSize,
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.verticalSmall),
+
+                Text(
+                  "Feature Locked",
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.verticalSmall),
+
+                Text(
+                  "This feature is locked.\nUpgrade your plan to access reports.",
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Standalone Logout action, kept separate from "Account Management" so
+/// it reads as the terminal action of the menu (per the role/menu spec)
+/// rather than one more settings row.
+class _LogoutTile extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _LogoutTile({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.medium),
+        side: BorderSide(color: AppColors.error.withOpacity(0.25)),
+      ),
+      elevation: 0,
+      child: ListTile(
+        leading: const Icon(Icons.logout, color: AppColors.error),
+        title: Text(
+          "Logout",
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.error,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          size: 18,
+          color: AppColors.error.withOpacity(0.6),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.page,
+          vertical: AppSpacing.verticalSmall / 2,
+        ),
+        onTap: onTap,
+      ),
     );
   }
 }
