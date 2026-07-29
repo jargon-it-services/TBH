@@ -1,0 +1,110 @@
+{
+  "success": true,
+  "message": "Payment history fetched successfully",
+  "data": {
+    "currency": "INR",
+    "payments": [
+      {
+        "id": "TXN125487",
+        "dateTime": {
+          "iso": "2025-05-31T10:45:00+05:30",
+          "display": "31 May 2025, 10:45 AM"
+        },
+        "branch": { "name": "Andheri Branch", "code": "BH-AND" },
+        "paymentType": "Subscription Payment",
+        "paymentMethod": "UPI",
+        "amount": 13700,
+        "formattedAmount": "₹13,700",
+        "status": "success"
+      },
+      {
+        "id": "TXN125318",
+        "dateTime": {
+          "iso": "2025-05-28T16:20:00+05:30",
+          "display": "28 May 2025, 04:20 PM"
+        },
+        "branch": { "name": "Bandra Branch", "code": "BH-BAN" },
+        "paymentType": "Service Charge",
+        "paymentMethod": "Card",
+        "amount": 2450,
+        "formattedAmount": "₹2,450",
+        "status": "pending"
+      },
+      {
+        "id": "TXN124987",
+        "dateTime": {
+          "iso": "2025-05-24T11:15:00+05:30",
+          "display": "24 May 2025, 11:15 AM"
+        },
+        "branch": { "name": "Powai Branch", "code": "BH-POW" },
+        "paymentType": "Subscription Payment",
+        "paymentMethod": "UPI",
+        "amount": 13700,
+        "formattedAmount": "₹13,700",
+        "status": "success"
+      },
+      {
+        "id": "TXN124512",
+        "dateTime": {
+          "iso": "2025-05-20T09:30:00+05:30",
+          "display": "20 May 2025, 09:30 AM"
+        },
+        "branch": { "name": "Thane Branch", "code": "BH-THA" },
+        "paymentType": "Subscription Payment",
+        "paymentMethod": "UPI",
+        "amount": 13700,
+        "formattedAmount": "₹13,700",
+        "status": "success"
+      },
+      {
+        "id": "TXN124150",
+        "dateTime": {
+          "iso": "2025-05-18T14:10:00+05:30",
+          "display": "18 May 2025, 02:10 PM"
+        },
+        "branch": { "name": "Andheri Branch", "code": "BH-AND" },
+        "paymentType": "Service Charge",
+        "paymentMethod": "Card",
+        "amount": 1950,
+        "formattedAmount": "₹1,950",
+        "status": "failed"
+      },
+      {
+        "id": "TXN123876",
+        "dateTime": {
+          "iso": "2025-05-15T10:00:00+05:30",
+          "display": "15 May 2025, 10:00 AM"
+        },
+        "branch": { "name": "Bandra Branch", "code": "BH-BAN" },
+        "paymentType": "Subscription Payment",
+        "paymentMethod": "UPI",
+        "amount": 13700,
+        "formattedAmount": "₹13,700",
+        "status": "success"
+      },
+      {
+        "id": "TXN123420",
+        "dateTime": {
+          "iso": "2025-05-10T13:05:00+05:30",
+          "display": "10 May 2025, 01:05 PM"
+        },
+        "branch": { "name": "Powai Branch", "code": "BH-POW" },
+        "paymentType": "Subscription Payment",
+        "paymentMethod": "UPI",
+        "amount": 13700,
+        "formattedAmount": "₹13,700",
+        "status": "refunded"
+      },
+      {
+        "id": "TXN123001",
+        "dateTime": { "iso": "", "display": "02 May 2025, 09:00 AM" },
+        "branch": { "name": "", "code": "" },
+        "paymentType": "Service Charge",
+        "paymentMethod": "",
+        "amount": 800,
+        "formattedAmount": "₹800",
+        "status": "pending"
+      }
+    ]
+  }
+}

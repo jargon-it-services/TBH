@@ -1,0 +1,213 @@
+{
+  "TXN125487": {
+    "success": true,
+    "message": "Payment details fetched successfully",
+    "data": {
+      "payment": {
+        "id": "TXN125487",
+        "status": "success",
+        "amount": 13700,
+        "formattedAmount": "₹13,700",
+        "currency": "INR",
+        "dateTime": {
+          "iso": "2025-05-31T10:45:00+05:30",
+          "display": "31 May 2025, 10:45 AM"
+        },
+        "paymentInfo": {
+          "dateTime": "31 May 2025, 10:45 AM",
+          "branch": "Andheri Branch",
+          "branchCode": "BH-AND",
+          "paymentType": "Subscription Payment",
+          "paymentMethod": "UPI",
+          "amount": "₹13,700",
+          "status": "success"
+        },
+        "reference": {
+          "upiTransactionId": "UPI512345678901",
+          "transactionRefNo": "REF5123456789",
+          "gatewayRefNo": "GTW9876543210",
+          "notes": "Payment completed successfully."
+        },
+        "billing": {
+          "accountName": "Beauty Hub Chain",
+          "accountCode": "TBH2024",
+          "invoiceNo": "INV-2025-000487",
+          "invoiceDate": "31 May 2025"
+        },
+        "actions": {
+          "showDownloadReceipt": true,
+          "receiptUrl": "https://yourdomain.com/receipts/TXN125487.pdf",
+          "showDownloadInvoice": true,
+          "invoiceUrl": "https://yourdomain.com/invoices/INV-2025-000487.pdf",
+          "showContactSupport": true,
+          "supportUrl": "https://yourdomain.com/contact"
+        }
+      }
+    }
+  },
+  "TXN125318": {
+    "success": true,
+    "message": "Payment details fetched successfully",
+    "data": {
+      "payment": {
+        "id": "TXN125318",
+        "status": "pending",
+        "amount": 2450,
+        "formattedAmount": "₹2,450",
+        "currency": "INR",
+        "dateTime": {
+          "iso": "2025-05-28T16:20:00+05:30",
+          "display": "28 May 2025, 04:20 PM"
+        },
+        "paymentInfo": {
+          "dateTime": "28 May 2025, 04:20 PM",
+          "branch": "Bandra Branch",
+          "branchCode": "BH-BAN",
+          "paymentType": "Service Charge",
+          "paymentMethod": "Card",
+          "amount": "₹2,450",
+          "status": "pending"
+        },
+        "reference": {
+          "notes": "Payment is being processed by the bank. This can take up to 24 hours."
+        },
+        "billing": null,
+        "actions": {
+          "showDownloadReceipt": false,
+          "showDownloadInvoice": false,
+          "showContactSupport": true,
+          "supportUrl": "https://yourdomain.com/contact"
+        }
+      }
+    }
+  },
+  "TXN124150": {
+    "success": true,
+    "message": "Payment details fetched successfully",
+    "data": {
+      "payment": {
+        "id": "TXN124150",
+        "status": "failed",
+        "amount": 1950,
+        "formattedAmount": "₹1,950",
+        "currency": "INR",
+        "dateTime": {
+          "iso": "2025-05-18T14:10:00+05:30",
+          "display": "18 May 2025, 02:10 PM"
+        },
+        "paymentInfo": {
+          "dateTime": "18 May 2025, 02:10 PM",
+          "branch": "Andheri Branch",
+          "branchCode": "BH-AND",
+          "paymentType": "Service Charge",
+          "paymentMethod": "Card",
+          "amount": "₹1,950",
+          "status": "failed"
+        },
+        "reference": {
+          "gatewayRefNo": "GTW9876500111",
+          "notes": "Payment failed due to insufficient balance in the linked account."
+        },
+        "billing": null,
+        "actions": {
+          "showDownloadReceipt": false,
+          "showDownloadInvoice": false,
+          "showContactSupport": true,
+          "supportUrl": "https://yourdomain.com/contact"
+        }
+      }
+    }
+  },
+  "TXN123420": {
+    "success": true,
+    "message": "Payment details fetched successfully",
+    "data": {
+      "payment": {
+        "id": "TXN123420",
+        "status": "refunded",
+        "amount": 13700,
+        "formattedAmount": "₹13,700",
+        "currency": "INR",
+        "dateTime": {
+          "iso": "2025-05-10T13:05:00+05:30",
+          "display": "10 May 2025, 01:05 PM"
+        },
+        "paymentInfo": {
+          "dateTime": "10 May 2025, 01:05 PM",
+          "branch": "Powai Branch",
+          "branchCode": "BH-POW",
+          "paymentType": "Subscription Payment",
+          "paymentMethod": "UPI",
+          "amount": "₹13,700",
+          "status": "refunded"
+        },
+        "reference": {
+          "upiTransactionId": "UPI512340009988",
+          "transactionRefNo": "REF5123400099",
+          "gatewayRefNo": "GTW9876511122",
+          "notes": "Refunded in full after subscription downgrade."
+        },
+        "billing": {
+          "accountName": "Beauty Hub Chain",
+          "accountCode": "TBH2024",
+          "invoiceNo": "INV-2025-000420",
+          "invoiceDate": "10 May 2025"
+        },
+        "actions": {
+          "showDownloadReceipt": true,
+          "receiptUrl": "https://yourdomain.com/receipts/TXN123420.pdf",
+          "showDownloadInvoice": true,
+          "invoiceUrl": "https://yourdomain.com/invoices/INV-2025-000420.pdf",
+          "showContactSupport": true,
+          "supportUrl": "https://yourdomain.com/contact"
+        }
+      }
+    }
+  },
+  "default": {
+    "success": true,
+    "message": "Payment details fetched successfully",
+    "data": {
+      "payment": {
+        "id": "TXN124987",
+        "status": "success",
+        "amount": 13700,
+        "formattedAmount": "₹13,700",
+        "currency": "INR",
+        "dateTime": {
+          "iso": "2025-05-24T11:15:00+05:30",
+          "display": "24 May 2025, 11:15 AM"
+        },
+        "paymentInfo": {
+          "dateTime": "24 May 2025, 11:15 AM",
+          "branch": "Powai Branch",
+          "branchCode": "BH-POW",
+          "paymentType": "Subscription Payment",
+          "paymentMethod": "UPI",
+          "amount": "₹13,700",
+          "status": "success"
+        },
+        "reference": {
+          "upiTransactionId": "UPI512345600222",
+          "transactionRefNo": "REF5123456022",
+          "gatewayRefNo": "GTW9876543022",
+          "notes": "Payment completed successfully."
+        },
+        "billing": {
+          "accountName": "Beauty Hub Chain",
+          "accountCode": "TBH2024",
+          "invoiceNo": "INV-2025-000424",
+          "invoiceDate": "24 May 2025"
+        },
+        "actions": {
+          "showDownloadReceipt": true,
+          "receiptUrl": "https://yourdomain.com/receipts/TXN124987.pdf",
+          "showDownloadInvoice": true,
+          "invoiceUrl": "https://yourdomain.com/invoices/INV-2025-000424.pdf",
+          "showContactSupport": true,
+          "supportUrl": "https://yourdomain.com/contact"
+        }
+      }
+    }
+  }
+}

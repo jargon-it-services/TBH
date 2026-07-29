@@ -35,8 +35,9 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     checkAndProcess();
     // Runs after the first frame so ModalRoute.of(context) is available.
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _showSessionExpiredIfNeeded());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _showSessionExpiredIfNeeded(),
+    );
   }
 
   checkAndProcess() async {}
@@ -56,9 +57,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _goToForgotPassword() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ForgotPasswordPage()));
   }
 
   @override
@@ -86,8 +87,9 @@ class _LoginPageState extends State<LoginPage> {
 
                             /// LOGO
                             ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.circle),
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.circle,
+                              ),
                               child: Image.asset(
                                 'assets/logo.png',
                                 fit: BoxFit.cover,
@@ -96,22 +98,20 @@ class _LoginPageState extends State<LoginPage> {
                             ),
 
                             SizedBox(
-                                height:
-                                    size.height * AppSpacing.contentGapRatio),
+                              height: size.height * AppSpacing.contentGapRatio,
+                            ),
 
                             /// TITLE
-                            const Text(
-                              "Welcome back",
-                              style: AppTextStyles.h1,
-                            ),
+                            const Text("Welcome back", style: AppTextStyles.h1),
                             Text(
                               "Sign in to your workspace",
-                              style: AppTextStyles.body
-                                  .copyWith(color: Colors.black54),
+                              style: AppTextStyles.body.copyWith(
+                                color: Colors.black54,
+                              ),
                             ),
                             SizedBox(
-                                height:
-                                    size.height * AppSpacing.contentGapRatio),
+                              height: size.height * AppSpacing.contentGapRatio,
+                            ),
 
                             /// INPUTS
                             Form(
@@ -124,7 +124,9 @@ class _LoginPageState extends State<LoginPage> {
                                     onChanged: (v) => _organizationCode = v,
                                     validator: (v) =>
                                         RegistrationValidators.required(
-                                            v, 'Organization code'),
+                                          v,
+                                          'Organization code',
+                                        ),
                                   ),
                                   AppTextField(
                                     label: 'Registered email address',
@@ -140,7 +142,9 @@ class _LoginPageState extends State<LoginPage> {
                                     onChanged: (v) => _password = v,
                                     validator: (v) =>
                                         RegistrationValidators.required(
-                                            v, 'Password'),
+                                          v,
+                                          'Password',
+                                        ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         _obscurePassword
@@ -148,9 +152,10 @@ class _LoginPageState extends State<LoginPage> {
                                             : Icons.visibility_outlined,
                                         size: 20,
                                       ),
-                                      onPressed: () => setState(() =>
-                                          _obscurePassword =
-                                              !_obscurePassword),
+                                      onPressed: () => setState(
+                                        () => _obscurePassword =
+                                            !_obscurePassword,
+                                      ),
                                     ),
                                   ),
 
@@ -178,7 +183,8 @@ class _LoginPageState extends State<LoginPage> {
                             ),
 
                             SizedBox(
-                                height: size.height * AppSpacing.inputGapRatio),
+                              height: size.height * AppSpacing.inputGapRatio,
+                            ),
 
                             /// SLIDE TO LOGIN
                             SlideActionButton(
@@ -224,6 +230,12 @@ class _LoginPageState extends State<LoginPage> {
                                     userName: response.data!.userName,
                                     role: response.data!.role,
                                     refreshToken: response.data!.refreshToken,
+                                    expiresIn: response.data!.expiresIn,
+                                    userInfo: response.data!.userInfo,
+                                    account: response.data!.account,
+                                    recentPlan: response.data!.recentPlan,
+                                    management: response.data!.management,
+                                    featureLock: response.data!.featureLock,
                                   );
                                 } catch (_) {
                                   if (!mounted) return;
@@ -252,8 +264,9 @@ class _LoginPageState extends State<LoginPage> {
                               children: [
                                 Text(
                                   "Don't have an account? ",
-                                  style: AppTextStyles.body
-                                      .copyWith(color: Colors.black87),
+                                  style: AppTextStyles.body.copyWith(
+                                    color: Colors.black87,
+                                  ),
                                 ),
                                 GestureDetector(
                                   onTap: () {
@@ -289,16 +302,18 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           Text(
                             "Terms & Conditions | App Version 1.0.0",
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: Colors.grey),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.grey,
+                            ),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 "Powered & Managed by ",
-                                style: AppTextStyles.bodySmall
-                                    .copyWith(color: Colors.grey),
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: Colors.grey,
+                                ),
                               ),
                               SizedBox(
                                 height: 30,
@@ -315,8 +330,9 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           Text(
                             "©2026 THE BEAUTY HUB. All rights reserved.",
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: Colors.grey),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                       ),

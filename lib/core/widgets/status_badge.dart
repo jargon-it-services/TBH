@@ -18,15 +18,21 @@ class StatusBadge extends StatelessWidget {
     final Color color = switch (normalized) {
       "paid" => AppColors.success,
       "active" => AppColors.success,
+      "success" => AppColors.success,
       "pending" => AppColors.warning,
       "cancelled" => AppColors.error,
+      "failed" => AppColors.error,
+      "refunded" => AppColors.primary,
       _ => AppColors.textSecondary,
     };
 
     final IconData icon = switch (normalized) {
       "paid" => Icons.check_circle,
+      "success" => Icons.check_circle,
       "pending" => Icons.schedule,
       "cancelled" => Icons.cancel,
+      "failed" => Icons.cancel,
+      "refunded" => Icons.replay_circle_filled,
       _ => Icons.schedule,
     };
 

@@ -81,6 +81,8 @@ flutter:
     - assets/mocks/subscription_status_expired.json
     - assets/mocks/subscription_status_suspended.json
     - assets/mocks/subscription_status_cancelled.json
+    - assets/mocks/payment_details_response.json
+    - assets/mocks/payment_history_response.json
 
 # ---------------------------------------------------------------------
 # flutter_launcher_icons config

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/constants/app_lables_messages.dart';
-import '../../../core/navigation/app_navigator.dart';
-import '../../../core/network/apis/logout_api.dart';
-import '../../../core/network/apis/referral_api.dart';
-import '../../../core/session/session_manager.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_fonts.dart';
-import '../../../core/widgets/app_snackbar.dart';
+import '../../core/constants/app_lables_messages.dart';
+import '../../core/navigation/app_navigator.dart';
+import '../../core/network/apis/logout_api.dart';
+import '../../core/network/apis/referral_api.dart';
+import '../../core/services/DataModels/login_response_model.dart';
+import '../../core/session/session_manager.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_fonts.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../firms/firms_list_page.dart';
+import '../payments/payment_history_page.dart';
 import '../subscriptions/subscription_plans_page.dart';
 
 class AccountPage extends StatefulWidget {
@@ -21,11 +24,31 @@ class AccountPage extends StatefulWidget {
   State<AccountPage> createState() => _AccountPageState();
 }
 
+/// Builds the "code • branch" subtitle shown on the Account Info /
+/// Settings tile from `account.code` and `account.branch_name`.
+/// Returns null when neither is available, so the tile falls back to
+/// having no subtitle rather than showing a stray separator.
+String? _accountSubtitle(LoginAccountInfo? account) {
+  if (account == null) return null;
+  final parts = [
+    account.code,
+    account.branchName,
+  ].where((part) => part.isNotEmpty);
+  return parts.isEmpty ? null : parts.join(' • ');
+}
+
 class _AccountPageState extends State<AccountPage> {
   Future<void> _handleSubscription() async {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const SubscriptionPlansPage()),
+    );
+  }
+
+  Future<void> _handlePaymentHistory() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PaymentHistoryPage()),
     );
   }
 
@@ -233,12 +256,18 @@ class _AccountPageState extends State<AccountPage> {
                       _AccountTile(
                         icon: Icons.document_scanner_outlined,
                         title: "Report",
+                        featureId: "report",
                       ),
                       _AccountTile(
                         icon: Icons.payment_outlined,
                         title: "Payment Slip",
+                        featureId: "payment_slip",
                       ),
-                      _AccountTile(icon: Icons.subject_outlined, title: "PnL"),
+                      _AccountTile(
+                        icon: Icons.subject_outlined,
+                        title: "PnL",
+                        featureId: "pnl",
+                      ),
                       _AccountTile(
                         icon: Icons.add_comment_outlined,
                         title: "Incentive Config",
@@ -249,13 +278,17 @@ class _AccountPageState extends State<AccountPage> {
                   _SectionCard(
                     title: "Account Management",
                     items: [
-                      const _AccountTile(
+                      _AccountTile(
                         icon: Icons.admin_panel_settings_outlined,
                         title: "Account Info / Settings",
+                        subtitle: _accountSubtitle(
+                          SessionManager.instance.currentSession?.account,
+                        ),
                       ),
-                      const _AccountTile(
+                      _AccountTile(
                         icon: Icons.credit_card_outlined,
                         title: "Payment History",
+                        onTap: _handlePaymentHistory,
                       ),
                       _AccountTile(
                         icon: Icons.subject_outlined,
@@ -358,29 +391,68 @@ class _SectionCard extends StatelessWidget {
 class _AccountTile extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final bool isDestructive;
   final VoidCallback? onTap;
+
+  /// Identifier matched against the login session's `feature_lock`
+  /// list (e.g. `"report"`, `"payment_slip"`, `"pnl"`). When present
+  /// and locked, this tile stays visible with its existing styling,
+  /// shows a lock icon instead of the chevron, and tapping it explains
+  /// why instead of navigating — see [build]. Tiles that don't
+  /// represent a lockable feature simply leave this null. New
+  /// lockable identifiers work automatically — no per-feature
+  /// branching needed here.
+  final String? featureId;
 
   const _AccountTile({
     required this.icon,
     required this.title,
+    this.subtitle,
     this.isDestructive = false,
     this.onTap,
+    this.featureId,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = isDestructive ? Colors.red : Colors.black87;
+    final isLocked =
+        featureId != null &&
+        (SessionManager.instance.currentSession?.isFeatureLocked(featureId!) ??
+            false);
+
+    // Locked tiles get their own explanatory subtitle (overriding
+    // whatever [subtitle] was passed — none of the lockable tiles set
+    // one today) so the "not on your plan" reason is visible without
+    // needing to tap first.
+    final effectiveSubtitle = isLocked
+        ? 'Not available on your plan'
+        : subtitle;
 
     return ListTile(
       leading: Icon(icon, color: color, size: AppIcons.defaultSize),
       title: Text(title, style: AppTextStyles.body.copyWith(color: color)),
-      trailing: Icon(
-        Icons.chevron_right,
-        size: 18,
-        color: Colors.grey.shade600,
-      ),
-      onTap: onTap ?? () {},
+      subtitle: effectiveSubtitle != null && effectiveSubtitle.isNotEmpty
+          ? Text(
+              effectiveSubtitle,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: isLocked ? AppColors.error : Colors.grey.shade600,
+              ),
+            )
+          : null,
+      trailing: isLocked
+          ? Icon(Icons.lock_outline, size: 18, color: Colors.grey.shade600)
+          : Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade600),
+      // Locked tiles stay tappable — tapping doesn't navigate, it tells
+      // the user why (and to upgrade) instead of just doing nothing.
+      onTap: isLocked
+          ? () => AppSnackbar.warning(
+              context,
+              '$title isn\'t available on your current plan. '
+              'Upgrade your plan to unlock it.',
+            )
+          : (onTap ?? () {}),
       contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
       dense: true,
     );
@@ -393,6 +465,20 @@ class _ProfileHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = SessionManager.instance.currentSession;
+    final userInfo = session?.userInfo;
+    final profileImage = userInfo?.profileImage;
+    final displayName = userInfo?.userName.isNotEmpty == true
+        ? userInfo!.userName
+        : (session?.userName ?? '');
+    final accountName = session?.account?.name ?? '';
+    // Role badge stays driven by SessionManager.role (backed by
+    // user_info.role) rather than the raw string, so it gets the same
+    // human-readable label ("Account Admin") the rest of the app uses.
+    final roleLabel = SessionManager.instance.role.displayName;
+    final mobile = userInfo?.mobile ?? '';
+    final email = userInfo?.email ?? '';
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.page),
       decoration: BoxDecoration(
@@ -413,7 +499,8 @@ class _ProfileHeaderCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              /// Avatar
+              /// Avatar — falls back to the existing placeholder when
+              /// profile_image is null.
               Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
@@ -423,9 +510,13 @@ class _ProfileHeaderCard extends StatelessWidget {
                     width: 2,
                   ),
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 32,
-                  backgroundImage: NetworkImage("https://i.pravatar.cc/300"),
+                  backgroundImage: NetworkImage(
+                    profileImage != null && profileImage.isNotEmpty
+                        ? profileImage
+                        : "https://i.pravatar.cc/300",
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.horizontalMedium),
@@ -435,10 +526,10 @@ class _ProfileHeaderCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("John Anderson", style: AppTextStyles.body),
+                    Text(displayName, style: AppTextStyles.body),
                     const SizedBox(height: 2),
                     Text(
-                      "Acme Technologies Pvt. Ltd.",
+                      accountName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
@@ -456,7 +547,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppRadius.circle),
                       ),
                       child: Text(
-                        "Administrator",
+                        roleLabel,
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -492,21 +583,21 @@ class _ProfileHeaderCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.verticalSmall),
 
           /// Info Grid
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: _ProfileInfoTile(
                   icon: Icons.phone_outlined,
                   label: "Mobile",
-                  value: "+91 8793052520",
+                  value: mobile.isNotEmpty ? "+91 $mobile" : '',
                 ),
               ),
-              SizedBox(width: AppSpacing.horizontalMedium),
+              const SizedBox(width: AppSpacing.horizontalMedium),
               Expanded(
                 child: _ProfileInfoTile(
                   icon: Icons.email_outlined,
                   label: "Email",
-                  value: "john@company.com",
+                  value: email,
                 ),
               ),
             ],
@@ -578,11 +669,13 @@ class _StatsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final management = SessionManager.instance.currentSession?.management;
+
     return Row(
       children: [
         _InteractiveStatCard(
           icon: Icons.business,
-          value: "12",
+          value: "${management?.totalFirms ?? 0}",
           label: "Firms",
           actionText: "Manage",
           onTap: () {
@@ -594,14 +687,14 @@ class _StatsSection extends StatelessWidget {
         ),
         _InteractiveStatCard(
           icon: Icons.people,
-          value: "48",
+          value: "${management?.totalStaff ?? 0}",
           label: "Staff",
           actionText: "Manage",
           onTap: () {},
         ),
         _InteractiveStatCard(
           icon: Icons.miscellaneous_services,
-          value: "25",
+          value: "${management?.totalServices ?? 0}",
           label: "Services",
           actionText: "Manage",
           onTap: () {},
@@ -711,8 +804,40 @@ class _InteractiveStatCard extends StatelessWidget {
 class _SubscriptionCard extends StatelessWidget {
   const _SubscriptionCard({super.key});
 
+  /// Formats [validUntil] (an ISO date from `recent_plan.valid_until`)
+  /// using [pattern] (`recent_plan.date_format`, e.g. `"dd MMM yyyy"`)
+  /// rather than any hardcoded pattern. Falls back to the raw value if
+  /// either is missing/unparsable, instead of throwing.
+  static String _formatValidUntil(String? validUntil, String? pattern) {
+    if (validUntil == null || validUntil.isEmpty) return '';
+    final parsed = DateTime.tryParse(validUntil);
+    if (parsed == null) return validUntil;
+    if (pattern == null || pattern.isEmpty) return validUntil;
+    try {
+      return DateFormat(pattern).format(parsed);
+    } catch (_) {
+      return validUntil;
+    }
+  }
+
+  /// `recent_plan.status` comes from the API as a lowercase key (e.g.
+  /// `"active"`); this only adjusts capitalization for display, it
+  /// doesn't hardcode any particular status value.
+  static String _titleCase(String value) {
+    if (value.isEmpty) return value;
+    return value[0].toUpperCase() + value.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final plan = SessionManager.instance.currentSession?.recentPlan;
+    final planName = plan?.name ?? '';
+    final planStatus = _titleCase(plan?.status ?? '');
+    final validUntilLabel = _formatValidUntil(
+      plan?.validUntil,
+      plan?.dateFormat,
+    );
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.page),
       decoration: BoxDecoration(
@@ -741,36 +866,39 @@ class _SubscriptionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Premium Plan",
+                  planName,
                   style: AppTextStyles.body.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  "Valid until: March 15, 2026",
-                  style: AppTextStyles.bodySmall,
-                ),
+                if (validUntilLabel.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    "Valid until: $validUntilLabel",
+                    style: AppTextStyles.bodySmall,
+                  ),
+                ],
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.horizontalSmall,
-              vertical: AppSpacing.verticalSmall / 2,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppRadius.circle),
-            ),
-            child: Text(
-              "Active",
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.secondary,
-                fontWeight: FontWeight.w600,
+          if (planStatus.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.horizontalSmall,
+                vertical: AppSpacing.verticalSmall / 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppRadius.circle),
+              ),
+              child: Text(
+                planStatus,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
