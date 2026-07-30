@@ -391,13 +391,6 @@ class _AccountPageState extends State<AccountPage>
         featureId: 'account_management',
         title: "Account Management",
         items: [
-          _AccountTile(
-            icon: Icons.admin_panel_settings_outlined,
-            title: "Account Info",
-            subtitle: _accountSubtitle(
-              SessionManager.instance.currentSession?.account,
-            ),
-          ),
           if (isAccountAdmin) ...[
             _AccountTile(
               icon: Icons.subject_outlined,
