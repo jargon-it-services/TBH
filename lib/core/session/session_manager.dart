@@ -278,6 +278,59 @@ class SessionManager {
     _status = AuthStatus.authenticated;
   }
 
+  /// Updates the profile-derived fields of an already-active session
+  /// ([UserSession.userInfo], [UserSession.account],
+  /// [UserSession.recentPlan], [UserSession.management],
+  /// [UserSession.featureLock] — plus the top-level [userName]/[role]
+  /// mirrors of [userInfo]) from a `/user/profile` response, leaving
+  /// [UserSession.token], [UserSession.refreshToken], and
+  /// [UserSession.expiresIn] exactly as they already were — the
+  /// profile endpoint doesn't return them (see [ProfileApi]/
+  /// `login_response_model.dart`'s file-level note on the shared
+  /// shape). Does nothing if there is no active session to update,
+  /// mirroring [updateToken].
+  Future<void> updateProfile({
+    required LoginUserInfo userInfo,
+    LoginAccountInfo? account,
+    LoginRecentPlan? recentPlan,
+    LoginManagementInfo? management,
+    List<String> featureLock = const [],
+  }) async {
+    if (_session == null) return;
+
+    final role = UserRole.fromApiValue(userInfo.role);
+
+    await _storage.write(_userNameKey, userInfo.userName);
+    await _storage.write(_roleKey, role.apiValue);
+    await _storage.write(
+      _extraKey,
+      _encodeExtra(
+        // expiresIn is auth-session metadata, not profile data — carry
+        // the existing session's value through unchanged.
+        expiresIn: _session!.expiresIn,
+        userInfo: userInfo,
+        account: account,
+        recentPlan: recentPlan,
+        management: management,
+        featureLock: featureLock,
+      ),
+    );
+
+    _session = UserSession(
+      token: _session!.token,
+      userName: userInfo.userName,
+      role: role,
+      refreshToken: _session!.refreshToken,
+      expiresIn: _session!.expiresIn,
+      userInfo: userInfo,
+      account: account,
+      recentPlan: recentPlan,
+      management: management,
+      featureLock: featureLock,
+    );
+    _status = AuthStatus.authenticated;
+  }
+
   /// Clears the session from both memory and secure storage. Called on
   /// logout (future work) and when the refresh-token flow ultimately
   /// fails (401 → refresh fails → clear session → caller navigates to

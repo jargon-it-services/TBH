@@ -6,9 +6,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/connectivity/connectivity_aware_refresh.dart';
 import '../../core/constants/app_lables_messages.dart';
 import '../../core/navigation/app_navigator.dart';
 import '../../core/network/apis/logout_api.dart';
+import '../../core/network/apis/profile_api.dart';
 import '../../core/network/apis/referral_api.dart';
 import '../../core/services/DataModels/login_response_model.dart';
 import '../../core/session/session_manager.dart';
@@ -39,7 +41,71 @@ String? _accountSubtitle(LoginAccountInfo? account) {
   return parts.isEmpty ? null : parts.join(' • ');
 }
 
-class _AccountPageState extends State<AccountPage> {
+class _AccountPageState extends State<AccountPage>
+    with ConnectivityAwareRefresh<AccountPage> {
+  final ProfileApi _profileApi = ProfileApi();
+
+  /// True while a `/user/profile` fetch is in flight. Purely
+  /// informational (e.g. could drive a subtle refresh indicator) —
+  /// the screen never blocks on this, since it already has the
+  /// login-time (or last successfully refreshed) session to show
+  /// immediately.
+  bool _isRefreshingProfile = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  @override
+  Future<void> onReconnected() => _loadProfile();
+
+  /// Profile screen previously read the signed-in user's profile
+  /// purely from the session snapshot captured at login. This fetches
+  /// the latest `/user/profile` (see [ProfileApi] — same response
+  /// shape as login's `data`, minus the token fields) and writes it
+  /// back into [SessionManager], so this screen — and anything else
+  /// reading `SessionManager.instance.currentSession` — reflects
+  /// current server state instead of a stale login-time snapshot.
+  ///
+  /// Always runs silently: there's already valid session data to
+  /// display while this is in flight, so a failure here (including no
+  /// connectivity) just leaves the existing session/UI as-is rather
+  /// than blanking the screen.
+  Future<void> _loadProfile() async {
+    if (_isRefreshingProfile) return;
+    setState(() => _isRefreshingProfile = true);
+
+    final response = await _profileApi.fetchProfile();
+    if (!mounted) return;
+
+    lastLoadFailedDueToConnectivity =
+        !response.isSuccess && response.isConnectivityError;
+
+    if (response.isSuccess && response.data != null) {
+      final profile = response.data!;
+      await SessionManager.instance.updateProfile(
+        userInfo: profile.userInfo,
+        account: profile.account,
+        recentPlan: profile.recentPlan,
+        management: profile.management,
+        featureLock: profile.featureLock,
+      );
+      if (!mounted) return;
+      setState(() => _isRefreshingProfile = false);
+      return;
+    }
+
+    setState(() => _isRefreshingProfile = false);
+    if (!response.isConnectivityError) {
+      AppSnackbar.error(
+        context,
+        response.error ?? "Couldn't refresh your profile.",
+      );
+    }
+  }
+
   Future<void> _handleSubscription() async {
     Navigator.push(
       context,
@@ -227,10 +293,17 @@ class _AccountPageState extends State<AccountPage> {
   /// - Manager / Employee: Report (Payslip only) · Account Management
   ///   (Account Info, Update Password only) · Support · Logout
   ///
-  /// "Report" is always rendered (its own lock state comes from
-  /// `isFeatureLocked('report')`, same as before); "Account Setup" and
-  /// the admin-only Account Management items are only included for the
-  /// two admin roles.
+  /// "Report", "Account Setup", and "Account Management" are each
+  /// wrapped in [_LockableSectionCard] with their own `featureId`
+  /// ("report" / "account_setup" / "account_management") matched
+  /// against the session's `feature_lock` list — see
+  /// [UserSession.isFeatureLocked]. Locking is entirely data-driven:
+  /// whenever the backend adds a new key to `feature_lock`, that
+  /// section locks automatically the next time the profile/login
+  /// response is read, with no new branching needed here. Wrapping any
+  /// *other* future section the same way (just give it a `featureId`)
+  /// makes it lockable too. "Account Setup" and the admin-only Account
+  /// Management items are only included for the two admin roles.
   List<Widget> _buildRoleMenuSections(BuildContext context) {
     final roleLabel = SessionManager.instance.role.displayName;
     final isAccountAdmin = roleLabel == 'Account Admin';
@@ -258,24 +331,20 @@ class _AccountPageState extends State<AccountPage> {
     ];
     final reports = hasAccountSetup ? fullReports : reportPayslipOnly;
 
-    final isLocked =
-        SessionManager.instance.currentSession?.isFeatureLocked('report') ??
-        false;
-
     return [
-      // ---- Report (locked as one unit via isFeatureLocked('report')) ----
-      // _ReportSectionCard(isFullReportSet: hasAccountSetup),
-      // const SizedBox(height: AppSpacing.verticalMedium),
-      // ---- Account Management ----
-      _SectionCard(
+      // ---- Report (locked as one unit via featureId "report") ----
+      _LockableSectionCard(
+        featureId: 'report',
         title: "Report",
-        items: isLocked ? [LockedReportCard()] : reports,
+        items: reports,
       ),
       const SizedBox(height: AppSpacing.verticalMedium),
 
-      // ---- Account Setup (Account Admin & Branch Admin only) ----
+      // ---- Account Setup (Account Admin & Branch Admin only; locked
+      // as one unit via featureId "account_setup") ----
       if (hasAccountSetup) ...[
-        _SectionCard(
+        _LockableSectionCard(
+          featureId: 'account_setup',
           title: "Account Setup",
           items: [
             _AccountTile(
@@ -297,8 +366,10 @@ class _AccountPageState extends State<AccountPage> {
         const SizedBox(height: AppSpacing.verticalMedium),
       ],
 
-      // ---- Account Management ----
-      _SectionCard(
+      // ---- Account Management (locked as one unit via featureId
+      // "account_management") ----
+      _LockableSectionCard(
+        featureId: 'account_management',
         title: "Account Management",
         items: [
           _AccountTile(
@@ -402,11 +473,19 @@ class _AccountPageState extends State<AccountPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _ProfileHeaderCard(),
+              // NOTE: deliberately NOT `const` — these read live data off
+              // SessionManager.instance.currentSession. If they're const,
+              // Flutter canonicalizes them to the same widget instance on
+              // every build, and the framework's `identical()` fast-path
+              // in Element.updateChild then skips rebuilding them
+              // entirely on setState() (see _loadProfile), so a
+              // completed profile fetch would never actually repaint
+              // the screen until it was torn down and remounted.
+              _ProfileHeaderCard(),
               const SizedBox(height: AppSpacing.verticalMedium),
-              const _StatsSection(),
+              _StatsSection(),
               const SizedBox(height: AppSpacing.verticalMedium),
-              const _SubscriptionCard(),
+              _SubscriptionCard(),
               const SizedBox(height: AppSpacing.verticalLarge),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -455,6 +534,47 @@ class _SectionCard extends StatelessWidget {
           ...items,
         ],
       ),
+    );
+  }
+}
+
+/// Wraps an entire menu section so it can be locked/unlocked as one
+/// unit, keyed by [featureId] against the session's `feature_lock`
+/// list — see [UserSession.isFeatureLocked]. This is the section-level
+/// counterpart to [_AccountTile.featureId] (which locks a single row);
+/// use this one when the whole section (Report, Account Setup, Account
+/// Management, or any future one) should lock/unlock together.
+///
+/// Purely data-driven: passing a new [featureId] here is the only step
+/// needed to make another section lockable — no per-feature branching
+/// lives in [_AccountPageState] itself, so a backend adding a new
+/// `feature_lock` key (e.g. `"account_setup"`) starts locking that
+/// section immediately, without any app changes.
+class _LockableSectionCard extends StatelessWidget {
+  final String featureId;
+  final String title;
+  final List<Widget> items;
+
+  const _LockableSectionCard({
+    required this.featureId,
+    required this.title,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isLocked =
+        SessionManager.instance.currentSession?.isFeatureLocked(featureId) ??
+        false;
+
+    // The heading (title + divider, rendered by _SectionCard) always
+    // stays visible and unlocked — only the menu items themselves swap
+    // for the frosted "locked" placeholder. This intentionally does
+    // NOT blur/hide the whole card (title included) the way the old
+    // report-only implementation did.
+    return _SectionCard(
+      title: title,
+      items: isLocked ? [_LockedSectionItems(sectionTitle: title)] : items,
     );
   }
 }
@@ -680,27 +800,76 @@ class _ReportItem {
 //   }
 // }
 
-class LockedReportCard extends StatelessWidget {
-  final VoidCallback? onUpgrade;
+/// Blurred/frosted "these items are locked" placeholder, shown as the
+/// sole item inside a [_SectionCard] by [_LockableSectionCard] when its
+/// `featureId` is present in the session's `feature_lock` list.
+///
+/// Unlike the earlier implementation, this does NOT blur or hide the
+/// section's heading — [_SectionCard] renders the real title + divider
+/// above this widget exactly as it would for an unlocked section; only
+/// the menu items themselves (this widget) get the frosted/blurred
+/// lock treatment. Not tied to any one section — [sectionTitle] only
+/// drives the default explanatory message, so the same widget serves
+/// Report, Account Setup, Account Management, or any future lockable
+/// section.
+class _LockedSectionItems extends StatelessWidget {
+  /// Title of the section being locked (e.g. "Report", "Account
+  /// Setup") — used only to build the default [message] when one
+  /// isn't supplied; never rendered directly by this widget.
+  final String sectionTitle;
 
-  const LockedReportCard({super.key, this.onUpgrade});
+  /// Explanatory copy shown under "Feature Locked". Defaults to a
+  /// generic upgrade message built from [sectionTitle] when omitted.
+  final String? message;
+
+  const _LockedSectionItems({required this.sectionTitle, this.message});
 
   @override
   Widget build(BuildContext context) {
+    final effectiveMessage =
+        message ??
+        'This feature is locked.\n'
+            'Upgrade your plan to access ${sectionTitle.toLowerCase()}.';
+
     return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
+      // Only the bottom corners need rounding — the top of this widget
+      // butts up against _SectionCard's (unlocked, unblurred) title
+      // and divider, and the outer Card already clips its own corners.
+      borderRadius: const BorderRadius.vertical(
+        bottom: Radius.circular(AppRadius.medium),
+      ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           //--------------------------------------------------
-          // Blur the Report Card
+          // Blurred stand-in rows, just so there's *something*
+          // underneath the frosted glass to blur (an empty area
+          // blurred looks identical to no blur at all).
           //--------------------------------------------------
           IgnorePointer(
             child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+              imageFilter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Opacity(
                 opacity: .9,
-                child: _SectionCard(title: "Report", items: const []),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                    3,
+                    (_) => ListTile(
+                      leading: Icon(
+                        Icons.circle,
+                        size: AppIcons.defaultSize,
+                        color: Colors.grey.shade400,
+                      ),
+                      title: Container(
+                        height: 12,
+                        width: 120,
+                        color: Colors.grey.shade300,
+                      ),
+                      dense: true,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -709,19 +878,17 @@ class LockedReportCard extends StatelessWidget {
           // Frosted Glass
           //--------------------------------------------------
           Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(.45),
-                borderRadius: BorderRadius.circular(18),
-              ),
-            ),
+            child: Container(color: Colors.white.withOpacity(.72)),
           ),
 
           //--------------------------------------------------
           // Lock UI
           //--------------------------------------------------
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 28,
+              vertical: AppSpacing.verticalMedium,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -729,7 +896,8 @@ class LockedReportCard extends StatelessWidget {
                 // Glass Lock Circle
                 //------------------------------------------
                 Container(
-                  height: 50,
+                  height: 44,
+                  width: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -755,7 +923,7 @@ class LockedReportCard extends StatelessWidget {
                   child: const Icon(
                     Icons.lock_rounded,
                     color: Colors.black,
-                    size: AppIcons.defaultSize,
+                    size: AppIcons.defaultSize - 6,
                   ),
                 ),
 
@@ -768,10 +936,10 @@ class LockedReportCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.verticalSmall),
+                const SizedBox(height: AppSpacing.verticalSmall / 2),
 
                 Text(
-                  "This feature is locked.\nUpgrade your plan to access reports.",
+                  effectiveMessage,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall,
                 ),

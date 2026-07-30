@@ -1,0 +1,34 @@
+{
+  "status": true,
+  "message": "Profile fetched successfully",
+  "data": {
+    "user_info": {
+      "id": 101,
+      "user_name": "Krushna Satbhai",
+      "email": "krusna.satbhai@gmail.com",
+      "mobile": "8793052520",
+      "role": "account_admin",
+      "profile_image": null,
+      "status": "active"
+    },
+    "account": {
+      "name": "Jargon pvt lts",
+      "code": "JAR-1233",
+      "branch_name": "Pune"
+    },
+    "recent_plan": {
+      "name": "Pro",
+      "valid_until": "2027-07-14",
+      "status": "active",
+      "date_format": "dd MMM yyyy"
+    },
+
+    "management": {
+      "total_firms": 22,
+      "total_staff": 220,
+      "total_services": 224
+    },
+
+    "feature_lock": ["report"]
+  }
+}

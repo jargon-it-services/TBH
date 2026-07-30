@@ -60,6 +60,7 @@ flutter:
     - assets/mocks/razorpay_create_order_response.json
     - assets/mocks/register_response.json
     - assets/mocks/login_response.json
+    - assets/mocks/profile_response.json
     - assets/mocks/refresh_token_response.json
     - assets/mocks/logout_response.json
     - assets/mocks/forgot_password_verify_org_response.json
