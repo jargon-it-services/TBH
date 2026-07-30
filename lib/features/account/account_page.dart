@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -16,8 +17,8 @@ import '../../core/services/DataModels/login_response_model.dart';
 import '../../core/session/session_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
+import '../../core/widgets/InitialsAvatar.dart';
 import '../../core/widgets/app_snackbar.dart';
-import '../firms/firms_list_page.dart';
 import '../payments/payment_history_page.dart';
 import '../subscriptions/subscription_plans_page.dart';
 
@@ -351,11 +352,29 @@ class _AccountPageState extends State<AccountPage>
               icon: Icons.storefront_outlined,
               title: "Branch",
               subtitle: isBranchAdmin ? "Allowed to edit logo & address" : null,
+              count: SessionManager
+                  .instance
+                  .currentSession
+                  ?.management
+                  ?.totalFirms,
             ),
-            const _AccountTile(icon: Icons.people_outline, title: "Staff"),
-            const _AccountTile(
+            _AccountTile(
+              icon: Icons.people_outline,
+              title: "Staff",
+              count: SessionManager
+                  .instance
+                  .currentSession
+                  ?.management
+                  ?.totalStaff,
+            ),
+            _AccountTile(
               icon: Icons.miscellaneous_services_outlined,
               title: "Services",
+              count: SessionManager
+                  .instance
+                  .currentSession
+                  ?.management
+                  ?.totalServices,
             ),
             const _AccountTile(
               icon: Icons.rule_folder_outlined,
@@ -392,9 +411,14 @@ class _AccountPageState extends State<AccountPage>
             ),
           ],
           if (!hasAccountSetup)
-            const _AccountTile(
+            _AccountTile(
               icon: Icons.miscellaneous_services_outlined,
               title: "Services",
+              count: SessionManager
+                  .instance
+                  .currentSession
+                  ?.management
+                  ?.totalServices,
             ),
           const _AccountTile(
             icon: Icons.lock_reset_outlined,
@@ -447,10 +471,13 @@ class _AccountPageState extends State<AccountPage>
 
   @override
   Widget build(BuildContext context) {
+    final isAccountAdmin =
+        SessionManager.instance.role.displayName == 'Account Admin';
     return Scaffold(
       backgroundColor: AppColors.pageBackground,
       appBar: AppBar(
         elevation: 1,
+        toolbarHeight: 110,
         backgroundColor: AppColors.primary,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -458,10 +485,7 @@ class _AccountPageState extends State<AccountPage>
           ),
         ),
         centerTitle: true,
-        title: Text(
-          "Profile",
-          style: AppTextStyles.h3.copyWith(color: Colors.white),
-        ),
+        title: _ProfileHeaderCard(),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SafeArea(
@@ -473,20 +497,13 @@ class _AccountPageState extends State<AccountPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // NOTE: deliberately NOT `const` — these read live data off
-              // SessionManager.instance.currentSession. If they're const,
-              // Flutter canonicalizes them to the same widget instance on
-              // every build, and the framework's `identical()` fast-path
-              // in Element.updateChild then skips rebuilding them
-              // entirely on setState() (see _loadProfile), so a
-              // completed profile fetch would never actually repaint
-              // the screen until it was torn down and remounted.
-              _ProfileHeaderCard(),
-              const SizedBox(height: AppSpacing.verticalMedium),
-              _StatsSection(),
-              const SizedBox(height: AppSpacing.verticalMedium),
-              _SubscriptionCard(),
-              const SizedBox(height: AppSpacing.verticalLarge),
+              // Plan card is only relevant to the Account Admin, who
+              // owns billing/subscription for the account — Branch
+              // Admin, Manager, and Employee never see it.
+              if (isAccountAdmin) ...[
+                _PlanCard(),
+                const SizedBox(height: AppSpacing.verticalLarge),
+              ],
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: _buildRoleMenuSections(context),
@@ -596,6 +613,11 @@ class _AccountTile extends StatelessWidget {
   /// branching needed here.
   final String? featureId;
 
+  /// Optional count badge (e.g. `management.total_firms`) shown just
+  /// before the trailing chevron/lock icon. Null/omitted for tiles
+  /// that don't represent a countable resource.
+  final int? count;
+
   const _AccountTile({
     required this.icon,
     required this.title,
@@ -603,6 +625,7 @@ class _AccountTile extends StatelessWidget {
     this.isDestructive = false,
     this.onTap,
     this.featureId,
+    this.count,
   });
 
   @override
@@ -632,9 +655,38 @@ class _AccountTile extends StatelessWidget {
               ),
             )
           : null,
-      trailing: isLocked
-          ? Icon(Icons.lock_outline, size: 18, color: Colors.grey.shade600)
-          : Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade600),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!isLocked && count != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.horizontalSmall,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                borderRadius: BorderRadius.circular(AppRadius.circle),
+              ),
+              child: Text(
+                "$count",
+                style: AppTextStyles.caption.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          isLocked
+              ? Icon(Icons.lock_outline, size: 18, color: Colors.grey.shade600)
+              : Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: Colors.grey.shade600,
+                ),
+        ],
+      ),
       // Locked tiles stay tappable — tapping doesn't navigate, it tells
       // the user why (and to upgrade) instead of just doing nothing.
       onTap: isLocked
@@ -649,156 +701,6 @@ class _AccountTile extends StatelessWidget {
     );
   }
 }
-
-/// One row inside the expandable Report section.
-class _ReportItem {
-  final IconData icon;
-  final String title;
-
-  const _ReportItem(this.icon, this.title);
-}
-
-/// The "Report" menu entry, rendered as a single expandable card so the
-/// whole group can be locked/unlocked together via
-/// `isFeatureLocked('report')` — matching the lock pattern [_AccountTile]
-/// already uses for individual tiles elsewhere on this page.
-///
-/// [isFullReportSet] switches between the 5-report list (Account Admin /
-/// Branch Admin) and the Payslip-only list (Manager / Employee).
-// class _ReportSectionCard extends StatefulWidget {
-//   final bool isFullReportSet;
-
-//   const _ReportSectionCard({required this.isFullReportSet});
-
-//   @override
-//   State<_ReportSectionCard> createState() => _ReportSectionCardState();
-// }
-
-// class _ReportSectionCardState extends State<_ReportSectionCard> {
-//   bool _expanded = false;
-
-//   static const _fullReports = [
-//     _ReportItem(Icons.receipt_long_outlined, "Payslip"),
-//     _ReportItem(Icons.subject_outlined, "PnL"),
-//     _ReportItem(Icons.summarize_outlined, "Revenue & Expense Summary"),
-//     _ReportItem(Icons.pie_chart_outline, "Payment Mode Breakdown Charts"),
-//     _ReportItem(Icons.insights_outlined, "Employee Performance Report"),
-//   ];
-
-//   static const _payslipOnly = [
-//     _ReportItem(Icons.receipt_long_outlined, "Payslip"),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final isLocked =
-//         SessionManager.instance.currentSession?.isFeatureLocked('report') ??
-//         false;
-//     final reports = widget.isFullReportSet ? _fullReports : _payslipOnly;
-//     final showChildren = _expanded && !isLocked;
-
-//     return Card(
-//       color: Colors.white,
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(AppRadius.medium),
-//       ),
-//       elevation: 1,
-//       clipBehavior: Clip.antiAlias,
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.stretch,
-//         children: [
-//           InkWell(
-//             onTap: isLocked
-//                 ? () => AppSnackbar.warning(
-//                     context,
-//                     'Report isn\'t available on your current plan. '
-//                     'Upgrade your plan to unlock it.',
-//                   )
-//                 : () => setState(() => _expanded = !_expanded),
-//             child: Padding(
-//               padding: const EdgeInsets.symmetric(
-//                 horizontal: AppSpacing.page,
-//                 vertical: AppSpacing.verticalSmall,
-//               ),
-//               child: Row(
-//                 children: [
-//                   Icon(
-//                     Icons.document_scanner_outlined,
-//                     color: Colors.black87,
-//                     size: AppIcons.defaultSize,
-//                   ),
-//                   const SizedBox(width: AppSpacing.horizontalSmall),
-//                   Expanded(
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Text(
-//                           "Report",
-//                           style: AppTextStyles.body.copyWith(
-//                             fontWeight: FontWeight.w600,
-//                             color: AppColors.primary,
-//                           ),
-//                         ),
-//                         if (isLocked)
-//                           Text(
-//                             'Not available on your plan',
-//                             style: AppTextStyles.bodySmall.copyWith(
-//                               color: AppColors.error,
-//                             ),
-//                           ),
-//                       ],
-//                     ),
-//                   ),
-//                   Icon(
-//                     isLocked
-//                         ? Icons.lock_outline
-//                         : (_expanded ? Icons.expand_less : Icons.expand_more),
-//                     size: 18,
-//                     color: Colors.grey.shade600,
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//           AnimatedCrossFade(
-//             duration: const Duration(milliseconds: 200),
-//             crossFadeState: showChildren
-//                 ? CrossFadeState.showFirst
-//                 : CrossFadeState.showSecond,
-//             firstChild: Column(
-//               crossAxisAlignment: CrossAxisAlignment.stretch,
-//               children: [
-//                 Divider(color: Colors.grey.shade200, height: 0.5),
-//                 ...reports.map(
-//                   (report) => ListTile(
-//                     leading: Icon(
-//                       report.icon,
-//                       color: Colors.black87,
-//                       size: AppIcons.defaultSize,
-//                     ),
-//                     title: Text(report.title, style: AppTextStyles.body),
-//                     trailing: Icon(
-//                       Icons.chevron_right,
-//                       size: 18,
-//                       color: Colors.grey.shade600,
-//                     ),
-//                     contentPadding: const EdgeInsets.only(
-//                       left: AppSpacing.page + AppSpacing.horizontalMedium,
-//                       right: AppSpacing.page,
-//                     ),
-//                     dense: true,
-//                     onTap: () {},
-//                   ),
-//                 ),
-//               ],
-//             ),
-//             secondChild: const SizedBox(width: double.infinity, height: 0),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 
 /// Blurred/frosted "these items are locked" placeholder, shown as the
 /// sole item inside a [_SectionCard] by [_LockableSectionCard] when its
@@ -994,6 +896,7 @@ class _LogoutTile extends StatelessWidget {
 }
 
 /* ---------------- Header ---------------- */
+/* ---------------- Header ---------------- */
 class _ProfileHeaderCard extends StatelessWidget {
   const _ProfileHeaderCard({super.key});
 
@@ -1012,129 +915,222 @@ class _ProfileHeaderCard extends StatelessWidget {
     final roleLabel = SessionManager.instance.role.displayName;
     final mobile = userInfo?.mobile ?? '';
     final email = userInfo?.email ?? '';
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.page),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.medium),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+    final accountCode = session?.account?.code ?? '';
+    return Material(
+      color: AppColors.primary,
+      clipBehavior: Clip.antiAlias,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(AppRadius.large),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        // Cap system font scaling inside the header only. This is a
+        // fixed-height piece of chrome (see `toolbarHeight` on the
+        // AppBar); an unclamped scale factor (large accessibility/
+        // system font settings) is the main way the content could end
+        // up taller than the slot Scaffold hands a custom `appBar`.
+        // Content still grows with scale up to 1.25x — it just can't
+        // run away the way an unclamped 1.5x-2x setting could.
+        child: MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: MediaQuery.textScalerOf(
+              context,
+            ).clamp(minScaleFactor: 0.8, maxScaleFactor: 1.25),
           ),
-        ],
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 22),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 84,
+                  height: 84,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.35),
+                      width: 3,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: profileImage != null && profileImage.isNotEmpty
+                        ? Image.network(
+                            profileImage,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.white24,
+                              child: const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                          )
+                        : InitialsAvatar(name: displayName),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.horizontalMedium),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        style: AppTextStyles.h3.copyWith(color: Colors.white),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        accountName,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (roleLabel.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.verticalSmall),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.horizontalSmall,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.circle,
+                            ),
+                          ),
+                          child: Text(
+                            roleLabel,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.horizontalSmall),
+                _InfoButton(
+                  mobile: mobile,
+                  email: email,
+                  accountCode: accountCode,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Info icon button — opens the contact-details bottom sheet.
+class _InfoButton extends StatelessWidget {
+  final String mobile;
+  final String email;
+  final String accountCode;
+
+  const _InfoButton({
+    required this.mobile,
+    required this.email,
+    required this.accountCode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(22),
+      onTap: () => showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (_) => _ContactSheet(
+          mobile: mobile,
+          email: email,
+          accountCode: accountCode,
+        ),
+      ),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.14),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+        ),
+        child: const Icon(Icons.info_outline, color: Colors.white, size: 20),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet: Mobile / Email / Account Code, each with a
+/// copy-to-clipboard action.
+class _ContactSheet extends StatelessWidget {
+  final String mobile;
+  final String email;
+  final String accountCode;
+
+  const _ContactSheet({
+    required this.mobile,
+    required this.email,
+    required this.accountCode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// ---------- Top Row (Avatar + Name) ----------
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              /// Avatar — falls back to the existing placeholder when
-              /// profile_image is null.
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.primary.withOpacity(0.4),
-                    width: 2,
-                  ),
-                ),
-                child: CircleAvatar(
-                  radius: 32,
-                  backgroundImage: NetworkImage(
-                    profileImage != null && profileImage.isNotEmpty
-                        ? profileImage
-                        : "https://i.pravatar.cc/300",
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.horizontalMedium),
-
-              /// Name + Company + Role
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(displayName, style: AppTextStyles.body),
-                    const SizedBox(height: 2),
-                    Text(
-                      accountName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.verticalSmall),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.horizontalSmall,
-                        vertical: AppSpacing.verticalSmall / 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(AppRadius.circle),
-                      ),
-                      child: Text(
-                        roleLabel,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              /// Edit Button
-              InkWell(
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(AppRadius.circle),
-                onTap: () {},
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.verticalSmall / 2),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.password_outlined,
-                    size: AppIcons.defaultSize - 6,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
               ),
-            ],
+            ),
           ),
-
+          Text(
+            "Contact Details",
+            style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: AppSpacing.verticalSmall),
-          Divider(color: Colors.grey.shade200),
-          const SizedBox(height: AppSpacing.verticalSmall),
-
-          /// Info Grid
-          Row(
-            children: [
-              Expanded(
-                child: _ProfileInfoTile(
-                  icon: Icons.phone_outlined,
-                  label: "Mobile",
-                  value: mobile.isNotEmpty ? "+91 $mobile" : '',
-                ),
-              ),
-              const SizedBox(width: AppSpacing.horizontalMedium),
-              Expanded(
-                child: _ProfileInfoTile(
-                  icon: Icons.email_outlined,
-                  label: "Email",
-                  value: email,
-                ),
-              ),
-            ],
+          _ContactRow(
+            icon: Icons.call_outlined,
+            label: 'Mobile',
+            value: mobile.isNotEmpty ? "+91 $mobile" : '—',
+          ),
+          _ContactRow(
+            icon: Icons.email_outlined,
+            label: 'Email',
+            value: email.isNotEmpty ? email : '—',
+          ),
+          _ContactRow(
+            icon: Icons.badge_outlined,
+            label: 'Account Code',
+            value: accountCode.isNotEmpty ? accountCode : '—',
+            showDivider: false,
           ),
         ],
       ),
@@ -1142,32 +1138,39 @@ class _ProfileHeaderCard extends StatelessWidget {
   }
 }
 
-class _ProfileInfoTile extends StatelessWidget {
+class _ContactRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final bool showDivider;
 
-  const _ProfileInfoTile({
+  const _ContactRow({
     required this.icon,
     required this.label,
     required this.value,
+    this.showDivider = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.horizontalSmall,
-        vertical: AppSpacing.verticalSmall,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(AppRadius.medium),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+      decoration: showDivider
+          ? BoxDecoration(
+              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+            )
+          : null,
+      padding: const EdgeInsets.symmetric(vertical: 13),
       child: Row(
         children: [
-          Icon(icon, size: AppIcons.defaultSize, color: AppColors.primary),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 17, color: AppColors.primary),
+          ),
           const SizedBox(width: AppSpacing.horizontalSmall),
           Expanded(
             child: Column(
@@ -1176,167 +1179,57 @@ class _ProfileInfoTile extends StatelessWidget {
                 Text(
                   label,
                   style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: 10.5,
                     color: Colors.grey.shade600,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
+          // Only offer copy for values that actually exist.
+          if (value != '—')
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: value));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('$label copied'),
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(4.0),
+                child: Icon(Icons.copy_outlined, size: 16, color: Colors.grey),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-/* ---------------- Stats ---------------- */
-class _StatsSection extends StatelessWidget {
-  const _StatsSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final management = SessionManager.instance.currentSession?.management;
-
-    return Row(
-      children: [
-        _InteractiveStatCard(
-          icon: Icons.business,
-          value: "${management?.totalFirms ?? 0}",
-          label: "Firms",
-          actionText: "Manage",
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const FirmListPage()),
-            );
-          },
-        ),
-        _InteractiveStatCard(
-          icon: Icons.people,
-          value: "${management?.totalStaff ?? 0}",
-          label: "Staff",
-          actionText: "Manage",
-          onTap: () {},
-        ),
-        _InteractiveStatCard(
-          icon: Icons.miscellaneous_services,
-          value: "${management?.totalServices ?? 0}",
-          label: "Services",
-          actionText: "Manage",
-          onTap: () {},
-        ),
-      ],
-    );
-  }
-}
-
-class _InteractiveStatCard extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-  final String actionText;
-  final VoidCallback onTap;
-
-  const _InteractiveStatCard({
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.actionText,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.medium),
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.horizontalSmall / 2,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.page,
-            vertical: AppSpacing.verticalMedium,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(AppRadius.medium),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Label
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Icon(
-                    icon,
-                    size: 64,
-                    color: AppColors.primary.withOpacity(0.08),
-                  ),
-                  Text(value, style: AppTextStyles.h1.copyWith(fontSize: 28)),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.verticalSmall),
-              Divider(height: 1, color: Colors.grey.shade200),
-              const SizedBox(height: AppSpacing.verticalSmall),
-              // Action
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    actionText,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.indigo.shade500,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 12,
-                    color: Colors.indigo.shade500,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/* ---------------- Subscription ---------------- */
-class _SubscriptionCard extends StatelessWidget {
-  const _SubscriptionCard({super.key});
+/* ---------------- Plan ----------------
+ * Adapted from the shared ProfileScreen's _PlanCard, styled with the
+ * same primary gradient as the header (rather than the shared
+ * design's dark ink tile) so the two feel like one continuous surface.
+ * `daysRemaining` is computed from `recentPlan.validUntil` (no
+ * activation/start date exists on the session model today — see note
+ * below).
+ */
+class _PlanCard extends StatelessWidget {
+  const _PlanCard({super.key});
 
   /// Formats [validUntil] (an ISO date from `recent_plan.valid_until`)
   /// using [pattern] (`recent_plan.date_format`, e.g. `"dd MMM yyyy"`)
@@ -1362,6 +1255,36 @@ class _SubscriptionCard extends StatelessWidget {
     return value[0].toUpperCase() + value.substring(1);
   }
 
+  /// Whole-days between today and [validUntil] (negative once expired).
+  /// Null when `validUntil` is missing/unparsable.
+  static int? _daysRemaining(String? validUntil) {
+    final parsed = DateTime.tryParse(validUntil ?? '');
+    if (parsed == null) return null;
+    final today = DateTime.now();
+    final todayDateOnly = DateTime(today.year, today.month, today.day);
+    final untilDateOnly = DateTime(parsed.year, parsed.month, parsed.day);
+    return untilDateOnly.difference(todayDateOnly).inDays;
+  }
+
+  /// "Renews in N days" / "Renews today" / "Plan expired", driven purely
+  /// by [daysRemaining] — there's no activation date on the session
+  /// model to compute this from more precisely.
+  static String _renewsInText(int? daysRemaining) {
+    if (daysRemaining == null) return '';
+    if (daysRemaining < 0) return 'Plan expired';
+    if (daysRemaining == 0) return 'Renews today';
+    return 'Renews in $daysRemaining day${daysRemaining == 1 ? '' : 's'}';
+  }
+
+  /// Progress bar fill (0.0–1.0). With no plan start date available,
+  /// this approximates elapsed time against a standard 365-day cycle
+  /// from [daysRemaining] alone — a visual cue, not an exact fraction.
+  static double _progress(int? daysRemaining) {
+    if (daysRemaining == null) return 0.0;
+    final clampedRemaining = daysRemaining.clamp(0, 365);
+    return (1 - (clampedRemaining / 365)).clamp(0.0, 1.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final plan = SessionManager.instance.currentSession?.recentPlan;
@@ -1371,68 +1294,101 @@ class _SubscriptionCard extends StatelessWidget {
       plan?.validUntil,
       plan?.dateFormat,
     );
+    final daysRemaining = _daysRemaining(plan?.validUntil);
+    final renewsInText = _renewsInText(daysRemaining);
+    final progress = _progress(daysRemaining);
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.page),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.medium),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.large),
+      child: Stack(
         children: [
-          Expanded(
+          Container(
+            color: AppColors.secondary.withOpacity(0.20),
+            padding: const EdgeInsets.all(AppSpacing.page),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Active Subscription",
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.secondary,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Subscription',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            planName,
+                            style: AppTextStyles.body,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (planStatus.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.horizontalSmall,
+                          vertical: AppSpacing.verticalSmall / 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary,
+                          borderRadius: BorderRadius.circular(AppRadius.circle),
+                        ),
+                        child: Text(
+                          planStatus,
+                          style: AppTextStyles.caption.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.verticalMedium),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.circle),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 5,
+                    backgroundColor: Colors.white.withOpacity(0.15),
+                    valueColor: AlwaysStoppedAnimation(AppColors.secondary),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  planName,
-                  style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                const SizedBox(height: AppSpacing.verticalSmall),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (renewsInText.isNotEmpty)
+                      Text(renewsInText, style: AppTextStyles.caption),
+                    if (validUntilLabel.isNotEmpty)
+                      Text(validUntilLabel, style: AppTextStyles.caption),
+                  ],
                 ),
-                if (validUntilLabel.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    "Valid until: $validUntilLabel",
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ],
               ],
             ),
           ),
-          if (planStatus.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.horizontalSmall,
-                vertical: AppSpacing.verticalSmall / 2,
-              ),
+          // Decorative soft circle, matches the coral accent in the
+          // shared design.
+          Positioned(
+            right: -20,
+            top: -30,
+            child: Container(
+              width: 110,
+              height: 110,
               decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(AppRadius.circle),
-              ),
-              child: Text(
-                planStatus,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w600,
-                ),
+                shape: BoxShape.circle,
+                color: AppColors.secondary.withOpacity(0.25),
               ),
             ),
+          ),
         ],
       ),
     );

@@ -12,13 +12,13 @@
       "status": "active"
     },
     "account": {
-      "name": "Jargon pvt lts",
-      "code": "JAR-1233",
+      "name": "Jargon Pvt Ltd",
+      "code": "JAR-1234",
       "branch_name": "Pune"
     },
     "recent_plan": {
       "name": "Pro",
-      "valid_until": "2027-07-14",
+      "valid_until": "2026-08-01",
       "status": "active",
       "date_format": "dd MMM yyyy"
     },
@@ -29,6 +29,6 @@
       "total_services": 224
     },
 
-    "feature_lock": ["report"]
+    "feature_lock": []
   }
 }
