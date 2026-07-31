@@ -6,6 +6,7 @@ import '../../core/services/DataModels/payment_history_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/animated_empty_state.dart';
+import '../../core/widgets/app_search_bar.dart';
 import '../../core/widgets/network_state_view.dart';
 import '../../core/widgets/shimmers/transaction_list_shimmer.dart';
 import '../../core/widgets/status_badge.dart';
@@ -172,51 +173,10 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage>
 
   /// ---------------- SEARCH ----------------
   Widget _searchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: _searchController,
-        // Purely local filtering -- no API call while typing, so this
-        // needs no debounce (there's no existing debounce utility in
-        // the codebase to reuse either; TransactionsPage's identical
-        // local-search box also filters directly on every change).
-        onChanged: (_) => _applyFilters(),
-        style: AppTextStyles.body,
-        decoration: InputDecoration(
-          hintText: "Search by Transaction ID",
-          hintStyle: AppTextStyles.bodySmall,
-          prefixIcon: const Icon(
-            Icons.search,
-            size: 20,
-            color: AppColors.textSecondary,
-          ),
-          suffixIcon: _searchController.text.isEmpty
-              ? null
-              : IconButton(
-                  icon: const Icon(
-                    Icons.close,
-                    size: 20,
-                    color: AppColors.textSecondary,
-                  ),
-                  onPressed: _clearSearch,
-                ),
-          border: InputBorder.none,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-        ),
-      ),
+    return AppSearchBar(
+      controller: _searchController,
+      hintText: "Search by Transaction ID",
+      onChanged: (_) => _applyFilters(),
     );
   }
 

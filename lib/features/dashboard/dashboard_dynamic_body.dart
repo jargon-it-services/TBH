@@ -10,6 +10,7 @@ import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/business_summary_card.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/revenue_trend_chart.dart';
+import '../branches/add_edit_branch_page.dart';
 import 'dashboard_quick_actions.dart';
 import 'widgets/dashboard_shared_widgets.dart';
 import 'widgets/dashboard_transaction_tile.dart';
@@ -108,6 +109,23 @@ class _DashboardDynamicBodyState extends State<DashboardDynamicBody> {
   List<QuickActionSpec> get _quickActions =>
       DashboardQuickActions.forRole(SessionManager.instance.role);
 
+  /// Routes a Quick Action tap to its destination screen, now that the
+  /// Branch module exists. Every key other than 'add_branch' is left
+  /// as a no-op, same as the previous `onActionTap: null` behavior —
+  /// their destinations still don't exist yet.
+  void _handleQuickAction(QuickActionSpec action) {
+    switch (action.key) {
+      case 'add_branch':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddEditBranchPage()),
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
   String _selectedPeriodLabel(DashboardMeta meta) {
     for (final period in meta.periods) {
       if (period.key == widget.selectedPeriodKey) return period.label;
@@ -147,7 +165,10 @@ class _DashboardDynamicBodyState extends State<DashboardDynamicBody> {
               const SizedBox(height: AppSpacing.verticalSmall),
             ],
             if (_quickActions.isNotEmpty) ...[
-              QuickActionsRow(actions: _quickActions),
+              QuickActionsRow(
+                actions: _quickActions,
+                onActionTap: _handleQuickAction,
+              ),
               const SizedBox(height: AppSpacing.verticalMedium),
             ],
             if (meta.periods.isNotEmpty) ...[

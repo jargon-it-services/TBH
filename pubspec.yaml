@@ -34,6 +34,9 @@ dependencies:
   app_links: ^7.2.1
   share_plus: ^13.3.0
   intl: ^0.19.0
+  geolocator: ^13.0.2
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
@@ -85,6 +88,10 @@ flutter:
     - assets/mocks/payment_details_response.json
     - assets/mocks/payment_history_response.json
     - assets/mocks/delete_account_response.json
+    - assets/mocks/services_response.json
+    - assets/mocks/branches_response.json
+    - assets/mocks/branch_details_response.json
+    - assets/mocks/branch_save_response.json
 
 # ---------------------------------------------------------------------
 # flutter_launcher_icons config

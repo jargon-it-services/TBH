@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:tbh/features/branches/branch_list_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/connectivity/connectivity_aware_refresh.dart';
@@ -129,6 +130,13 @@ class _AccountPageState extends State<AccountPage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const PaymentHistoryPage()),
+    );
+  }
+
+  Future<void> _handleBranches() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const BranchListPage()),
     );
   }
 
@@ -279,7 +287,8 @@ class _AccountPageState extends State<AccountPage>
         url = AppConstantData.appStoreUrl;
       } else {
         final info = await PackageInfo.fromPlatform();
-        url = 'https://play.google.com/store/apps/details?id=${info.packageName}';
+        url =
+            'https://play.google.com/store/apps/details?id=${info.packageName}';
       }
       await AppStoreLauncher.open(url);
     } catch (_) {
@@ -504,6 +513,7 @@ class _AccountPageState extends State<AccountPage>
                   .currentSession
                   ?.management
                   ?.totalFirms,
+              onTap: _handleBranches,
             ),
             _AccountTile(
               icon: Icons.people_outline,
@@ -1528,7 +1538,7 @@ class _PlanCard extends StatelessWidget {
             top: -30,
             child: Container(
               width: 110,
-              height: 110,
+              height: 105,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.secondary.withOpacity(0.25),

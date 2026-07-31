@@ -1,0 +1,52 @@
+{
+  "status": true,
+  "message": "Branches fetched successfully",
+  "data": {
+    "branches": [
+      {
+        "id": 1,
+        "name": "MG Road Branch",
+        "address": "2nd Floor, Prestige Arcade, MG Road",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "mobile": "9876543210",
+        "branch_type": "Unisex",
+        "status": "Active",
+        "logo": "https://i.pravatar.cc/150?img=12"
+      },
+      {
+        "id": 2,
+        "name": "Andheri West Branch",
+        "address": "Shop 12, Sunshine Plaza, Andheri West",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "mobile": "9822011223",
+        "branch_type": "Female",
+        "status": "Active",
+        "logo": null
+      },
+      {
+        "id": 3,
+        "name": "Connaught Place Branch",
+        "address": "Block D, Inner Circle, Connaught Place",
+        "city": "New Delhi",
+        "state": "Delhi",
+        "mobile": "9911223344",
+        "branch_type": "Male",
+        "status": "Deactive",
+        "logo": null
+      },
+      {
+        "id": 4,
+        "name": "Hitech City Branch",
+        "address": "3rd Floor, Cyber Towers, Hitech City",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "mobile": "9700112233",
+        "branch_type": "Unisex",
+        "status": "Active",
+        "logo": "https://i.pravatar.cc/150?img=33"
+      }
+    ]
+  }
+}

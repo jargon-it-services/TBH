@@ -6,11 +6,11 @@ import 'package:flutter/services.dart';
 import '../../../../core/network/apis/pincode_api.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_fonts.dart';
+import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/inline_action_button.dart';
 import '../registration_data.dart';
 import '../registration_validators.dart';
 import '../widgets/registration_step_scaffold.dart';
-import '../../../../core/widgets/app_text_field.dart';
 import '../widgets/searchable_select_field.dart';
 
 class Step1ContactInfo extends StatefulWidget {
@@ -79,8 +79,9 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
 
     setState(() => _loadingStates = true);
     try {
-      final String jsonStr =
-          await rootBundle.loadString('assets/india_states_cities.json');
+      final String jsonStr = await rootBundle.loadString(
+        'assets/india_states_cities.json',
+      );
       final data = json.decode(jsonStr) as Map<String, dynamic>;
       final List<dynamic> rawStates = data['states'] as List<dynamic>;
 
@@ -201,7 +202,8 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
     final d = widget.data;
     // Once the ZIP text is edited past what we last verified, this goes
     // false again — the Verify button reappears and the badge hides.
-    final zipUnchangedSinceVerify = _zipVerified &&
+    final zipUnchangedSinceVerify =
+        _zipVerified &&
         d.zip.trim() == _lastVerifiedZip &&
         d.zip.trim().isNotEmpty;
 
@@ -252,7 +254,7 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
             validator: (v) => RegistrationValidators.required(v, 'Address'),
           ),
           AppTextField(
-            label: 'ZIP / Postal Code',
+            label: 'Pin Code / ZIP Code',
             icon: Icons.pin_drop_outlined,
             keyboardType: TextInputType.number,
             initialValue: d.zip,
@@ -275,42 +277,46 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
                     ),
                   )
                 : zipUnchangedSinceVerify
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.check_circle,
-                                size: 16, color: AppColors.success),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Verified',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.success,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          size: 16,
+                          color: AppColors.success,
                         ),
-                      )
-                    : InlineActionButton(
-                        label: 'Verify',
-                        onPressed: _verifyZip,
-                      ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Verified',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : InlineActionButton(label: 'Verify', onPressed: _verifyZip),
           ),
           if (_zipError != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12, left: 4),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline,
-                      size: 13, color: AppColors.error),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 13,
+                    color: AppColors.error,
+                  ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       _zipError!,
-                      style: AppTextStyles.caption
-                          .copyWith(color: AppColors.error),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.error,
+                      ),
                     ),
                   ),
                 ],
@@ -324,9 +330,9 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
             loading: _loadingCities,
             failed: _citiesFailed,
             failedMessage: _citiesFailMessage,
-            onRetry: () => _loadCitiesForState(d.state),
+            onRetry: () => {},
             enabled: false,
-            disabledHint: 'Please select a State first',
+            disabledHint: "Please enter 'Pin Code / ZIP Code' first",
             errorText: _cityError,
             onSelected: (v) => setState(() {
               d.city = v;
@@ -340,6 +346,7 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
             options: _states,
             loading: _loadingStates,
             errorText: _stateError,
+            disabledHint: "Please enter 'Pin Code / ZIP Code' first",
             enabled: false,
             onSelected: (v) {
               setState(() {

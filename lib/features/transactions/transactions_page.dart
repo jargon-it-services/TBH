@@ -147,8 +147,9 @@ class _TransactionsPageState extends State<TransactionsPage>
             const SizedBox(height: AppSpacing.verticalLarge),
             Expanded(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.page,
+                ),
                 child: _transactionsList(),
               ),
             ),
@@ -216,10 +217,7 @@ class _TransactionsPageState extends State<TransactionsPage>
             borderRadius: BorderRadius.circular(12),
             onTap: () {},
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isFilterApplied
                     ? AppColors.primary.withOpacity(0.12)
@@ -326,9 +324,7 @@ class _TransactionsPageState extends State<TransactionsPage>
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => TransactionDetailsPage(
-                transactionId: item.id,
-              ),
+              builder: (_) => TransactionDetailsPage(transactionId: item.id),
             ),
           );
         },
@@ -366,10 +362,16 @@ class _TransactionsPageState extends State<TransactionsPage>
                   children: [
                     Text(
                       "₹${item.amount}",
-                      style: AppTextStyles.body
-                          .copyWith(fontWeight: FontWeight.bold),
+                      style: AppTextStyles.body.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
+                ),
+                const SizedBox(width: 2),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textSecondary,
                 ),
               ],
             ),
@@ -410,7 +412,7 @@ class _TransactionsPageState extends State<TransactionsPage>
             const SizedBox(width: AppSpacing.horizontalSmall),
             PaymentModeChip(mode: item.paymentMode),
             const SizedBox(width: AppSpacing.horizontalSmall),
-            TransactionTypeChip(type: item.type)
+            TransactionTypeChip(type: item.type),
           ],
         ),
       ],

@@ -1,0 +1,18 @@
+{
+  "status": true,
+  "message": "Services fetched successfully",
+  "data": {
+    "services": [
+      { "id": 1, "name": "Haircut", "active": true },
+      { "id": 2, "name": "Facial", "active": true },
+      { "id": 3, "name": "Manicure", "active": true },
+      { "id": 4, "name": "Pedicure", "active": true },
+      { "id": 5, "name": "Hair Spa", "active": true },
+      { "id": 6, "name": "Massage", "active": true },
+      { "id": 7, "name": "Bridal Makeup", "active": true },
+      { "id": 8, "name": "Waxing", "active": true },
+      { "id": 9, "name": "Threading", "active": true },
+      { "id": 10, "name": "Hair Color", "active": true }
+    ]
+  }
+}
