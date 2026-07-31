@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -10,17 +11,21 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/connectivity/connectivity_aware_refresh.dart';
 import '../../core/constants/app_lables_messages.dart';
 import '../../core/navigation/app_navigator.dart';
+import '../../core/network/apis/delete_account_api.dart';
 import '../../core/network/apis/logout_api.dart';
 import '../../core/network/apis/profile_api.dart';
 import '../../core/network/apis/referral_api.dart';
 import '../../core/services/DataModels/login_response_model.dart';
+import '../../core/services/app_store_launcher.dart';
 import '../../core/session/session_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/InitialsAvatar.dart';
 import '../../core/widgets/app_snackbar.dart';
+import '../auth/forgot_password/forgot_password_page.dart';
 import '../payments/payment_history_page.dart';
 import '../subscriptions/subscription_plans_page.dart';
+import 'account_deleted_page.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -52,6 +57,12 @@ class _AccountPageState extends State<AccountPage>
   /// login-time (or last successfully refreshed) session to show
   /// immediately.
   bool _isRefreshingProfile = false;
+
+  /// True from the moment the user confirms Delete Account until that
+  /// call (success or failure) resolves. Guards against a duplicate
+  /// tap firing a second delete call while the first is still in
+  /// flight.
+  bool _isDeletingAccount = false;
 
   @override
   void initState() {
@@ -252,6 +263,142 @@ class _AccountPageState extends State<AccountPage>
     await SharePlus.instance.share(ShareParams(text: message));
   }
 
+  /// Rate Us -> platform store listing (Play Store on Android, App
+  /// Store on iOS), reusing [AppStoreLauncher] (the same
+  /// parse-and-launch utility ForceUpdatePage/OptionalUpdateDialog
+  /// already use) rather than a new URL-launching implementation.
+  /// [AppStoreLauncher.open] uses `LaunchMode.externalApplication`,
+  /// which already gets the "open the store app, or fall back to the
+  /// browser if it isn't installed" behavior for free from the OS for
+  /// a plain https store URL — no separate browser-fallback branch is
+  /// needed here.
+  Future<void> _handleRateUs() async {
+    try {
+      String url;
+      if (Platform.isIOS) {
+        url = AppConstantData.appStoreUrl;
+      } else {
+        final info = await PackageInfo.fromPlatform();
+        url = 'https://play.google.com/store/apps/details?id=${info.packageName}';
+      }
+      await AppStoreLauncher.open(url);
+    } catch (_) {
+      // Same error-handling pattern as the rest of this screen
+      // (AppSnackbar.error) rather than a new one for this one action.
+      if (!mounted) return;
+      AppSnackbar.error(context, "Couldn't open the store right now.");
+    }
+  }
+
+  /// Update Password -> the app's one existing password-reset/change
+  /// screen ([ForgotPasswordPage]). No separate "change password
+  /// (while logged in)" screen exists anywhere in the project, so this
+  /// reuses that screen as-is rather than building a second one.
+  void _handleUpdatePassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+    );
+  }
+
+  /// Delete Account -> confirm -> (existing) loading dialog -> existing
+  /// Delete Account API -> on success, clear the entire local
+  /// session/auth state and hand off to the Account Deleted screen; on
+  /// failure, show the existing error Snackbar and let the user retry.
+  Future<void> _handleDeleteAccount() async {
+    if (_isDeletingAccount) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.pageBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.large),
+        ),
+        title: const Text('Delete Account', style: AppTextStyles.h3),
+        content: const Text(
+          'Are you sure you want to delete your account?\n\n'
+          'This action is permanent and cannot be undone.',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    setState(() => _isDeletingAccount = true);
+
+    // Same themed, non-dismissible loading dialog used by Logout and
+    // Invite Friend above — reusing the existing loading UI rather
+    // than introducing a new one.
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.verticalLarge),
+          decoration: BoxDecoration(
+            color: AppColors.pageBackground,
+            borderRadius: BorderRadius.circular(AppRadius.large),
+          ),
+          child: const CircularProgressIndicator(color: AppColors.secondary),
+        ),
+      ),
+    );
+
+    final response = await DeleteAccountApi().deleteAccount();
+
+    // Dismiss the loading dialog either way — both the success and
+    // failure paths below need the screen clear of it before doing
+    // anything further (navigating away, or showing the error
+    // Snackbar).
+    if (mounted) Navigator.of(context, rootNavigator: true).pop();
+
+    if (!response.isSuccess) {
+      if (!mounted) return;
+      setState(() => _isDeletingAccount = false);
+      AppSnackbar.error(
+        context,
+        response.error ?? 'Could not delete your account. Please try again.',
+      );
+      return; // Retry: the tile is tappable again immediately.
+    }
+
+    // Clear the ENTIRE local session/auth state — access token,
+    // refresh token, cached user profile, and every other
+    // session-related entry — via the same single call Logout uses,
+    // so account-deletion cleanup can never drift from logout cleanup.
+    await SessionManager.instance.clearSession();
+
+    if (!mounted) return;
+
+    // Clears the whole navigation stack right now (not just at the
+    // final "Continue" tap) so there is no authenticated screen left
+    // for Back to return to at any point in this hand-off, then lands
+    // on the Account Deleted screen.
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AccountDeletedPage()),
+      (route) => false,
+    );
+  }
+
   Future<void> _showAppInfo() async {
     final info = await PackageInfo.fromPlatform();
 
@@ -413,15 +560,17 @@ class _AccountPageState extends State<AccountPage>
                   ?.management
                   ?.totalServices,
             ),
-          const _AccountTile(
+          _AccountTile(
             icon: Icons.lock_reset_outlined,
             title: "Update Password",
+            onTap: _handleUpdatePassword,
           ),
           if (isAccountAdmin)
-            const _AccountTile(
+            _AccountTile(
               icon: Icons.delete_outline,
               title: "Delete Account",
               isDestructive: true,
+              onTap: _handleDeleteAccount,
             ),
         ],
       ),
@@ -451,7 +600,11 @@ class _AccountPageState extends State<AccountPage>
             title: "App Info",
             onTap: () => _showAppInfo(),
           ),
-          const _AccountTile(icon: Icons.star_outline, title: "Rate Us"),
+          _AccountTile(
+            icon: Icons.star_outline,
+            title: "Rate Us",
+            onTap: _handleRateUs,
+          ),
         ],
       ),
       const SizedBox(height: AppSpacing.verticalLarge),

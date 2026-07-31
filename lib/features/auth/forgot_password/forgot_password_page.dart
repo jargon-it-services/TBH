@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/network/apis/forgot_password_api.dart';
+import '../../../core/navigation/app_navigator.dart';
+import '../../../core/session/session_manager.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_fonts.dart';
 import '../../../core/widgets/app_snackbar.dart';
@@ -205,8 +207,26 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         context,
         result.data?.message ?? 'Password changed successfully',
       );
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) Navigator.of(context).pop();
+
+      // Reused from two different places: the pre-login "forgot
+      // password" flow (no session yet — just pop back to Login) and
+      // AccountPage's "Update Password" (an authenticated session
+      // exists). In the authenticated case, the token issued for the
+      // now-changed password shouldn't keep the user signed in — log
+      // them out and land on Login, using the same single "clear
+      // session + clear stack + go to Login" sequence AccountPage's
+      // own Logout and DioClient's forced-logout path both already
+      // use, so this can't drift into a third implementation of that.
+      final wasAuthenticated = SessionManager.instance.isAuthenticated;
+
+      Future.delayed(const Duration(seconds: 2), () async {
+        if (!mounted) return;
+        if (wasAuthenticated) {
+          await SessionManager.instance.clearSession();
+          AppNavigator.goToLoginAndClearStack();
+        } else {
+          Navigator.of(context).pop();
+        }
       });
       return true;
     } else {

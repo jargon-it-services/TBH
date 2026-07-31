@@ -84,6 +84,7 @@ flutter:
     - assets/mocks/subscription_status_cancelled.json
     - assets/mocks/payment_details_response.json
     - assets/mocks/payment_history_response.json
+    - assets/mocks/delete_account_response.json
 
 # ---------------------------------------------------------------------
 # flutter_launcher_icons config
