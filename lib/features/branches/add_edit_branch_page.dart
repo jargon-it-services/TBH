@@ -67,7 +67,7 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
 
   late String _city = widget.existing?.city ?? '';
   late String _state = widget.existing?.state ?? '';
-  late String _branchType = widget.existing?.branchType ?? '';
+  late String _branchType = widget.existing?.branchType ?? 'Unisex';
 
   // Defaults to Active for a brand-new branch, per the Add New Branch
   // spec — previously this started blank, which (combined with the
@@ -107,7 +107,9 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
     super.initState();
     _status = widget.existing?.status ?? 'Active';
     _originalStatus = widget.existing?.status ?? 'Active';
+
     final existing = widget.existing;
+
     if (existing != null) {
       _openingTime = _parseTime(existing.openingTime);
       _closingTime = _parseTime(existing.closingTime);
