@@ -68,8 +68,7 @@ class _BranchListPageState extends State<BranchListPage>
         // State preservation: a failed reload with branches already on
         // screen must not clear them.
         if (_branches.isEmpty) {
-          _error =
-              response.error ??
+          _error = response.error ??
               "We couldn't load branches right now. Please try again.";
           _isOffline = response.isConnectivityError;
         }
@@ -88,12 +87,15 @@ class _BranchListPageState extends State<BranchListPage>
   Future<void> _openBranchDetail(BranchModel branch) async {
     final changed = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => BranchDetailPage(branchId: branch.id)),
+      MaterialPageRoute(
+        builder: (_) => BranchDetailPage(branchId: branch.id),
+      ),
     );
     if (changed == true) _loadBranches(silent: true);
   }
 
   Future<void> _openFilterSheet() async {
+    FocusScope.of(context).unfocus();
     final options = _filterOptions();
     final result = await BranchFilterSheet.show(
       context,
@@ -127,8 +129,7 @@ class _BranchListPageState extends State<BranchListPage>
   List<BranchModel> _applyFilters(List<BranchModel> data) {
     final query = _searchController.text.trim().toLowerCase();
     return data.where((branch) {
-      final matchesQuery =
-          query.isEmpty ||
+      final matchesQuery = query.isEmpty ||
           branch.name.toLowerCase().contains(query) ||
           branch.city.toLowerCase().contains(query) ||
           branch.state.toLowerCase().contains(query) ||
@@ -171,7 +172,10 @@ class _BranchListPageState extends State<BranchListPage>
         onPressed: _openCreateBranch,
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      body: SafeArea(
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.page),
           child: Column(
@@ -181,6 +185,7 @@ class _BranchListPageState extends State<BranchListPage>
               Expanded(child: _body(filteredBranches)),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -198,7 +203,9 @@ class _BranchListPageState extends State<BranchListPage>
   Widget _filterButton() {
     final active = _filter.activeCount;
     return Material(
-      color: active > 0 ? AppColors.primary : AppColors.cardBackground,
+      color: active > 0
+          ? AppColors.primary
+          : AppColors.cardBackground,
       borderRadius: BorderRadius.circular(AppRadius.medium),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.medium),
@@ -229,10 +236,7 @@ class _BranchListPageState extends State<BranchListPage>
                       color: AppColors.secondary,
                       shape: BoxShape.circle,
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 14,
-                      minHeight: 14,
-                    ),
+                    constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
                     child: Text(
                       '$active',
                       textAlign: TextAlign.center,
@@ -276,8 +280,8 @@ class _BranchListPageState extends State<BranchListPage>
             message: _branches.isEmpty
                 ? "Add a branch to start managing its staff and services."
                 : hasActiveSearchOrFilter
-                ? "Try a different search term or adjust your filters."
-                : "Try a different search term.",
+                    ? "Try a different search term or adjust your filters."
+                    : "Try a different search term.",
             height: MediaQuery.of(context).size.height * 0.45,
           ),
         ),
@@ -338,7 +342,7 @@ class _BranchCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.page),
             child: Row(
-              // crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _logoAvatar(),
                 const SizedBox(width: AppSpacing.horizontalMedium),
@@ -346,27 +350,22 @@ class _BranchCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        branch.name,
-                        style: AppTextStyles.body.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      Text(branch.name,
+                          style: AppTextStyles.body
+                              .copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 4),
                       Text(
                         branch.address,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        [
-                          branch.city,
-                          branch.state,
-                        ].where((p) => p.isNotEmpty).join(', '),
+                        [branch.city, branch.state]
+                            .where((p) => p.isNotEmpty)
+                            .join(', '),
                         style: AppTextStyles.caption,
                       ),
                       const SizedBox(height: 10),
@@ -381,10 +380,8 @@ class _BranchCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textSecondary,
-                ),
+                const Icon(Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary),
               ],
             ),
           ),

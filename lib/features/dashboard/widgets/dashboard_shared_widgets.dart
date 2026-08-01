@@ -50,11 +50,7 @@ class QuickActionsRow extends StatelessWidget {
   final List<QuickActionSpec> actions;
   final ValueChanged<QuickActionSpec>? onActionTap;
 
-  const QuickActionsRow({
-    super.key,
-    required this.actions,
-    this.onActionTap,
-  });
+  const QuickActionsRow({super.key, required this.actions, this.onActionTap});
 
   static const double _tileWidth = 76;
 
@@ -185,11 +181,7 @@ class DashboardPeriodSelector extends StatelessWidget {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(AppRadius.large),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 3),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
         ],
       ),
       child: Row(
@@ -230,7 +222,7 @@ class _PeriodTab extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.secondary : Colors.transparent,
+          color: isActive ? AppColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.medium),
         ),
         alignment: Alignment.center,
@@ -239,8 +231,7 @@ class _PeriodTab extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyles.bodySmall.copyWith(
-            color:
-                isActive ? AppColors.textOnPrimary : AppColors.textSecondary,
+            color: isActive ? AppColors.textOnPrimary : AppColors.textSecondary,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             fontSize: 13.5,
           ),
@@ -275,7 +266,8 @@ class QuickInsightsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final tiles = insights.items
         .map(
-          (item) => _QuickInsightTile(item: item, currencySymbol: currencySymbol),
+          (item) =>
+              _QuickInsightTile(item: item, currencySymbol: currencySymbol),
         )
         .toList();
 
@@ -318,10 +310,7 @@ class _QuickInsightTile extends StatelessWidget {
   final QuickInsightItem item;
   final String currencySymbol;
 
-  const _QuickInsightTile({
-    required this.item,
-    required this.currencySymbol,
-  });
+  const _QuickInsightTile({required this.item, required this.currencySymbol});
 
   @override
   Widget build(BuildContext context) {
@@ -346,7 +335,10 @@ class _QuickInsightTile extends StatelessWidget {
       );
     } else {
       figure = Text(
-        CurrencyUtils.format((item.value ?? 0).toDouble(), symbol: currencySymbol),
+        CurrencyUtils.format(
+          (item.value ?? 0).toDouble(),
+          symbol: currencySymbol,
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: AppTextStyles.h3.copyWith(fontSize: 16),
@@ -588,8 +580,7 @@ class RevenueContributionChart extends StatelessWidget {
         'Revenue contribution will appear once sales are recorded.',
   });
 
-  double get _total =>
-      contribution.items.fold(0.0, (sum, s) => sum + s.value);
+  double get _total => contribution.items.fold(0.0, (sum, s) => sum + s.value);
 
   @override
   Widget build(BuildContext context) {
@@ -716,10 +707,7 @@ class DashboardBodyErrorView extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text(
-                'Retry',
-                style: TextStyle(color: Colors.white),
-              ),
+              label: const Text('Retry', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(

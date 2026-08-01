@@ -67,6 +67,12 @@ class BranchDetailResponse {
   final String pincode;
   final double? latitude;
   final double? longitude;
+
+  /// Google Maps share link as pasted by the user on Add/Edit Branch,
+  /// saved as-is. The backend is responsible for extracting
+  /// [latitude]/[longitude] from it — the app doesn't parse this link
+  /// itself.
+  final String? mapsLink;
   final String mobile;
   final String email;
   final String branchType;
@@ -93,6 +99,25 @@ class BranchDetailResponse {
 
   bool get isActive => status.toLowerCase() == 'active';
   bool get hasLogo => logo != null && logo!.trim().isNotEmpty;
+
+  bool get hasLocation =>
+      (mapsLink != null && mapsLink!.trim().isNotEmpty) ||
+      (latitude != null && longitude != null);
+
+  /// The URL Branch Details' "Open in Google Maps" button should use —
+  /// the saved link when there is one, otherwise a plain
+  /// `google.com/maps/search` URL built from lat/long (covers branches
+  /// saved before this field existed, once the backend has back-filled
+  /// their coordinates).
+  String? get mapsUrl {
+    if (mapsLink != null && mapsLink!.trim().isNotEmpty) {
+      return mapsLink!.trim();
+    }
+    if (latitude != null && longitude != null) {
+      return 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    }
+    return null;
+  }
 
   bool get isNoWeeklyOff => weeklyOff.trim().toLowerCase() == 'none';
 
@@ -136,6 +161,7 @@ class BranchDetailResponse {
     required this.pincode,
     this.latitude,
     this.longitude,
+    this.mapsLink,
     required this.mobile,
     required this.email,
     required this.branchType,
@@ -159,6 +185,7 @@ class BranchDetailResponse {
       pincode: json['pincode'] ?? '',
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      mapsLink: json['maps_link'] as String?,
       mobile: json['mobile'] ?? '',
       email: json['email'] ?? '',
       branchType: json['branch_type'] ?? '',

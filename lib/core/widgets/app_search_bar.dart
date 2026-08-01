@@ -58,6 +58,8 @@ class AppSearchBar extends StatelessWidget {
               // this needs no debounce, matching Payment History /
               // Transactions' identical local-search boxes.
               onChanged: onChanged,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) => FocusScope.of(context).unfocus(),
               style: AppTextStyles.body,
               decoration: InputDecoration(
                 hintText: hintText,

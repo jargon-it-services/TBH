@@ -1538,7 +1538,7 @@ class _PlanCard extends StatelessWidget {
             top: -30,
             child: Container(
               width: 110,
-              height: 105,
+              height: 110,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.secondary.withOpacity(0.25),

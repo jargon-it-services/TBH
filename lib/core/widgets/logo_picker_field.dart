@@ -53,6 +53,7 @@ class LogoPickerField extends StatelessWidget {
       !removed && (pickedFile != null || (existingUrl?.isNotEmpty ?? false));
 
   Future<void> _openPicker(BuildContext context) async {
+    FocusScope.of(context).unfocus();
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.transparent,

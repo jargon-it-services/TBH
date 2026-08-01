@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../features/auth/registration/widgets/searchable_select_field.dart';
 import '../network/apis/pincode_api.dart';
 import '../services/india_states_cities_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
+import 'app_snackbar.dart';
 import 'app_text_field.dart';
 import 'inline_action_button.dart';
+import '../../features/auth/registration/widgets/searchable_select_field.dart';
 
 /// Pin/ZIP code field with a "Verify" action that looks the code up via
 /// [PincodeApi] and auto-fills State + City — plus the State/City
@@ -140,8 +141,7 @@ class PincodeLookupFieldState extends State<PincodeLookupField> {
     if (!result.isValid) {
       setState(() {
         _verified = false;
-        _zipError =
-            "We couldn't find this postal code. Please enter a valid one.";
+        _zipError = "We couldn't find this postal code. Please enter a valid one.";
       });
       return;
     }
@@ -165,9 +165,7 @@ class PincodeLookupFieldState extends State<PincodeLookupField> {
   @override
   Widget build(BuildContext context) {
     final zipUnchangedSinceVerify =
-        _verified &&
-        _pincode.trim() == _lastVerifiedZip &&
-        _pincode.trim().isNotEmpty;
+        _verified && _pincode.trim() == _lastVerifiedZip && _pincode.trim().isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,46 +192,37 @@ class PincodeLookupFieldState extends State<PincodeLookupField> {
                   ),
                 )
               : zipUnchangedSinceVerify
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.check_circle,
-                        size: 16,
-                        color: AppColors.success,
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle,
+                              size: 16, color: AppColors.success),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Verified',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.success,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Verified',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.success,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : InlineActionButton(label: 'Verify', onPressed: _verifyZip),
+                    )
+                  : InlineActionButton(label: 'Verify', onPressed: _verifyZip),
         ),
         if (_zipError != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 12, left: 4),
             child: Row(
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 13,
-                  color: AppColors.error,
-                ),
+                const Icon(Icons.error_outline, size: 13, color: AppColors.error),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     _zipError!,
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.error,
-                    ),
+                    style: AppTextStyles.caption.copyWith(color: AppColors.error),
                   ),
                 ),
               ],
@@ -246,19 +235,19 @@ class PincodeLookupFieldState extends State<PincodeLookupField> {
           options: _states,
           loading: _loadingStates,
           errorText: _stateError,
-          disabledHint: "Please enter 'Pin Code / ZIP Code' first",
-          onSelected: _onStateSelected,
           enabled: false,
+          disabledHint: 'Auto-filled from the verified Pin Code',
+          onSelected: _onStateSelected,
         ),
         SearchableSelectField(
           label: 'City',
           icon: Icons.location_city_outlined,
           value: _city.isEmpty ? null : _city,
           options: _cities,
-          disabledHint: "Please enter 'Pin Code / ZIP Code' first",
+          enabled: false,
+          disabledHint: 'Auto-filled from the verified Pin Code',
           errorText: _cityError,
           onSelected: _onCitySelected,
-          enabled: false,
         ),
       ],
     );

@@ -4,17 +4,15 @@ import 'package:action_slider/action_slider.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/network/apis/branches_api.dart';
-import '../../core/network/apis/services_api.dart';
 import '../../core/services/DataModels/branch_detail_model.dart';
-import '../../core/services/DataModels/service_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/app_text_field.dart';
-import '../../core/widgets/jargon_dropdown.dart';
-import '../../core/widgets/location_picker_field.dart';
 import '../../core/widgets/logo_picker_field.dart';
+import '../../core/widgets/maps_link_field.dart';
 import '../../core/widgets/pincode_lookup_field.dart';
+import '../../core/widgets/segmented_toggle.dart';
 import '../../core/widgets/slide_action_button.dart';
 import '../auth/registration/registration_validators.dart';
 
@@ -24,10 +22,14 @@ import '../auth/registration/registration_validators.dart';
 /// Save calls `BranchesApi.updateBranch`); omit it to create a new one
 /// (`BranchesApi.createBranch`). Reuses the same building blocks as
 /// `AddFirmPage`/the registration flow throughout: [AppTextField],
-/// [JargonDropdown], [PincodeLookupField] (State/City lookup, shared
-/// with Registration's pattern), [LocationPickerField] (current
-/// location / pick-on-map), [LogoPickerField] (upload/replace/remove),
-/// and [SlideActionButton] for Save, per the Branch module spec.
+/// [SegmentedToggle] (Branch Type and Status — the same pill-toggle
+/// style as the Subscriptions page's Monthly/Annual switch),
+/// [PincodeLookupField] (State/City lookup, shared
+/// with Registration's pattern, read-only here), [MapsLinkField]
+/// (paste-and-save a Google Maps link; coordinates are extracted
+/// server-side, not on-device), [LogoPickerField]
+/// (upload/replace/remove), and [SlideActionButton] for Save, per the
+/// Branch module spec.
 class AddEditBranchPage extends StatefulWidget {
   final BranchDetailResponse? existing;
 
@@ -51,12 +53,10 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
     'Friday',
     'Saturday',
   ];
-  static const String _selectBranchTypeHint = 'Select Branch Type';
 
   final _formKey = GlobalKey<FormState>();
   final _pincodeFieldKey = GlobalKey<PincodeLookupFieldState>();
   final BranchesApi _branchesApi = BranchesApi();
-  final ServicesApi _servicesApi = ServicesApi();
 
   late String _name = widget.existing?.name ?? '';
   late String _address1 = widget.existing?.addressLine1 ?? '';
@@ -76,8 +76,9 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
   late String _status;
   late String _originalStatus;
 
-  double? _latitude;
-  double? _longitude;
+  // Saved as-is; the backend extracts latitude/longitude from this
+  // link on its own — see MapsLinkField's doc comment for why.
+  late String _mapsLink = widget.existing?.mapsLink ?? '';
 
   TimeOfDay? _openingTime;
   TimeOfDay? _closingTime;
@@ -91,11 +92,13 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
   File? _pickedLogo;
   bool _logoRemoved = false;
 
-  // ------------- Services (fetched from ServicesApi) -------------
-  List<ServiceModel> _catalog = [];
-  Set<int> _selectedServiceIds = {};
-  bool _loadingServices = true;
-  bool _servicesFailed = false;
+  // ------------- Services -------------
+  // Not editable from this form (same restriction as employees — see
+  // spec: services/staff are only assigned from their own dedicated
+  // flows). Preserved unmodified from the existing branch on Edit so
+  // saving doesn't wipe out its current service assignments; empty for
+  // a brand-new branch, same as it has no staff yet either.
+  final Set<int> _selectedServiceIds = {};
 
   bool _isSaving = false;
 
@@ -104,18 +107,14 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
     super.initState();
     _status = widget.existing?.status ?? 'Active';
     _originalStatus = widget.existing?.status ?? 'Active';
-
-    _latitude = widget.existing?.latitude;
-    _longitude = widget.existing?.longitude;
     final existing = widget.existing;
     if (existing != null) {
       _openingTime = _parseTime(existing.openingTime);
       _closingTime = _parseTime(existing.closingTime);
-      _selectedServiceIds = existing.services.map((s) => s.id).toSet();
+      _selectedServiceIds.addAll(existing.services.map((s) => s.id));
       _noWeeklyOff = existing.isNoWeeklyOff;
       _selectedWeekDays = existing.weeklyOffDays.toSet();
     }
-    _loadServices();
   }
 
   TimeOfDay? _parseTime(String value) {
@@ -130,31 +129,11 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
   String _formatTime(TimeOfDay time) =>
       '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
-  /// Auto-fetches the services catalog — services are never typed in
-  /// manually, per the Branch module spec.
-  Future<void> _loadServices() async {
-    setState(() {
-      _loadingServices = true;
-      _servicesFailed = false;
-    });
-
-    final response = await _servicesApi.fetchServices();
-    if (!mounted) return;
-
-    if (response.isSuccess) {
-      setState(() {
-        _catalog = response.data ?? [];
-        _loadingServices = false;
-      });
-    } else {
-      setState(() {
-        _loadingServices = false;
-        _servicesFailed = true;
-      });
-    }
-  }
-
   Future<void> _pickTime({required bool isOpening}) async {
+    // Explicit unfocus: moving from a text field straight into the
+    // time picker previously left the keyboard showing underneath it.
+    FocusScope.of(context).unfocus();
+
     final initial =
         (isOpening ? _openingTime : _closingTime) ?? TimeOfDay.now();
     final picked = await showTimePicker(context: context, initialTime: initial);
@@ -230,10 +209,11 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.pageBackground,
         title: const Text('Deactivate this branch?'),
         content: Text(
           '${_name.isEmpty ? "This branch" : _name} will be marked Deactive. '
-          'It may stop appearing in staff/booking flows until reactivated.',
+          'It may stop appearing in all flows until reactivated.',
           style: AppTextStyles.body,
         ),
         actions: [
@@ -275,8 +255,7 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
         'city': _city,
         'state': _state,
         'pincode': _pincode.trim(),
-        'latitude': _latitude,
-        'longitude': _longitude,
+        'maps_link': _mapsLink.trim().isEmpty ? null : _mapsLink.trim(),
         'mobile': _mobile.trim(),
         'email': _email.trim(),
         'branch_type': _branchType,
@@ -345,158 +324,153 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.page),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _sectionTitle('Branch Logo'),
-              LogoPickerField(
-                title: 'Branch Logo',
-                existingUrl: widget.existing?.logo,
-                pickedFile: _pickedLogo,
-                removed: _logoRemoved,
-                allowRemove: widget.isEdit,
-                onPicked: (file) => setState(() {
-                  _pickedLogo = file;
-                  _logoRemoved = false;
-                }),
-                onRemoved: () => setState(() {
-                  _pickedLogo = null;
-                  _logoRemoved = true;
-                }),
-              ),
-              const SizedBox(height: AppSpacing.verticalLarge),
-              _sectionTitle('Basic Information'),
-              AppTextField(
-                label: 'Branch Name',
-                icon: Icons.storefront_outlined,
-                initialValue: _name,
-                onChanged: (v) => _name = v,
-                validator: (v) =>
-                    RegistrationValidators.required(v, 'Branch Name'),
-              ),
-              AppTextField(
-                label: 'Address Line 1',
-                icon: Icons.location_on_outlined,
-                initialValue: _address1,
-                onChanged: (v) => _address1 = v,
-                validator: (v) => RegistrationValidators.required(v, 'Address'),
-              ),
-              AppTextField(
-                label: 'Address Line 2 (optional)',
-                icon: Icons.location_on_outlined,
-                initialValue: _address2,
-                onChanged: (v) => _address2 = v,
-              ),
-              PincodeLookupField(
-                key: _pincodeFieldKey,
-                initialPincode: _pincode,
-                onPincodeChanged: (v) => _pincode = v,
-                initialState: _state,
-                initialCity: _city,
-                onStateSelected: (v) => _state = v,
-                onCitySelected: (v) => _city = v,
-                pincodeValidator: RegistrationValidators.zip,
-              ),
-              const SizedBox(height: AppSpacing.verticalSmall),
-              _sectionTitle('Location'),
-              LocationPickerField(
-                initialLatitude: _latitude,
-                initialLongitude: _longitude,
-                onChanged: (lat, lng) => setState(() {
-                  _latitude = lat;
-                  _longitude = lng;
-                }),
-              ),
-              const SizedBox(height: AppSpacing.verticalMedium),
-              _sectionTitle('Contact Information'),
-              AppTextField(
-                label: 'Mobile Number',
-                icon: Icons.phone_android_outlined,
-                keyboardType: TextInputType.phone,
-                initialValue: _mobile,
-                onChanged: (v) => _mobile = v,
-                validator: RegistrationValidators.phone,
-              ),
-              AppTextField(
-                label: 'Email (Username)',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                initialValue: _email,
-                onChanged: (v) => _email = v,
-                validator: RegistrationValidators.email,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  bottom: AppSpacing.verticalMedium,
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.page),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _sectionTitle('Branch Logo'),
+                LogoPickerField(
+                  title: 'Branch Logo',
+                  existingUrl: widget.existing?.logo,
+                  pickedFile: _pickedLogo,
+                  removed: _logoRemoved,
+                  allowRemove: widget.isEdit,
+                  onPicked: (file) => setState(() {
+                    _pickedLogo = file;
+                    _logoRemoved = false;
+                  }),
+                  onRemoved: () => setState(() {
+                    _pickedLogo = null;
+                    _logoRemoved = true;
+                  }),
                 ),
-                child: JargonDropdown(
-                  label: 'Branch Type',
-                  value: _branchType.isEmpty
-                      ? _selectBranchTypeHint
-                      : _branchType,
-                  icon: Icons.people_alt_outlined,
-                  options: _branchTypes,
-                  showCard: false,
-                  showIconBackground: false,
-                  onChanged: (val) => setState(() => _branchType = val),
+                const SizedBox(height: AppSpacing.verticalLarge),
+                _sectionTitle('Basic Information'),
+                AppTextField(
+                  label: 'Branch Name',
+                  icon: Icons.storefront_outlined,
+                  initialValue: _name,
+                  onChanged: (v) => _name = v,
+                  validator: (v) =>
+                      RegistrationValidators.required(v, 'Branch Name'),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.verticalSmall),
-              _sectionTitle('Working Hours'),
-              Row(
-                children: [
-                  Expanded(
-                    child: _timeTile(
-                      label: 'Opening Time',
-                      icon: Icons.login_outlined,
-                      time: _openingTime,
-                      onTap: () => _pickTime(isOpening: true),
-                    ),
+                AppTextField(
+                  label: 'Address Line 1',
+                  icon: Icons.location_on_outlined,
+                  initialValue: _address1,
+                  onChanged: (v) => _address1 = v,
+                  validator: (v) =>
+                      RegistrationValidators.required(v, 'Address'),
+                ),
+                AppTextField(
+                  label: 'Address Line 2 (optional)',
+                  icon: Icons.location_on_outlined,
+                  initialValue: _address2,
+                  onChanged: (v) => _address2 = v,
+                ),
+                PincodeLookupField(
+                  key: _pincodeFieldKey,
+                  initialPincode: _pincode,
+                  onPincodeChanged: (v) => _pincode = v,
+                  initialState: _state,
+                  initialCity: _city,
+                  onStateSelected: (v) => _state = v,
+                  onCitySelected: (v) => _city = v,
+                  pincodeValidator: RegistrationValidators.zip,
+                ),
+                const SizedBox(height: AppSpacing.verticalSmall),
+                _sectionTitle('Location'),
+                MapsLinkField(
+                  initialValue: _mapsLink,
+                  onChanged: (v) => _mapsLink = v,
+                ),
+                const SizedBox(height: AppSpacing.verticalMedium),
+                _sectionTitle('Contact Information'),
+                AppTextField(
+                  label: 'Mobile Number',
+                  icon: Icons.phone_android_outlined,
+                  keyboardType: TextInputType.phone,
+                  initialValue: _mobile,
+                  onChanged: (v) => _mobile = v,
+                  validator: RegistrationValidators.phone,
+                ),
+                AppTextField(
+                  label: 'Email (Username)',
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  initialValue: _email,
+                  onChanged: (v) => _email = v,
+                  validator: RegistrationValidators.email,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: AppSpacing.verticalMedium,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _timeTile(
-                      label: 'Closing Time',
-                      icon: Icons.logout_outlined,
-                      time: _closingTime,
-                      onTap: () => _pickTime(isOpening: false),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Branch Type'),
+                      const SizedBox(height: AppSpacing.verticalSmall),
+                      SegmentedToggle(
+                        options: _branchTypes,
+                        value: _branchType.isEmpty ? null : _branchType,
+                        onChanged: (val) => setState(() => _branchType = val),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.verticalMedium),
-              _weeklyOffPicker(),
-              const SizedBox(height: AppSpacing.verticalSmall),
-              _sectionTitle('Status'),
-              Padding(
-                padding: const EdgeInsets.only(
-                  bottom: AppSpacing.verticalMedium,
                 ),
-                child: JargonDropdown(
-                  label: 'Status',
-                  value: _status,
-                  icon: Icons.toggle_on_outlined,
-                  options: _statusOptions,
-                  showCard: false,
-                  showIconBackground: false,
-                  onChanged: (val) => setState(() => _status = val),
+                const SizedBox(height: AppSpacing.verticalSmall),
+                _sectionTitle('Working Hours'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _timeTile(
+                        label: 'Opening Time',
+                        icon: Icons.login_outlined,
+                        time: _openingTime,
+                        onTap: () => _pickTime(isOpening: true),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _timeTile(
+                        label: 'Closing Time',
+                        icon: Icons.logout_outlined,
+                        time: _closingTime,
+                        onTap: () => _pickTime(isOpening: false),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              // const SizedBox(height: AppSpacing.verticalSmall),
-              // _sectionTitle('Services'),
-              // _servicesPicker(),
-              const SizedBox(height: AppSpacing.verticalLarge),
-              SlideActionButton(
-                label: widget.isEdit ? 'Slide to Update' : 'Slide to Save',
-                submitting: _isSaving,
-                onSlide: _save,
-              ),
-              const SizedBox(height: AppSpacing.verticalMedium),
-            ],
+                const SizedBox(height: AppSpacing.verticalMedium),
+                _weeklyOffPicker(),
+                const SizedBox(height: AppSpacing.verticalMedium),
+                _sectionTitle('Status'),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: AppSpacing.verticalMedium,
+                  ),
+                  child: SegmentedToggle(
+                    options: _statusOptions,
+                    value: _status,
+                    onChanged: (val) => setState(() => _status = val),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.verticalLarge),
+                SlideActionButton(
+                  label: widget.isEdit ? 'Slide to Update' : 'Slide to Save',
+                  submitting: _isSaving,
+                  onSlide: _save,
+                ),
+                const SizedBox(height: AppSpacing.verticalMedium),
+              ],
+            ),
           ),
         ),
       ),
@@ -560,9 +534,8 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
   /// Weekly Off — mandatory multi-select of weekdays, with a dedicated
   /// "No Weekly Off" chip that's mutually exclusive with picking
   /// individual days (selecting one clears the other), per the Add New
-  /// Branch spec. Kept as a feature-local chip picker (same treatment
-  /// as the Services picker below) since no shared multi-select chip
-  /// widget exists elsewhere in the app yet.
+  /// Branch spec. Kept as a feature-local chip picker since no shared
+  /// multi-select chip widget exists elsewhere in the app yet.
   Widget _weeklyOffPicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,103 +599,8 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
     );
   }
 
-  /// Service selection — auto-fetched from [ServicesApi], never typed
-  /// in manually, per the Branch module spec. No pre-existing service
-  /// picker exists elsewhere in the app to reuse, so this is a small,
-  /// feature-local chip picker (kept private to this page rather than
-  /// promoted to `core/widgets`, since nothing else uses it yet).
-  ///
-  /// There is deliberately no employee/staff picker anywhere on this
-  /// page — Add/Edit Branch must not allow assigning or removing
-  /// employees, per spec; that only happens from the dedicated
-  /// employee management flow.
-  Widget _servicesPicker() {
-    if (_loadingServices) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_servicesFailed) {
-      return Container(
-        padding: const EdgeInsets.all(AppSpacing.page),
-        decoration: BoxDecoration(
-          color: AppColors.error.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(AppRadius.medium),
-          border: Border.all(color: AppColors.error.withOpacity(0.3)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.wifi_off_rounded, color: AppColors.error),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                "Couldn't load services",
-                style: AppTextStyles.body.copyWith(color: AppColors.error),
-              ),
-            ),
-            TextButton(onPressed: _loadServices, child: const Text('Retry')),
-          ],
-        ),
-      );
-    }
-
-    if (_catalog.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Text(
-          'No services available yet.',
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.verticalMedium),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: _catalog.map((service) {
-          final selected = _selectedServiceIds.contains(service.id);
-          return GestureDetector(
-            onTap: () => setState(() {
-              if (selected) {
-                _selectedServiceIds.remove(service.id);
-              } else {
-                _selectedServiceIds.add(service.id);
-              }
-            }),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: selected
-                    ? AppColors.primary
-                    : AppColors.primary.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(AppRadius.medium),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (selected) ...[
-                    const Icon(Icons.check, size: 14, color: Colors.white),
-                    const SizedBox(width: 4),
-                  ],
-                  Text(
-                    service.name,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: selected ? Colors.white : AppColors.primary,
-                      fontWeight: selected ? FontWeight.w600 : null,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
+  /// There is deliberately no service or employee/staff picker anywhere
+  /// on this page — Add/Edit Branch must not allow assigning or
+  /// removing services or employees, per spec; both only happen from
+  /// their own dedicated management flows.
 }

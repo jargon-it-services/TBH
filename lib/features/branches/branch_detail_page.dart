@@ -274,8 +274,6 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
   }
 
   Widget _locationCard(BranchDetailResponse branch) {
-    final hasCoordinates = branch.latitude != null && branch.longitude != null;
-
     return CardWrapper(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,17 +291,9 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
             style: AppTextStyles.body,
           ),
           const SizedBox(height: AppSpacing.verticalMedium),
-          if (hasCoordinates) ...[
-            StaticMapPreview(
-              latitude: branch.latitude!,
-              longitude: branch.longitude!,
-            ),
-            const SizedBox(height: AppSpacing.verticalSmall),
-            Text(
-              "${branch.latitude!.toStringAsFixed(5)}, ${branch.longitude!.toStringAsFixed(5)}",
-              style: AppTextStyles.caption,
-            ),
-          ] else
+          if (branch.hasLocation)
+            StaticMapPreview(mapsUrl: branch.mapsUrl!)
+          else
             Container(
               padding: const EdgeInsets.all(AppSpacing.verticalMedium),
               decoration: BoxDecoration(

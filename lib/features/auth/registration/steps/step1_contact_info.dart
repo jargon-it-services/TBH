@@ -79,9 +79,8 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
 
     setState(() => _loadingStates = true);
     try {
-      final String jsonStr = await rootBundle.loadString(
-        'assets/india_states_cities.json',
-      );
+      final String jsonStr =
+          await rootBundle.loadString('assets/india_states_cities.json');
       final data = json.decode(jsonStr) as Map<String, dynamic>;
       final List<dynamic> rawStates = data['states'] as List<dynamic>;
 
@@ -202,8 +201,7 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
     final d = widget.data;
     // Once the ZIP text is edited past what we last verified, this goes
     // false again — the Verify button reappears and the badge hides.
-    final zipUnchangedSinceVerify =
-        _zipVerified &&
+    final zipUnchangedSinceVerify = _zipVerified &&
         d.zip.trim() == _lastVerifiedZip &&
         d.zip.trim().isNotEmpty;
 
