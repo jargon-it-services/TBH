@@ -1,0 +1,29 @@
+{
+  "status": true,
+  "message": "Service details fetched successfully",
+  "data": {
+    "id": 1,
+    "name": "Haircut & Styling",
+    "description": "A precision haircut finished with a wash and blow-dry styling.",
+    "photo": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400",
+    "category": "Hair",
+    "duration_minutes": 45,
+    "applicable_gender": "Unisex",
+    "type": "Service",
+    "status": "Active",
+    "customer_price": 500,
+    "material_cost": 30,
+    "commission_type": "Percentage",
+    "commission_value": 10,
+    "other_cost": 20,
+    "home_service_available": true,
+    "home_visit_charges": 150,
+    "service_radius_km": 8,
+    "extra_charge_per_km": 15,
+    "all_branches": false,
+    "branches": [
+      { "id": 1, "name": "MG Road Branch" },
+      { "id": 4, "name": "Hitech City Branch" }
+    ]
+  }
+}

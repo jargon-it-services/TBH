@@ -86,6 +86,10 @@ flutter:
     - assets/mocks/payment_history_response.json
     - assets/mocks/delete_account_response.json
     - assets/mocks/services_response.json
+    - assets/mocks/service_list_response.json
+    - assets/mocks/service_detail_response.json
+    - assets/mocks/service_save_response.json
+    - assets/mocks/service_delete_response.json
     - assets/mocks/branches_response.json
     - assets/mocks/branch_details_response.json
     - assets/mocks/branch_save_response.json

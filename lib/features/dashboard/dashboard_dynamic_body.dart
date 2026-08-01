@@ -11,6 +11,7 @@ import '../../core/widgets/business_summary_card.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/revenue_trend_chart.dart';
 import '../branches/add_edit_branch_page.dart';
+import '../services/add_edit_service_page.dart';
 import 'dashboard_quick_actions.dart';
 import 'widgets/dashboard_shared_widgets.dart';
 import 'widgets/dashboard_transaction_tile.dart';
@@ -110,15 +111,21 @@ class _DashboardDynamicBodyState extends State<DashboardDynamicBody> {
       DashboardQuickActions.forRole(SessionManager.instance.role);
 
   /// Routes a Quick Action tap to its destination screen, now that the
-  /// Branch module exists. Every key other than 'add_branch' is left
-  /// as a no-op, same as the previous `onActionTap: null` behavior —
-  /// their destinations still don't exist yet.
+  /// Branch and Service modules exist. Every other key is left as a
+  /// no-op, same as the previous `onActionTap: null` behavior — their
+  /// destinations still don't exist yet.
   void _handleQuickAction(QuickActionSpec action) {
     switch (action.key) {
       case 'add_branch':
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const AddEditBranchPage()),
+        );
+        break;
+      case 'add_service':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddEditServicePage()),
         );
         break;
       default:

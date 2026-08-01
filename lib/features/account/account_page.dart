@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tbh/features/branches/branch_list_page.dart';
+import 'package:tbh/features/services/service_list_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/connectivity/connectivity_aware_refresh.dart';
@@ -137,6 +138,13 @@ class _AccountPageState extends State<AccountPage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const BranchListPage()),
+    );
+  }
+
+  Future<void> _handleServices() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ServiceListPage()),
     );
   }
 
@@ -532,6 +540,7 @@ class _AccountPageState extends State<AccountPage>
                   .currentSession
                   ?.management
                   ?.totalServices,
+              onTap: _handleServices,
             ),
             const _AccountTile(
               icon: Icons.rule_folder_outlined,
@@ -569,6 +578,7 @@ class _AccountPageState extends State<AccountPage>
                   .currentSession
                   ?.management
                   ?.totalServices,
+              onTap: _handleServices,
             ),
           _AccountTile(
             icon: Icons.lock_reset_outlined,

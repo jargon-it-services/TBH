@@ -43,7 +43,7 @@ class AddEditBranchPage extends StatefulWidget {
 
 class _AddEditBranchPageState extends State<AddEditBranchPage> {
   static const List<String> _branchTypes = ['Male', 'Female', 'Unisex'];
-  static const List<String> _statusOptions = ['Active', 'Deactive'];
+  static const List<String> _statusOptions = ['Active', 'Inactive'];
   static const List<String> _weekDays = [
     'Sunday',
     'Monday',
@@ -212,9 +212,9 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.pageBackground,
-        title: const Text('Deactivate this branch?'),
+        title: const Text('Mark this branch Inactive?'),
         content: Text(
-          '${_name.isEmpty ? "This branch" : _name} will be marked Deactive. '
+          '${_name.isEmpty ? "This branch" : _name} will be marked Inactive. '
           'It may stop appearing in all flows until reactivated.',
           style: AppTextStyles.body,
         ),
@@ -226,7 +226,7 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text(
-              'Deactivate',
+              'Mark Inactive',
               style: TextStyle(color: AppColors.error),
             ),
           ),

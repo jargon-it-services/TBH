@@ -1,0 +1,74 @@
+{
+  "status": true,
+  "message": "Services fetched successfully",
+  "data": {
+    "services": [
+      {
+        "id": 1,
+        "name": "Haircut & Styling",
+        "category": "Hair",
+        "applicable_gender": "Unisex",
+        "duration_minutes": 45,
+        "customer_price": 500,
+        "status": "Active",
+        "type": "Service",
+        "photo": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200"
+      },
+      {
+        "id": 2,
+        "name": "Classic Facial",
+        "category": "Facial",
+        "applicable_gender": "Female",
+        "duration_minutes": 60,
+        "customer_price": 1200,
+        "status": "Active",
+        "type": "Service",
+        "photo": null
+      },
+      {
+        "id": 3,
+        "name": "Manicure",
+        "category": "Nail",
+        "applicable_gender": "Female",
+        "duration_minutes": 30,
+        "customer_price": 400,
+        "status": "Active",
+        "type": "Service",
+        "photo": null
+      },
+      {
+        "id": 4,
+        "name": "Deep Tissue Spa",
+        "category": "Spa",
+        "applicable_gender": "Unisex",
+        "duration_minutes": 90,
+        "customer_price": 2500,
+        "status": "Inactive",
+        "type": "Service",
+        "photo": null
+      },
+      {
+        "id": 5,
+        "name": "Bridal Makeup",
+        "category": "Makeup",
+        "applicable_gender": "Female",
+        "duration_minutes": 120,
+        "customer_price": 8000,
+        "status": "Active",
+        "type": "Service",
+        "photo": "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=200"
+      },
+      {
+        "id": 6,
+        "name": "Beard Grooming",
+        "category": "Hair",
+        "applicable_gender": "Male",
+        "duration_minutes": 25,
+        "customer_price": 250,
+        "status": "Active",
+        "type": "Service",
+        "photo": null
+      }
+    ]
+  }
+}
