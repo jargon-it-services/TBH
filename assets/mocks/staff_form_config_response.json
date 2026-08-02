@@ -1,0 +1,46 @@
+{
+  "status": true,
+  "message": "Form config fetched successfully",
+  "data": {
+    "branches": [
+      {
+        "id": 1,
+        "name": "MG Road Branch",
+        "address": "12 MG Road",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "mobile": "9876500001",
+        "branch_type": "Owned",
+        "status": "Active",
+        "logo": null
+      },
+      {
+        "id": 4,
+        "name": "Hitech City Branch",
+        "address": "45 Hitech City Road",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "mobile": "9876500004",
+        "branch_type": "Franchise",
+        "status": "Active",
+        "logo": null
+      }
+    ],
+    "salary_rules": [
+      { "id": 1, "name": "Standard Fixed Salary", "active": true },
+      { "id": 2, "name": "Commission Based", "active": true },
+      { "id": 3, "name": "Fixed + Commission Hybrid", "active": true },
+      { "id": 4, "name": "Trainee Salary Rule", "active": true }
+    ],
+    "specialists": [
+      "Hair Stylist",
+      "Makeup Artist",
+      "Beautician",
+      "Spa Therapist",
+      "Nail Artist",
+      "Facial Expert",
+      "Barber",
+      "Others"
+    ]
+  }
+}

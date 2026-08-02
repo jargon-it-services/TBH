@@ -4,21 +4,38 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import '../../services/DataModels/staff_detail_model.dart';
+import '../../services/DataModels/staff_form_config_model.dart';
 import '../../services/DataModels/staff_list_model.dart';
 import '../api_call_helper.dart';
 import '../api_response.dart';
 import '../dio_client.dart';
 
 /// Staff Management API — list/detail/create/update/delete, plus a
-/// best-effort employee-code suggestion. Follows the exact same
-/// [callApi]/[DioClient] pattern as `ServicesApi`/`BranchesApi`, so
-/// nothing new is introduced architecturally.
+/// best-effort employee-code suggestion and the Add/Edit form's
+/// dropdown config. Follows the exact same [callApi]/[DioClient]
+/// pattern as `ServicesApi`/`BranchesApi`, so nothing new is
+/// introduced architecturally.
 ///
 /// [DioClient] only exposes `get`/`post` (no `put`/`delete`), so
 /// create, update, and delete all go through POST, matching every
 /// other mutation endpoint in the app.
 class StaffApi {
   final DioClient _client = DioClient();
+
+  /// GET /staff/form-config — Branch list + Salary Rule list +
+  /// Specialist list in one call, instead of the form making three
+  /// separate lookups. Branches/Salary Rules reuse `BranchesApi`/
+  /// `SalaryRulesApi`'s own list endpoints elsewhere in the app (e.g.
+  /// the Service module's Branch Assignment); this endpoint exists
+  /// specifically so the Staff form's config is one round trip.
+  Future<ApiResponse<StaffFormConfig>> fetchStaffFormConfig() {
+    return callApi<StaffFormConfig>(
+      mockAsset: 'assets/mocks/staff_form_config_response.json',
+      liveCall: () => _client.get('/staff/form-config'),
+      parse: (data) => StaffFormConfig.fromJson(data),
+      fallbackErrorMessage: "We couldn't load form options right now.",
+    );
+  }
 
   /// GET /staff/list
   Future<ApiResponse<List<StaffListItem>>> fetchStaffList() {

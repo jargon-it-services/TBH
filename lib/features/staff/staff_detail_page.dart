@@ -16,8 +16,8 @@ import 'add_edit_staff_page.dart';
 /// Staff Details screen — read view for one staff member, reached by
 /// tapping a card on [StaffListPage]. Structure mirrors
 /// `ServiceDetailPage`: a headline block, a stack of [InfoCard]
-/// sections, an Edit action, and a destructive Delete action behind a
-/// confirmation dialog (per this module's Delete Flow requirement).
+/// sections, an Edit action, and a Mark Inactive action (in place of a
+/// destructive delete) behind a confirmation dialog.
 class StaffDetailPage extends StatefulWidget {
   final int staffId;
 
@@ -34,9 +34,9 @@ class _StaffDetailPageState extends State<StaffDetailPage> {
   bool _isOffline = false;
   String? _error;
   StaffDetailResponse? _staff;
-  bool _isDeleting = false;
+  bool _markingInactive = false;
 
-  /// Set to true the moment an edit or delete actually changes
+  /// Set to true the moment an edit or status change actually changes
   /// anything, so the list screen behind us knows to refresh — same
   /// pop(true)/pop(false) contract `ServiceDetailPage` uses.
   bool _didChange = false;
@@ -82,41 +82,48 @@ class _StaffDetailPageState extends State<StaffDetailPage> {
     }
   }
 
-  Future<void> _confirmAndDelete() async {
-    if (_staff == null || _isDeleting) return;
+  /// Marks this staff member Inactive without a full Edit round-trip —
+  /// confirms, then calls the same `updateStaff` API Edit Staff uses,
+  /// sending only the changed field. Replaces the old destructive
+  /// Delete action on this screen: an inactive staff member is hidden
+  /// from active flows but stays recoverable (re-activate via Edit),
+  /// unlike a delete.
+  Future<void> _confirmAndMarkInactive() async {
+    if (_staff == null || _markingInactive) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.pageBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.large)),
-        title: const Text('Delete this staff member?', style: AppTextStyles.h3),
+        title: const Text('Mark this staff member Inactive?', style: AppTextStyles.h3),
         content: Text(
-          '"${_staff!.fullName}" will be permanently removed, including their '
-          'branch and app access. This cannot be undone.',
+          '"${_staff!.fullName}" will be marked Inactive and may lose '
+          'scheduling/app access until reactivated.',
           style: AppTextStyles.body,
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+            child: const Text('Mark Inactive', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
 
-    setState(() => _isDeleting = true);
-    final response = await _api.deleteStaff(widget.staffId);
+    setState(() => _markingInactive = true);
+    final response = await _api.updateStaff(widget.staffId, {'status': 'Inactive'});
     if (!mounted) return;
-    setState(() => _isDeleting = false);
+    setState(() => _markingInactive = false);
 
     if (response.isSuccess) {
-      AppSnackbar.success(context, 'Staff member deleted successfully');
-      Navigator.pop(context, true);
+      AppSnackbar.success(context, 'Staff member marked Inactive');
+      _didChange = true;
+      _loadDetail();
     } else {
-      AppSnackbar.error(context, response.error ?? 'Failed to delete staff member. Please try again.');
+      AppSnackbar.error(context, response.error ?? 'Failed to update status. Please try again.');
     }
   }
 
@@ -226,28 +233,29 @@ class _StaffDetailPageState extends State<StaffDetailPage> {
                 : [InfoRowData(icon: Icons.cancel_outlined, label: 'App Login', value: 'Disabled')],
           ),
           const SizedBox(height: AppSpacing.verticalLarge),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _isDeleting ? null : _confirmAndDelete,
-              icon: _isDeleting
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
-                    )
-                  : const Icon(Icons.delete_outline, color: AppColors.error),
-              label: Text(
-                _isDeleting ? 'Deleting…' : 'Delete Staff',
-                style: const TextStyle(color: AppColors.error),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.error),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium)),
+          if (staff.isActive)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _markingInactive ? null : _confirmAndMarkInactive,
+                icon: _markingInactive
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+                      )
+                    : const Icon(Icons.block_outlined, color: AppColors.error),
+                label: Text(
+                  _markingInactive ? 'Updating…' : 'Mark Inactive',
+                  style: const TextStyle(color: AppColors.error),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.error),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium)),
+                ),
               ),
             ),
-          ),
           const SizedBox(height: AppSpacing.verticalMedium),
         ],
       ),

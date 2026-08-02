@@ -5,6 +5,7 @@ import '../../core/services/DataModels/branch_detail_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/InitialsAvatar.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/info_card.dart';
 import '../../core/widgets/network_state_view.dart';
@@ -38,6 +39,8 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
   // Tracks whether anything changed (an edit was saved) so the list
   // screen knows to silently refresh when this page is popped.
   bool _didChange = false;
+
+  bool _markingInactive = false;
 
   @override
   void initState() {
@@ -80,6 +83,59 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
     if (updated == true) {
       _didChange = true;
       _loadData();
+    }
+  }
+
+  /// Marks this branch Inactive without a full Edit round-trip —
+  /// confirms, then calls the same `updateBranch` API Edit Branch uses,
+  /// sending only the changed field. This replaces the old destructive
+  /// Delete action on this screen: an inactive branch is hidden from
+  /// active flows but stays recoverable (re-activate via Edit), unlike
+  /// a delete.
+  Future<void> _confirmAndMarkInactive() async {
+    if (_data == null || _markingInactive) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.pageBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.large),
+        ),
+        title: const Text('Mark this branch Inactive?', style: AppTextStyles.h3),
+        content: Text(
+          '${_data!.name} will be marked Inactive. It may stop appearing '
+          'in all flows until reactivated.',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Mark Inactive', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _markingInactive = true);
+    final response = await _api.updateBranch(widget.branchId, {'status': 'Inactive'});
+    if (!mounted) return;
+    setState(() => _markingInactive = false);
+
+    if (response.isSuccess) {
+      AppSnackbar.success(context, 'Branch marked Inactive');
+      _didChange = true;
+      _loadData();
+    } else {
+      AppSnackbar.error(
+        context,
+        response.error ?? 'Failed to update status. Please try again.',
+      );
     }
   }
 
@@ -189,13 +245,43 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
             _servicesCard(branch),
             const SizedBox(height: AppSpacing.verticalLarge),
             _staffCard(branch),
+            if (branch.isActive) ...[
+              const SizedBox(height: AppSpacing.verticalLarge),
+              _markInactiveButton(),
+            ],
           ],
         ),
       ),
     );
   }
 
-  /// Colored "headline" card — same visual role as
+  Widget _markInactiveButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _markingInactive ? null : _confirmAndMarkInactive,
+        icon: _markingInactive
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+              )
+            : const Icon(Icons.block_outlined, color: AppColors.error),
+        label: Text(
+          _markingInactive ? 'Updating…' : 'Mark Inactive',
+          style: const TextStyle(color: AppColors.error),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.error),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.medium),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// `TransactionDetailsPage._buildStatusCard` (a tinted-primary
   /// container up top carrying the record's status front and center)
   /// but built around the branch's name/logo/type instead of a payment

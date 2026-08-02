@@ -95,6 +95,7 @@ flutter:
     - assets/mocks/staff_save_response.json
     - assets/mocks/staff_delete_response.json
     - assets/mocks/staff_next_employee_code_response.json
+    - assets/mocks/staff_form_config_response.json
     - assets/mocks/salary_rules_response.json
     - assets/mocks/branches_response.json
     - assets/mocks/branch_details_response.json

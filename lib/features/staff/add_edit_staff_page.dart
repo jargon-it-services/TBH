@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:action_slider/action_slider.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/network/apis/branches_api.dart';
-import '../../core/network/apis/salary_rules_api.dart';
 import '../../core/network/apis/staff_api.dart';
 import '../../core/services/DataModels/branch_model.dart';
 import '../../core/services/DataModels/salary_rule_model.dart';
@@ -19,7 +17,6 @@ import '../../core/widgets/logo_picker_field.dart';
 import '../../core/widgets/segmented_toggle.dart';
 import '../../core/widgets/slide_action_button.dart';
 import '../auth/registration/registration_validators.dart';
-import '../auth/registration/widgets/password_strength_meter.dart';
 
 /// Create/Edit Staff form.
 ///
@@ -35,7 +32,14 @@ import '../auth/registration/widgets/password_strength_meter.dart';
 /// for Joining Date, [LogoPickerField] for Profile Photo and the
 /// Aadhaar Card upload, and [SlideActionButton] for Save.
 ///
-/// Email/Mobile/Password validation reuses `RegistrationValidators`
+/// Branch, Salary Rule, and Specialist options all come from one
+/// `StaffApi.fetchStaffFormConfig()` call rather than three separate
+/// lookups. There's no Username/Password here — app login credentials
+/// are never set from this form; a staff member with Allow App Login
+/// enabled sets their own password via the existing Reset Password
+/// flow on the login screen (see [_appAccessNote]).
+///
+/// Name/Mobile/Email/Aadhaar validation reuses `RegistrationValidators`
 /// directly rather than duplicating those regexes — the same rules
 /// Registration already enforces apply here.
 class AddEditStaffPage extends StatefulWidget {
@@ -52,19 +56,10 @@ class AddEditStaffPage extends StatefulWidget {
 class _AddEditStaffPageState extends State<AddEditStaffPage> {
   static const List<String> _genders = ['Male', 'Female', 'Other'];
   static const List<String> _designations = [
+    'Admin',
     'Manager',
     'Employee',
     'Receptionist',
-  ];
-  static const List<String> _specialists = [
-    'Hair Stylist',
-    'Makeup Artist',
-    'Beautician',
-    'Spa Therapist',
-    'Nail Artist',
-    'Facial Expert',
-    'Barber',
-    'Others',
   ];
   static const List<String> _statusOptions = ['Active', 'Inactive'];
   static const List<String> _allowLoginOptions = ['Yes', 'No'];
@@ -72,8 +67,6 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
 
   final _formKey = GlobalKey<FormState>();
   final StaffApi _staffApi = StaffApi();
-  final BranchesApi _branchesApi = BranchesApi();
-  final SalaryRulesApi _salaryRulesApi = SalaryRulesApi();
 
   // ------------- Personal Information -------------
   late String _fullName = widget.existing?.fullName ?? '';
@@ -98,20 +91,23 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
       widget.existing != null && widget.existing!.designation.isNotEmpty
       ? widget.existing!.designation
       : _designations.first;
-  late String _specialist =
-      widget.existing != null && widget.existing!.specialist.isNotEmpty
-      ? widget.existing!.specialist
-      : _specialists.first;
+
+  // Specialist, Branch, and Salary Rule options all come from one
+  // config call (see _loadFormConfig) rather than a hardcoded list —
+  // _specialist starts as whatever the staff member already has (edit
+  // mode) or empty until the config loads in (create mode).
+  String _specialist = '';
+  List<String> _specialistOptions = [];
 
   int? _branchId;
   String? _branchName;
   List<BranchModel> _branchOptions = [];
-  bool _loadingBranches = true;
 
   int? _salaryRuleId;
   String? _salaryRuleName;
   List<SalaryRuleModel> _salaryRuleOptions = [];
-  bool _loadingSalaryRules = true;
+
+  bool _loadingConfig = true;
 
   late String _status = widget.existing?.status ?? 'Active';
   late String _originalStatus = widget.existing?.status ?? 'Active';
@@ -124,27 +120,24 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
       widget.existing != null && widget.existing!.appRole.isNotEmpty
       ? widget.existing!.appRole
       : _appRoles.last;
-  late String _username = widget.existing?.username ?? '';
-  String _password = '';
-  String _confirmPassword = '';
-  bool _obscurePassword = true;
-  bool _obscureConfirm = true;
 
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _loadBranchOptions();
-    _loadSalaryRuleOptions();
+    _loadFormConfig();
     _joiningDate =
         widget.existing != null && widget.existing!.joiningDate.isNotEmpty
         ? DateTime.tryParse(widget.existing!.joiningDate)
         : null;
+    _specialist = widget.existing?.specialist ?? '';
+
     _branchId = widget.existing?.branchId;
     _branchName = (widget.existing?.branchName.isNotEmpty ?? false)
         ? widget.existing!.branchName
         : null;
+
     _salaryRuleId = widget.existing?.salaryRuleId;
     _salaryRuleName = (widget.existing?.salaryRuleName.isNotEmpty ?? false)
         ? widget.existing!.salaryRuleName
@@ -152,21 +145,21 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
     if (!widget.isEdit) _fetchSuggestedEmployeeCode();
   }
 
-  Future<void> _loadBranchOptions() async {
-    final response = await _branchesApi.fetchBranches();
+  /// Single call for everything the form's dropdowns need — Branch
+  /// list, Salary Rule list, and Specialist list — instead of three
+  /// separate lookups.
+  Future<void> _loadFormConfig() async {
+    final response = await _staffApi.fetchStaffFormConfig();
     if (!mounted) return;
+    final config = response.data;
     setState(() {
-      _branchOptions = response.data ?? [];
-      _loadingBranches = false;
-    });
-  }
-
-  Future<void> _loadSalaryRuleOptions() async {
-    final response = await _salaryRulesApi.fetchSalaryRules();
-    if (!mounted) return;
-    setState(() {
-      _salaryRuleOptions = response.data ?? [];
-      _loadingSalaryRules = false;
+      _branchOptions = config?.branches ?? [];
+      _salaryRuleOptions = config?.salaryRules ?? [];
+      _specialistOptions = config?.specialists ?? [];
+      if (_specialist.isEmpty && _specialistOptions.isNotEmpty) {
+        _specialist = _specialistOptions.first;
+      }
+      _loadingConfig = false;
     });
   }
 
@@ -251,21 +244,6 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
     return confirmed ?? false;
   }
 
-  String? _passwordValidator(String? value) {
-    final v = value ?? '';
-    // Editing an existing staff member: leaving both password fields
-    // blank means "keep the current password unchanged" — only
-    // validate strength once they've actually started typing one.
-    if (widget.isEdit && v.isEmpty && _confirmPassword.isEmpty) return null;
-    return RegistrationValidators.password(v);
-  }
-
-  String? _confirmPasswordValidator(String? value) {
-    final v = value ?? '';
-    if (widget.isEdit && _password.isEmpty && v.isEmpty) return null;
-    return RegistrationValidators.confirmPassword(v, _password);
-  }
-
   Future<void> _save(ActionSliderController controller) async {
     if (_isSaving) return;
 
@@ -281,7 +259,6 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
       setState(() => _isSaving = true);
 
       final allowLogin = _allowAppLogin == 'Yes';
-      final changingPassword = _password.trim().isNotEmpty;
 
       final payload = {
         'full_name': _fullName.trim(),
@@ -298,10 +275,6 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
         'status': _status,
         'allow_app_login': allowLogin,
         'app_role': allowLogin ? _appRole : null,
-        'username': allowLogin ? _username.trim() : null,
-        if (allowLogin && changingPassword) 'password': _password,
-        if (allowLogin && changingPassword)
-          'confirm_password': _confirmPassword,
       };
 
       final response = widget.isEdit
@@ -490,19 +463,35 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: AppSpacing.verticalMedium,
-                  ),
-                  child: JargonDropdown(
-                    label: 'Specialist',
-                    value: _specialist,
-                    icon: Icons.content_cut_outlined,
-                    options: _specialists,
-                    showLabel: true,
-                    onChanged: (v) => setState(() => _specialist = v),
-                  ),
-                ),
+                _loadingConfig
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Center(
+                          child: SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: AppSpacing.verticalMedium,
+                        ),
+                        child: JargonDropdown(
+                          label: 'Specialist',
+                          value: _specialist.isEmpty
+                              ? 'Select Specialist'
+                              : _specialist,
+                          icon: Icons.content_cut_outlined,
+                          options: _specialistOptions,
+                          showLabel: true,
+                          onChanged: (v) => setState(() => _specialist = v),
+                        ),
+                      ),
                 _branchPicker(),
                 _salaryRulePicker(),
                 Padding(
@@ -530,12 +519,7 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
                   child: SegmentedToggle(
                     options: _allowLoginOptions,
                     value: _allowAppLogin,
-                    onChanged: (val) => setState(() {
-                      _allowAppLogin = val;
-                      if (val == 'Yes' && _username.trim().isEmpty) {
-                        _username = _email.trim();
-                      }
-                    }),
+                    onChanged: (val) => setState(() => _allowAppLogin = val),
                   ),
                 ),
                 if (_allowAppLogin == 'Yes') ...[
@@ -555,52 +539,7 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
                       ],
                     ),
                   ),
-                  AppTextField(
-                    key: ValueKey('username-${widget.existing?.id}'),
-                    label: 'Username',
-                    icon: Icons.alternate_email,
-                    initialValue: _username,
-                    onChanged: (v) => _username = v,
-                    validator: (v) =>
-                        RegistrationValidators.required(v, 'Username'),
-                  ),
-                  AppTextField(
-                    label: widget.isEdit
-                        ? 'New Password (leave blank to keep current)'
-                        : 'Password',
-                    icon: Icons.key,
-                    obscureText: _obscurePassword,
-                    onChanged: (v) => setState(() => _password = v),
-                    validator: _passwordValidator,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        size: 20,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                  ),
-                  PasswordStrengthMeter(password: _password),
-                  AppTextField(
-                    label: 'Confirm Password',
-                    icon: Icons.lock_outline,
-                    obscureText: _obscureConfirm,
-                    onChanged: (v) => setState(() => _confirmPassword = v),
-                    validator: _confirmPasswordValidator,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirm
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        size: 20,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscureConfirm = !_obscureConfirm),
-                    ),
-                  ),
+                  _appAccessNote(),
                 ],
                 const SizedBox(height: AppSpacing.verticalLarge),
                 SlideActionButton(
@@ -618,7 +557,7 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
   }
 
   Widget _branchPicker() {
-    if (_loadingBranches) {
+    if (_loadingConfig) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 12),
         child: Center(
@@ -653,7 +592,7 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
   }
 
   Widget _salaryRulePicker() {
-    if (_loadingSalaryRules) {
+    if (_loadingConfig) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 12),
         child: Center(
@@ -683,6 +622,42 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
             _salaryRuleId = match.id;
           });
         },
+      ),
+    );
+  }
+
+  /// Shown instead of Username/Password fields when Allow App Login is
+  /// Yes — this form never sets or resets a staff member's password.
+  /// The staff member sets/resets their own password themselves via
+  /// the existing Reset Password flow on the login screen (login
+  /// identifier defaults to their Email Address).
+  Widget _appAccessNote() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.verticalMedium),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(AppRadius.medium),
+        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'No password is set from here. Ask '
+              '${_fullName.trim().isEmpty ? "the staff member" : _fullName.trim()} '
+              'to use the Reset Password flow on the login screen '
+              '(with ${_email.trim().isEmpty ? "their email address" : _email.trim()}) '
+              'to set up their password.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

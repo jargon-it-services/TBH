@@ -5,6 +5,7 @@ import '../../core/services/DataModels/service_detail_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/InitialsAvatar.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/info_card.dart';
 import '../../core/widgets/network_state_view.dart';
@@ -15,8 +16,8 @@ import 'add_edit_service_page.dart';
 /// Service Details screen — read view for one service, reached by
 /// tapping a card on [ServiceListPage]. Structure mirrors
 /// `BranchDetailPage`: a headline block, a stack of [InfoCard]
-/// sections, and an Edit action. No delete action here by design —
-/// deleting a service is handled elsewhere in the flow.
+/// sections, an Edit action, and a Mark Inactive action (in place of a
+/// destructive delete) behind a confirmation dialog.
 class ServiceDetailPage extends StatefulWidget {
   final int serviceId;
 
@@ -33,6 +34,7 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
   bool _isOffline = false;
   String? _error;
   ServiceDetailResponse? _service;
+  bool _markingInactive = false;
 
   /// Set to true the moment an edit actually changes anything, so the
   /// list screen behind us knows to refresh — same pop(true)/pop(false)
@@ -79,6 +81,48 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     if (updated == true) {
       _didChange = true;
       _loadDetail();
+    }
+  }
+
+  /// Marks this service Inactive without a full Edit round-trip —
+  /// confirms, then calls the same `updateService` API Edit Service
+  /// uses, sending only the changed field.
+  Future<void> _confirmAndMarkInactive() async {
+    if (_service == null || _markingInactive) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.pageBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.large)),
+        title: const Text('Mark this service Inactive?', style: AppTextStyles.h3),
+        content: Text(
+          '"${_service!.name}" will be marked Inactive and will stop appearing '
+          'to customers until reactivated.',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Mark Inactive', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _markingInactive = true);
+    final response = await _api.updateService(widget.serviceId, {'status': 'Inactive'});
+    if (!mounted) return;
+    setState(() => _markingInactive = false);
+
+    if (response.isSuccess) {
+      AppSnackbar.success(context, 'Service marked Inactive');
+      _didChange = true;
+      _loadDetail();
+    } else {
+      AppSnackbar.error(context, response.error ?? 'Failed to update status. Please try again.');
     }
   }
 
@@ -295,11 +339,40 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             ),
           ),
           const SizedBox(height: AppSpacing.verticalMedium),
+          if (service.isActive) _markInactiveButton(),
         ],
       ),
     );
   }
 
+  Widget _markInactiveButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _markingInactive ? null : _confirmAndMarkInactive,
+        icon: _markingInactive
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+              )
+            : const Icon(Icons.block_outlined, color: AppColors.error),
+        label: Text(
+          _markingInactive ? 'Updating…' : 'Mark Inactive',
+          style: const TextStyle(color: AppColors.error),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.error),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium)),
+        ),
+      ),
+    );
+  }
+  /// plain [InfoRowData] row — [InfoCard]'s rows are all styled
+  /// identically, but Profit is the one derived, decision-relevant
+  /// figure on this screen, so it's called out the same way the
+  /// Add/Edit form's live Profit preview is.
   /// Profit gets its own highlighted summary rather than sitting as a
   /// plain [InfoRowData] row — [InfoCard]'s rows are all styled
   /// identically, but Profit is the one derived, decision-relevant
