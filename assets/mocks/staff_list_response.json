@@ -1,0 +1,68 @@
+{
+  "status": true,
+  "message": "Staff fetched successfully",
+  "data": {
+    "staff": [
+      {
+        "id": 1,
+        "full_name": "Priya Sharma",
+        "mobile": "9876543210",
+        "email": "priya.sharma@example.com",
+        "employee_code": "EMP1001",
+        "designation": "Manager",
+        "specialist": "Hair Stylist",
+        "branch_name": "MG Road Branch",
+        "status": "Active",
+        "photo": null
+      },
+      {
+        "id": 2,
+        "full_name": "Rahul Verma",
+        "mobile": "9876543211",
+        "email": "rahul.verma@example.com",
+        "employee_code": "EMP1002",
+        "designation": "Employee",
+        "specialist": "Barber",
+        "branch_name": "MG Road Branch",
+        "status": "Active",
+        "photo": null
+      },
+      {
+        "id": 3,
+        "full_name": "Anjali Nair",
+        "mobile": "9876543212",
+        "email": "anjali.nair@example.com",
+        "employee_code": "EMP1003",
+        "designation": "Employee",
+        "specialist": "Makeup Artist",
+        "branch_name": "Hitech City Branch",
+        "status": "Active",
+        "photo": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200"
+      },
+      {
+        "id": 4,
+        "full_name": "Karan Mehta",
+        "mobile": "9876543213",
+        "email": "karan.mehta@example.com",
+        "employee_code": "EMP1004",
+        "designation": "Receptionist",
+        "specialist": "Others",
+        "branch_name": "Hitech City Branch",
+        "status": "Inactive",
+        "photo": null
+      },
+      {
+        "id": 5,
+        "full_name": "Sneha Reddy",
+        "mobile": "9876543214",
+        "email": "sneha.reddy@example.com",
+        "employee_code": "EMP1005",
+        "designation": "Employee",
+        "specialist": "Spa Therapist",
+        "branch_name": "MG Road Branch",
+        "status": "Active",
+        "photo": null
+      }
+    ]
+  }
+}

@@ -8,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tbh/features/branches/branch_list_page.dart';
 import 'package:tbh/features/services/service_list_page.dart';
+import 'package:tbh/features/staff/staff_list_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/connectivity/connectivity_aware_refresh.dart';
@@ -145,6 +146,13 @@ class _AccountPageState extends State<AccountPage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const ServiceListPage()),
+    );
+  }
+
+  Future<void> _handleStaff() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StaffListPage()),
     );
   }
 
@@ -531,6 +539,7 @@ class _AccountPageState extends State<AccountPage>
                   .currentSession
                   ?.management
                   ?.totalStaff,
+              onTap: _handleStaff,
             ),
             _AccountTile(
               icon: Icons.miscellaneous_services_outlined,

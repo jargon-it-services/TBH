@@ -25,6 +25,7 @@ class LogoPickerField extends StatelessWidget {
     required this.onPicked,
     required this.onRemoved,
     this.allowRemove = true,
+    this.placeholderIcon = Icons.storefront_outlined,
   });
 
   final String title;
@@ -48,6 +49,13 @@ class LogoPickerField extends StatelessWidget {
   /// Add New Branch has nothing to remove yet, so this stays false
   /// there.
   final bool allowRemove;
+
+  /// Icon shown in the thumbnail slot before any image is picked.
+  /// Defaults to the original storefront icon (branch logo's icon), so
+  /// every pre-existing call site keeps its exact look unchanged. New
+  /// callers picking a non-branch image (a staff photo, a document
+  /// scan) should pass something that fits instead.
+  final IconData placeholderIcon;
 
   bool get _hasImage =>
       !removed && (pickedFile != null || (existingUrl?.isNotEmpty ?? false));
@@ -102,7 +110,7 @@ class LogoPickerField extends StatelessWidget {
                         ? Image.network(existingUrl!, fit: BoxFit.cover)
                         : Container(
                             color: AppColors.primary.withOpacity(0.15),
-                            child: const Icon(Icons.storefront_outlined,
+                            child: Icon(placeholderIcon,
                                 color: AppColors.primary),
                           )),
               ),

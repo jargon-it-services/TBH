@@ -1,0 +1,26 @@
+{
+  "status": true,
+  "message": "Staff details fetched successfully",
+  "data": {
+    "id": 1,
+    "full_name": "Priya Sharma",
+    "mobile": "9876543210",
+    "email": "priya.sharma@example.com",
+    "photo": null,
+    "gender": "Female",
+    "aadhaar_number": "234567890123",
+    "aadhaar_card_url": "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400",
+    "employee_code": "EMP1001",
+    "joining_date": "2024-03-15",
+    "designation": "Manager",
+    "specialist": "Hair Stylist",
+    "branch_id": 1,
+    "branch_name": "MG Road Branch",
+    "salary_rule_id": 1,
+    "salary_rule_name": "Standard Fixed Salary",
+    "status": "Active",
+    "allow_app_login": true,
+    "app_role": "Manager",
+    "username": "priya.sharma@example.com"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "status": true,
+  "message": "Salary rules fetched successfully",
+  "data": {
+    "salary_rules": [
+      { "id": 1, "name": "Standard Fixed Salary", "active": true },
+      { "id": 2, "name": "Commission Based", "active": true },
+      { "id": 3, "name": "Fixed + Commission Hybrid", "active": true },
+      { "id": 4, "name": "Trainee Salary Rule", "active": true }
+    ]
+  }
+}
