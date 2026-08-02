@@ -87,13 +87,18 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
   }
 
   /// Marks this branch Inactive without a full Edit round-trip —
-  /// confirms, then calls the same `updateBranch` API Edit Branch uses,
-  /// sending only the changed field. This replaces the old destructive
-  /// Delete action on this screen: an inactive branch is hidden from
-  /// active flows but stays recoverable (re-activate via Edit), unlike
-  /// a delete.
-  Future<void> _confirmAndMarkInactive() async {
+  /// Toggles this branch's status between Active and Inactive without
+  /// a full Edit round-trip — confirms, then calls the same
+  /// `updateBranch` API Edit Branch uses, sending only the changed
+  /// field. Replaces the old destructive Delete action on this screen:
+  /// marking a branch Inactive hides it from active flows but keeps it
+  /// recoverable (flip it back to Active here anytime), unlike a
+  /// delete.
+  Future<void> _confirmAndToggleStatus() async {
     if (_data == null || _markingInactive) return;
+
+    final goingInactive = _data!.isActive;
+    final targetStatus = goingInactive ? 'Inactive' : 'Active';
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -102,10 +107,13 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.large),
         ),
-        title: const Text('Mark this branch Inactive?', style: AppTextStyles.h3),
+        title: Text('Mark this branch $targetStatus?', style: AppTextStyles.h3),
         content: Text(
-          '${_data!.name} will be marked Inactive. It may stop appearing '
-          'in all flows until reactivated.',
+          goingInactive
+              ? '${_data!.name} will be marked Inactive. It may stop appearing '
+                  'in all flows until reactivated.'
+              : '${_data!.name} will be marked Active and will start appearing '
+                  'in all flows again.',
           style: AppTextStyles.body,
         ),
         actions: [
@@ -115,7 +123,10 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Mark Inactive', style: TextStyle(color: AppColors.error)),
+            child: Text(
+              'Mark $targetStatus',
+              style: TextStyle(color: goingInactive ? AppColors.error : AppColors.success),
+            ),
           ),
         ],
       ),
@@ -123,12 +134,12 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
     if (confirmed != true) return;
 
     setState(() => _markingInactive = true);
-    final response = await _api.updateBranch(widget.branchId, {'status': 'Inactive'});
+    final response = await _api.updateBranch(widget.branchId, {'status': targetStatus});
     if (!mounted) return;
     setState(() => _markingInactive = false);
 
     if (response.isSuccess) {
-      AppSnackbar.success(context, 'Branch marked Inactive');
+      AppSnackbar.success(context, 'Branch marked $targetStatus');
       _didChange = true;
       _loadData();
     } else {
@@ -245,34 +256,37 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
             _servicesCard(branch),
             const SizedBox(height: AppSpacing.verticalLarge),
             _staffCard(branch),
-            if (branch.isActive) ...[
-              const SizedBox(height: AppSpacing.verticalLarge),
-              _markInactiveButton(),
-            ],
+            const SizedBox(height: AppSpacing.verticalLarge),
+            _statusToggleButton(branch),
           ],
         ),
       ),
     );
   }
 
-  Widget _markInactiveButton() {
+  Widget _statusToggleButton(BranchDetailResponse branch) {
+    final goingInactive = branch.isActive;
+    final color = goingInactive ? AppColors.error : AppColors.success;
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: _markingInactive ? null : _confirmAndMarkInactive,
+        onPressed: _markingInactive ? null : _confirmAndToggleStatus,
         icon: _markingInactive
-            ? const SizedBox(
+            ? SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+                child: CircularProgressIndicator(strokeWidth: 2, color: color),
               )
-            : const Icon(Icons.block_outlined, color: AppColors.error),
+            : Icon(
+                goingInactive ? Icons.block_outlined : Icons.check_circle_outline,
+                color: color,
+              ),
         label: Text(
-          _markingInactive ? 'Updating…' : 'Mark Inactive',
-          style: const TextStyle(color: AppColors.error),
+          _markingInactive ? 'Updating…' : (goingInactive ? 'Mark Inactive' : 'Mark Active'),
+          style: TextStyle(color: color),
         ),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.error),
+          side: BorderSide(color: color),
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.medium),

@@ -16,7 +16,8 @@ import 'add_edit_service_page.dart';
 /// Service Details screen — read view for one service, reached by
 /// tapping a card on [ServiceListPage]. Structure mirrors
 /// `BranchDetailPage`: a headline block, a stack of [InfoCard]
-/// sections, an Edit action, and a Mark Inactive action (in place of a
+/// sections, an Edit action, and a Mark Active/Inactive status-toggle
+/// action (in place of a
 /// destructive delete) behind a confirmation dialog.
 class ServiceDetailPage extends StatefulWidget {
   final int serviceId;
@@ -84,28 +85,38 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     }
   }
 
-  /// Marks this service Inactive without a full Edit round-trip —
-  /// confirms, then calls the same `updateService` API Edit Service
-  /// uses, sending only the changed field.
-  Future<void> _confirmAndMarkInactive() async {
+  /// Toggles this service's status between Active and Inactive without
+  /// a full Edit round-trip — confirms, then calls the same
+  /// `updateService` API Edit Service uses, sending only the changed
+  /// field.
+  Future<void> _confirmAndToggleStatus() async {
     if (_service == null || _markingInactive) return;
+
+    final goingInactive = _service!.isActive;
+    final targetStatus = goingInactive ? 'Inactive' : 'Active';
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.pageBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.large)),
-        title: const Text('Mark this service Inactive?', style: AppTextStyles.h3),
+        title: Text('Mark this service $targetStatus?', style: AppTextStyles.h3),
         content: Text(
-          '"${_service!.name}" will be marked Inactive and will stop appearing '
-          'to customers until reactivated.',
+          goingInactive
+              ? '"${_service!.name}" will be marked Inactive and will stop appearing '
+                  'to customers until reactivated.'
+              : '"${_service!.name}" will be marked Active and will start appearing '
+                  'to customers again.',
           style: AppTextStyles.body,
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Mark Inactive', style: TextStyle(color: AppColors.error)),
+            child: Text(
+              'Mark $targetStatus',
+              style: TextStyle(color: goingInactive ? AppColors.error : AppColors.success),
+            ),
           ),
         ],
       ),
@@ -113,12 +124,12 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     if (confirmed != true) return;
 
     setState(() => _markingInactive = true);
-    final response = await _api.updateService(widget.serviceId, {'status': 'Inactive'});
+    final response = await _api.updateService(widget.serviceId, {'status': targetStatus});
     if (!mounted) return;
     setState(() => _markingInactive = false);
 
     if (response.isSuccess) {
-      AppSnackbar.success(context, 'Service marked Inactive');
+      AppSnackbar.success(context, 'Service marked $targetStatus');
       _didChange = true;
       _loadDetail();
     } else {
@@ -339,30 +350,35 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
             ),
           ),
           const SizedBox(height: AppSpacing.verticalMedium),
-          if (service.isActive) _markInactiveButton(),
+          _statusToggleButton(service),
         ],
       ),
     );
   }
 
-  Widget _markInactiveButton() {
+  Widget _statusToggleButton(ServiceDetailResponse service) {
+    final goingInactive = service.isActive;
+    final color = goingInactive ? AppColors.error : AppColors.success;
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: _markingInactive ? null : _confirmAndMarkInactive,
+        onPressed: _markingInactive ? null : _confirmAndToggleStatus,
         icon: _markingInactive
-            ? const SizedBox(
+            ? SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+                child: CircularProgressIndicator(strokeWidth: 2, color: color),
               )
-            : const Icon(Icons.block_outlined, color: AppColors.error),
+            : Icon(
+                goingInactive ? Icons.block_outlined : Icons.check_circle_outline,
+                color: color,
+              ),
         label: Text(
-          _markingInactive ? 'Updating…' : 'Mark Inactive',
-          style: const TextStyle(color: AppColors.error),
+          _markingInactive ? 'Updating…' : (goingInactive ? 'Mark Inactive' : 'Mark Active'),
+          style: TextStyle(color: color),
         ),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.error),
+          side: BorderSide(color: color),
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium)),
         ),

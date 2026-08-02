@@ -43,7 +43,6 @@ class AddEditBranchPage extends StatefulWidget {
 
 class _AddEditBranchPageState extends State<AddEditBranchPage> {
   static const List<String> _branchTypes = ['Male', 'Female', 'Unisex'];
-  static const List<String> _statusOptions = ['Active', 'Inactive'];
   static const List<String> _weekDays = [
     'Sunday',
     'Monday',
@@ -69,12 +68,12 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
   late String _state = widget.existing?.state ?? '';
   late String _branchType = widget.existing?.branchType ?? 'Unisex';
 
-  // Defaults to Active for a brand-new branch, per the Add New Branch
-  // spec — previously this started blank, which (combined with the
-  // dropdown's hint text not being a real option) was part of why a
-  // fresh Add New Branch form could hit an invalid state on save.
+  // Not shown as a field in this form — a separate Mark
+  // Active/Inactive action on Branch Details handles status changes
+  // (see BranchDetailPage). Defaults to Active for a brand-new branch;
+  // Edit Branch carries over whatever status the branch already has,
+  // untouched.
   late String _status;
-  late String _originalStatus;
 
   // Saved as-is; the backend extracts latitude/longitude from this
   // link on its own — see MapsLinkField's doc comment for why.
@@ -106,7 +105,6 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
   void initState() {
     super.initState();
     _status = widget.existing?.status ?? 'Active';
-    _originalStatus = widget.existing?.status ?? 'Active';
 
     final existing = widget.existing;
 
@@ -179,7 +177,6 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
     final errors = <String>[];
     if (!stateAndCityValid) errors.add('state/city');
     if (_branchType.isEmpty) errors.add('branch type');
-    if (_status.isEmpty) errors.add('status');
     if (!_noWeeklyOff && _selectedWeekDays.isEmpty) errors.add('weekly off');
     if (_openingTime == null) errors.add('opening time');
     if (_closingTime == null) errors.add('closing time');
@@ -199,43 +196,6 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
     return true;
   }
 
-  /// Active → Inactive is a meaningful, disruptive change (staff/booking
-  /// visibility), so Edit Branch confirms it before saving, per spec.
-  /// Not shown for Add New Branch (nothing to "change" yet) or for any
-  /// other status transition.
-  Future<bool> _confirmStatusChangeIfNeeded() async {
-    final goingInactive =
-        widget.isEdit && _originalStatus == 'Active' && _status != 'Active';
-    if (!goingInactive) return true;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.pageBackground,
-        title: const Text('Mark this branch Inactive?'),
-        content: Text(
-          '${_name.isEmpty ? "This branch" : _name} will be marked Inactive. '
-          'It may stop appearing in all flows until reactivated.',
-          style: AppTextStyles.body,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Mark Inactive',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    return confirmed ?? false;
-  }
-
   Future<void> _save(ActionSliderController controller) async {
     if (_isSaving) return;
 
@@ -245,7 +205,6 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
         return;
       }
       if (!_validateSelections()) return;
-      if (!await _confirmStatusChangeIfNeeded()) return;
 
       if (!mounted) return;
       setState(() => _isSaving = true);
@@ -452,18 +411,6 @@ class _AddEditBranchPageState extends State<AddEditBranchPage> {
                 ),
                 const SizedBox(height: AppSpacing.verticalMedium),
                 _weeklyOffPicker(),
-                const SizedBox(height: AppSpacing.verticalMedium),
-                _sectionTitle('Status'),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: AppSpacing.verticalMedium,
-                  ),
-                  child: SegmentedToggle(
-                    options: _statusOptions,
-                    value: _status,
-                    onChanged: (val) => setState(() => _status = val),
-                  ),
-                ),
                 const SizedBox(height: AppSpacing.verticalLarge),
                 SlideActionButton(
                   label: widget.isEdit ? 'Slide to Update' : 'Slide to Save',

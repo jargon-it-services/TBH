@@ -51,7 +51,6 @@ class _AddEditServicePageState extends State<AddEditServicePage> {
     'Makeup',
   ];
   static const List<String> _genders = ['Male', 'Female', 'Unisex'];
-  static const List<String> _statusOptions = ['Active', 'Inactive'];
   static const List<String> _homeServiceOptions = ['Yes', 'No'];
   static const List<String> _commissionTypes = ['Fixed Amount', 'Percentage'];
   static const List<String> _branchScopeOptions = [
@@ -76,9 +75,11 @@ class _AddEditServicePageState extends State<AddEditServicePage> {
           : '';
   late String _applicableGender = widget.existing?.applicableGender ?? 'Unisex';
 
-  // Defaults to Active for a brand-new service, same as Add New Branch.
+  // Not shown as a field in this form — a separate Mark
+  // Active/Inactive action on Service Details handles status changes.
+  // Defaults to Active for a brand-new service; Edit Service carries
+  // over whatever status the service already has, untouched.
   late String _status;
-  late String _originalStatus;
 
   // ------------- Photo -------------
   File? _pickedPhoto;
@@ -123,7 +124,6 @@ class _AddEditServicePageState extends State<AddEditServicePage> {
   void initState() {
     super.initState();
     _status = widget.existing?.status ?? 'Active';
-    _originalStatus = widget.existing?.status ?? 'Active';
     _loadBranchOptions();
   }
 
@@ -178,45 +178,6 @@ class _AddEditServicePageState extends State<AddEditServicePage> {
     return true;
   }
 
-  /// Active → Inactive is a meaningful, disruptive change (the service
-  /// stops appearing to customers), so Edit Service confirms it before
-  /// saving — same pattern as `AddEditBranchPage._confirmStatusChangeIfNeeded`.
-  Future<bool> _confirmStatusChangeIfNeeded() async {
-    final goingInactive =
-        widget.isEdit && _originalStatus == 'Active' && _status != 'Active';
-    if (!goingInactive) return true;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.pageBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.large),
-        ),
-        title: const Text('Mark this service Inactive?', style: AppTextStyles.h3),
-        content: Text(
-          '${_name.isEmpty ? "This service" : _name} will be marked Inactive '
-          'and will stop appearing to customers until reactivated.',
-          style: AppTextStyles.body,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Mark Inactive',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    return confirmed ?? false;
-  }
-
   Future<void> _save(ActionSliderController controller) async {
     if (_isSaving) return;
 
@@ -226,7 +187,6 @@ class _AddEditServicePageState extends State<AddEditServicePage> {
         return;
       }
       if (!_validateSelections()) return;
-      if (!await _confirmStatusChangeIfNeeded()) return;
 
       if (!mounted) return;
       setState(() => _isSaving = true);
@@ -396,22 +356,11 @@ class _AddEditServicePageState extends State<AddEditServicePage> {
                 // "Service" and is still sent as such in the save
                 // payload (see _save), just no longer surfaced as a
                 // field in the Create/Edit form per the latest spec.
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: AppSpacing.verticalMedium,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _sectionTitle('Status'),
-                      SegmentedToggle(
-                        options: _statusOptions,
-                        value: _status,
-                        onChanged: (val) => setState(() => _status = val),
-                      ),
-                    ],
-                  ),
-                ),
+                // Status likewise isn't shown here — a separate Mark
+                // Active/Inactive action on Service Details handles
+                // status changes; this form only sets Active by
+                // default for a new service and carries over the
+                // existing status untouched on edit.
                 const SizedBox(height: AppSpacing.verticalSmall),
                 _sectionTitle('Pricing'),
                 AppTextField(

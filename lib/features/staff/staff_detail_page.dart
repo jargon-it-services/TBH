@@ -16,7 +16,8 @@ import 'add_edit_staff_page.dart';
 /// Staff Details screen — read view for one staff member, reached by
 /// tapping a card on [StaffListPage]. Structure mirrors
 /// `ServiceDetailPage`: a headline block, a stack of [InfoCard]
-/// sections, an Edit action, and a Mark Inactive action (in place of a
+/// sections, an Edit action, and a Mark Active/Inactive status-toggle
+/// action (in place of a
 /// destructive delete) behind a confirmation dialog.
 class StaffDetailPage extends StatefulWidget {
   final int staffId;
@@ -82,31 +83,37 @@ class _StaffDetailPageState extends State<StaffDetailPage> {
     }
   }
 
-  /// Marks this staff member Inactive without a full Edit round-trip —
-  /// confirms, then calls the same `updateStaff` API Edit Staff uses,
-  /// sending only the changed field. Replaces the old destructive
-  /// Delete action on this screen: an inactive staff member is hidden
-  /// from active flows but stays recoverable (re-activate via Edit),
-  /// unlike a delete.
-  Future<void> _confirmAndMarkInactive() async {
+  /// Toggles this staff member's status between Active and Inactive
+  /// without a full Edit round-trip — confirms, then calls the same
+  /// `updateStaff` API Edit Staff uses, sending only the changed field.
+  Future<void> _confirmAndToggleStatus() async {
     if (_staff == null || _markingInactive) return;
+
+    final goingInactive = _staff!.isActive;
+    final targetStatus = goingInactive ? 'Inactive' : 'Active';
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.pageBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.large)),
-        title: const Text('Mark this staff member Inactive?', style: AppTextStyles.h3),
+        title: Text('Mark this staff member $targetStatus?', style: AppTextStyles.h3),
         content: Text(
-          '"${_staff!.fullName}" will be marked Inactive and may lose '
-          'scheduling/app access until reactivated.',
+          goingInactive
+              ? '"${_staff!.fullName}" will be marked Inactive and may lose '
+                  'scheduling/app access until reactivated.'
+              : '"${_staff!.fullName}" will be marked Active and will regain '
+                  'scheduling/app access.',
           style: AppTextStyles.body,
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Mark Inactive', style: TextStyle(color: AppColors.error)),
+            child: Text(
+              'Mark $targetStatus',
+              style: TextStyle(color: goingInactive ? AppColors.error : AppColors.success),
+            ),
           ),
         ],
       ),
@@ -114,12 +121,12 @@ class _StaffDetailPageState extends State<StaffDetailPage> {
     if (confirmed != true) return;
 
     setState(() => _markingInactive = true);
-    final response = await _api.updateStaff(widget.staffId, {'status': 'Inactive'});
+    final response = await _api.updateStaff(widget.staffId, {'status': targetStatus});
     if (!mounted) return;
     setState(() => _markingInactive = false);
 
     if (response.isSuccess) {
-      AppSnackbar.success(context, 'Staff member marked Inactive');
+      AppSnackbar.success(context, 'Staff member marked $targetStatus');
       _didChange = true;
       _loadDetail();
     } else {
@@ -233,31 +240,39 @@ class _StaffDetailPageState extends State<StaffDetailPage> {
                 : [InfoRowData(icon: Icons.cancel_outlined, label: 'App Login', value: 'Disabled')],
           ),
           const SizedBox(height: AppSpacing.verticalLarge),
-          if (staff.isActive)
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _markingInactive ? null : _confirmAndMarkInactive,
-                icon: _markingInactive
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
-                      )
-                    : const Icon(Icons.block_outlined, color: AppColors.error),
-                label: Text(
-                  _markingInactive ? 'Updating…' : 'Mark Inactive',
-                  style: const TextStyle(color: AppColors.error),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.error),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium)),
-                ),
-              ),
-            ),
+          _statusToggleButton(staff),
           const SizedBox(height: AppSpacing.verticalMedium),
         ],
+      ),
+    );
+  }
+
+  Widget _statusToggleButton(StaffDetailResponse staff) {
+    final goingInactive = staff.isActive;
+    final color = goingInactive ? AppColors.error : AppColors.success;
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _markingInactive ? null : _confirmAndToggleStatus,
+        icon: _markingInactive
+            ? SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: color),
+              )
+            : Icon(
+                goingInactive ? Icons.block_outlined : Icons.check_circle_outline,
+                color: color,
+              ),
+        label: Text(
+          _markingInactive ? 'Updating…' : (goingInactive ? 'Mark Inactive' : 'Mark Active'),
+          style: TextStyle(color: color),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: color),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium)),
+        ),
       ),
     );
   }

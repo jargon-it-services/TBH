@@ -61,7 +61,6 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
     'Employee',
     'Receptionist',
   ];
-  static const List<String> _statusOptions = ['Active', 'Inactive'];
   static const List<String> _allowLoginOptions = ['Yes', 'No'];
   static const List<String> _appRoles = ['Branch Admin', 'Manager', 'Employee'];
 
@@ -86,7 +85,10 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
   // ------------- Employment Details -------------
   late String _employeeCode = widget.existing?.employeeCode ?? '';
   bool _fetchingEmployeeCode = false;
-  DateTime? _joiningDate;
+  late DateTime? _joiningDate =
+      widget.existing != null && widget.existing!.joiningDate.isNotEmpty
+      ? DateTime.tryParse(widget.existing!.joiningDate)
+      : null;
   late String _designation =
       widget.existing != null && widget.existing!.designation.isNotEmpty
       ? widget.existing!.designation
@@ -96,21 +98,29 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
   // config call (see _loadFormConfig) rather than a hardcoded list —
   // _specialist starts as whatever the staff member already has (edit
   // mode) or empty until the config loads in (create mode).
-  String _specialist = '';
+  late String _specialist = widget.existing?.specialist ?? '';
   List<String> _specialistOptions = [];
 
-  int? _branchId;
-  String? _branchName;
+  late int? _branchId = widget.existing?.branchId;
+  late String? _branchName = (widget.existing?.branchName.isNotEmpty ?? false)
+      ? widget.existing!.branchName
+      : null;
   List<BranchModel> _branchOptions = [];
 
-  int? _salaryRuleId;
-  String? _salaryRuleName;
+  late int? _salaryRuleId = widget.existing?.salaryRuleId;
+  late String? _salaryRuleName =
+      (widget.existing?.salaryRuleName.isNotEmpty ?? false)
+      ? widget.existing!.salaryRuleName
+      : null;
   List<SalaryRuleModel> _salaryRuleOptions = [];
 
   bool _loadingConfig = true;
 
+  // Not shown as a field in this form — a separate Mark
+  // Active/Inactive action on Staff Details handles status changes.
+  // Defaults to Active for a brand-new staff member; Edit Staff
+  // carries over whatever status they already have, untouched.
   late String _status = widget.existing?.status ?? 'Active';
-  late String _originalStatus = widget.existing?.status ?? 'Active';
 
   // ------------- Application Access -------------
   late String _allowAppLogin = (widget.existing?.allowAppLogin ?? false)
@@ -127,21 +137,6 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
   void initState() {
     super.initState();
     _loadFormConfig();
-    _joiningDate =
-        widget.existing != null && widget.existing!.joiningDate.isNotEmpty
-        ? DateTime.tryParse(widget.existing!.joiningDate)
-        : null;
-    _specialist = widget.existing?.specialist ?? '';
-
-    _branchId = widget.existing?.branchId;
-    _branchName = (widget.existing?.branchName.isNotEmpty ?? false)
-        ? widget.existing!.branchName
-        : null;
-
-    _salaryRuleId = widget.existing?.salaryRuleId;
-    _salaryRuleName = (widget.existing?.salaryRuleName.isNotEmpty ?? false)
-        ? widget.existing!.salaryRuleName
-        : null;
     if (!widget.isEdit) _fetchSuggestedEmployeeCode();
   }
 
@@ -201,49 +196,6 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
     return true;
   }
 
-  /// Active → Inactive is a meaningful, disruptive change (the staff
-  /// member may lose app access/scheduling visibility), so Edit Staff
-  /// confirms it before saving — same pattern
-  /// `AddEditServicePage._confirmStatusChangeIfNeeded` uses.
-  Future<bool> _confirmStatusChangeIfNeeded() async {
-    final goingInactive =
-        widget.isEdit && _originalStatus == 'Active' && _status != 'Active';
-    if (!goingInactive) return true;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.pageBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.large),
-        ),
-        title: const Text(
-          'Mark this staff member Inactive?',
-          style: AppTextStyles.h3,
-        ),
-        content: Text(
-          '${_fullName.isEmpty ? "This staff member" : _fullName} will be marked '
-          'Inactive and may lose scheduling/app access until reactivated.',
-          style: AppTextStyles.body,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Mark Inactive',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    return confirmed ?? false;
-  }
-
   Future<void> _save(ActionSliderController controller) async {
     if (_isSaving) return;
 
@@ -253,7 +205,6 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
         return;
       }
       if (!_validateSelections()) return;
-      if (!await _confirmStatusChangeIfNeeded()) return;
 
       if (!mounted) return;
       setState(() => _isSaving = true);
@@ -494,22 +445,11 @@ class _AddEditStaffPageState extends State<AddEditStaffPage> {
                       ),
                 _branchPicker(),
                 _salaryRulePicker(),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: AppSpacing.verticalMedium,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _sectionTitle('Status'),
-                      SegmentedToggle(
-                        options: _statusOptions,
-                        value: _status,
-                        onChanged: (val) => setState(() => _status = val),
-                      ),
-                    ],
-                  ),
-                ),
+                // Status isn't shown here — a separate Mark
+                // Active/Inactive action on Staff Details handles
+                // status changes; this form only sets Active by
+                // default for a new staff member and carries over the
+                // existing status untouched on edit.
                 const SizedBox(height: AppSpacing.verticalSmall),
                 _sectionTitle('Application Access'),
                 Padding(
