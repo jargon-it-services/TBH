@@ -26,7 +26,9 @@
     "management": {
       "total_firms": 22,
       "total_staff": 220,
-      "total_services": 224
+      "total_services": 224,
+      "total_expenses": 12,
+      "total_salary_rules": 5
     },
 
     "feature_lock": []

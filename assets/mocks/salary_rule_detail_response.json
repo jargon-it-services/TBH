@@ -1,0 +1,16 @@
+{
+  "status": true,
+  "message": "Salary rule details fetched successfully",
+  "data": {
+    "id": 3,
+    "name": "Fixed + Commission Hybrid",
+    "description": "Base fixed salary for stylists; per-service commission is configured on each Service.",
+    "salary_type": "Hybrid",
+    "fixed_salary": 15000,
+    "monthly_target": 50000,
+    "target_bonus": 2000,
+    "allow_advance_recovery": true,
+    "max_recovery_per_month": 3000,
+    "status": "Active"
+  }
+}

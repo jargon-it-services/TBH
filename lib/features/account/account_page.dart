@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tbh/features/branches/branch_list_page.dart';
+import 'package:tbh/features/expenses/expense_list_page.dart';
+import 'package:tbh/features/salary_rules/salary_rule_list_page.dart';
 import 'package:tbh/features/services/service_list_page.dart';
 import 'package:tbh/features/staff/staff_list_page.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -153,6 +155,20 @@ class _AccountPageState extends State<AccountPage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const StaffListPage()),
+    );
+  }
+
+  Future<void> _handleExpenses() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ExpenseListPage()),
+    );
+  }
+
+  Future<void> _handleSalaryRules() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SalaryRuleListPage()),
     );
   }
 
@@ -551,9 +567,25 @@ class _AccountPageState extends State<AccountPage>
                   ?.totalServices,
               onTap: _handleServices,
             ),
-            const _AccountTile(
+            _AccountTile(
+              icon: Icons.receipt_long_outlined,
+              title: "Expenses",
+              count: SessionManager
+                  .instance
+                  .currentSession
+                  ?.management
+                  ?.totalExpenses,
+              onTap: _handleExpenses,
+            ),
+            _AccountTile(
               icon: Icons.rule_folder_outlined,
               title: "Salary Rule",
+              count: SessionManager
+                  .instance
+                  .currentSession
+                  ?.management
+                  ?.totalSalaryRules,
+              onTap: _handleSalaryRules,
             ),
           ],
         ),

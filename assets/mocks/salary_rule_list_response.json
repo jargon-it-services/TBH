@@ -1,0 +1,36 @@
+{
+  "status": true,
+  "message": "Salary rules fetched successfully",
+  "data": {
+    "salary_rules": [
+      {
+        "id": 1,
+        "name": "Standard Fixed Salary",
+        "salary_type": "Fixed Salary",
+        "fixed_salary": 25000,
+        "status": "Active"
+      },
+      {
+        "id": 2,
+        "name": "Commission Based",
+        "salary_type": "Service Commission",
+        "fixed_salary": null,
+        "status": "Active"
+      },
+      {
+        "id": 3,
+        "name": "Fixed + Commission Hybrid",
+        "salary_type": "Hybrid",
+        "fixed_salary": 15000,
+        "status": "Active"
+      },
+      {
+        "id": 4,
+        "name": "Trainee Salary Rule",
+        "salary_type": "Fixed Salary",
+        "fixed_salary": 10000,
+        "status": "Inactive"
+      }
+    ]
+  }
+}

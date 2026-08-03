@@ -1,0 +1,53 @@
+{
+  "status": true,
+  "message": "Expenses fetched successfully",
+  "data": {
+    "expenses": [
+      {
+        "id": 1,
+        "name": "Rent",
+        "description": "Monthly branch premises rent",
+        "all_branches": true,
+        "branches": [],
+        "status": "Active"
+      },
+      {
+        "id": 2,
+        "name": "Electricity",
+        "description": "Monthly electricity bills",
+        "all_branches": true,
+        "branches": [],
+        "status": "Active"
+      },
+      {
+        "id": 3,
+        "name": "Marketing",
+        "description": "Ads and promotional spends",
+        "all_branches": false,
+        "branches": [
+          { "id": 4, "name": "Hitech City Branch" }
+        ],
+        "status": "Active"
+      },
+      {
+        "id": 4,
+        "name": "Equipment Purchase",
+        "description": "One-off equipment and furniture purchases",
+        "all_branches": false,
+        "branches": [
+          { "id": 1, "name": "MG Road Branch" },
+          { "id": 4, "name": "Hitech City Branch" }
+        ],
+        "status": "Inactive"
+      },
+      {
+        "id": 5,
+        "name": "Staff Welfare",
+        "description": "Staff meals and welfare spends",
+        "all_branches": true,
+        "branches": [],
+        "status": "Active"
+      }
+    ]
+  }
+}

@@ -1,20 +1,31 @@
+import '../../services/DataModels/salary_rule_detail_model.dart';
+import '../../services/DataModels/salary_rule_list_model.dart';
 import '../../services/DataModels/salary_rule_model.dart';
 import '../api_call_helper.dart';
 import '../api_response.dart';
 import '../dio_client.dart';
 
-/// Salary Rules API.
+/// Salary Rules API — catalog (for the Staff form's picker) + full
+/// Salary Rules Management (list/detail/create/update/delete).
 ///
-/// Only the read side needed to populate the Staff form's Salary Rule
-/// picker exists here — same scope-limiting choice the pre-existing
-/// `ServicesApi.fetchServices()` catalog method made for the Branch
-/// form's service picker. Follows the exact same [callApi] pattern as
-/// every other API class, so nothing new is introduced architecturally.
+/// The catalog method (`fetchSalaryRules`) previously existed alone,
+/// added only so the Staff form could auto-fetch its Salary Rule
+/// picker. The management endpoints are added here rather than in a
+/// separate API class so every Salary-Rule-related network call still
+/// lives in one place, same as `ServicesApi` owns both the Branch
+/// picker's catalog and full Service Management. Uses the shared
+/// [callApi] helper exactly like every other API class, so nothing new
+/// is introduced architecturally.
+///
+/// [DioClient] only exposes `get`/`post` (no `put`/`delete`), so
+/// create, update, and delete all go through POST, matching every
+/// other mutation endpoint in the app.
 class SalaryRulesApi {
   final DioClient _client = DioClient();
 
   /// GET /salary-rules — the list a staff member's Salary Rule is
-  /// picked from.
+  /// picked from. Left untouched: still returns the lightweight
+  /// [SalaryRuleModel] shape the Staff Create/Edit form relies on.
   Future<ApiResponse<List<SalaryRuleModel>>> fetchSalaryRules() {
     return callApi<List<SalaryRuleModel>>(
       mockAsset: 'assets/mocks/salary_rules_response.json',
@@ -23,6 +34,58 @@ class SalaryRulesApi {
           .map((e) => SalaryRuleModel.fromJson(e))
           .toList(),
       fallbackErrorMessage: "We couldn't load salary rules right now.",
+    );
+  }
+
+  /// GET /salary-rules/list — the full Salary Rule List screen's data.
+  Future<ApiResponse<List<SalaryRuleListItem>>> fetchSalaryRuleList() {
+    return callApi<List<SalaryRuleListItem>>(
+      mockAsset: 'assets/mocks/salary_rule_list_response.json',
+      liveCall: () => _client.get('/salary-rules/list'),
+      parse: (data) => (data['salary_rules'] as List)
+          .map((e) => SalaryRuleListItem.fromJson(e))
+          .toList(),
+      fallbackErrorMessage: "We couldn't load salary rules right now.",
+    );
+  }
+
+  /// GET /salary-rules/{ruleId}/details
+  Future<ApiResponse<SalaryRuleDetailResponse>> fetchSalaryRuleDetail(int ruleId) {
+    return callApi<SalaryRuleDetailResponse>(
+      mockAsset: 'assets/mocks/salary_rule_detail_response.json',
+      liveCall: () => _client.get('/salary-rules/$ruleId/details'),
+      parse: (data) => SalaryRuleDetailResponse.fromJson(data),
+      fallbackErrorMessage: "We couldn't load this salary rule's details.",
+    );
+  }
+
+  /// POST /salary-rules — create a new salary rule.
+  Future<ApiResponse<bool>> createSalaryRule(Map<String, dynamic> payload) {
+    return callApi<bool>(
+      mockAsset: 'assets/mocks/salary_rule_save_response.json',
+      liveCall: () => _client.post('/salary-rules', data: payload),
+      parse: (data) => (data['saved'] as bool?) ?? true,
+      fallbackErrorMessage: 'Failed to create salary rule',
+    );
+  }
+
+  /// POST /salary-rules/{ruleId} — update an existing salary rule.
+  Future<ApiResponse<bool>> updateSalaryRule(int ruleId, Map<String, dynamic> payload) {
+    return callApi<bool>(
+      mockAsset: 'assets/mocks/salary_rule_save_response.json',
+      liveCall: () => _client.post('/salary-rules/$ruleId', data: payload),
+      parse: (data) => (data['saved'] as bool?) ?? true,
+      fallbackErrorMessage: 'Failed to update salary rule',
+    );
+  }
+
+  /// POST /salary-rules/{ruleId}/delete
+  Future<ApiResponse<bool>> deleteSalaryRule(int ruleId) {
+    return callApi<bool>(
+      mockAsset: 'assets/mocks/salary_rule_delete_response.json',
+      liveCall: () => _client.post('/salary-rules/$ruleId/delete'),
+      parse: (data) => (data['deleted'] as bool?) ?? true,
+      fallbackErrorMessage: 'Failed to delete salary rule',
     );
   }
 }

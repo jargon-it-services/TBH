@@ -1,0 +1,14 @@
+{
+  "status": true,
+  "message": "Expense details fetched successfully",
+  "data": {
+    "id": 3,
+    "name": "Marketing",
+    "description": "Ads, social media promotions, and other marketing spends.",
+    "all_branches": false,
+    "branches": [
+      { "id": 4, "name": "Hitech City Branch" }
+    ],
+    "status": "Active"
+  }
+}

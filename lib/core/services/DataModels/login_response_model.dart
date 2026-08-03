@@ -162,11 +162,15 @@ class LoginManagementInfo {
   final int totalFirms;
   final int totalStaff;
   final int totalServices;
+  final int totalExpenses;
+  final int totalSalaryRules;
 
   const LoginManagementInfo({
     required this.totalFirms,
     required this.totalStaff,
     required this.totalServices,
+    this.totalExpenses = 0,
+    this.totalSalaryRules = 0,
   });
 
   factory LoginManagementInfo.fromJson(Map<String, dynamic> json) {
@@ -174,6 +178,8 @@ class LoginManagementInfo {
       totalFirms: (json['total_firms'] as num?)?.toInt() ?? 0,
       totalStaff: (json['total_staff'] as num?)?.toInt() ?? 0,
       totalServices: (json['total_services'] as num?)?.toInt() ?? 0,
+      totalExpenses: (json['total_expenses'] as num?)?.toInt() ?? 0,
+      totalSalaryRules: (json['total_salary_rules'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -181,5 +187,7 @@ class LoginManagementInfo {
     'total_firms': totalFirms,
     'total_staff': totalStaff,
     'total_services': totalServices,
+    'total_expenses': totalExpenses,
+    'total_salary_rules': totalSalaryRules,
   };
 }

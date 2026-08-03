@@ -1,0 +1,7 @@
+{
+  "status": true,
+  "message": "Salary rule deleted successfully",
+  "data": {
+    "deleted": true
+  }
+}
