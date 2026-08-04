@@ -62,6 +62,8 @@ class _Step4ReviewState extends State<Step4Review>
           zip: d.zip,
           phone: d.phone,
           businessEmail: d.accountEmail,
+          gstin: d.gstin,
+          accountPhoto: d.accountPhoto,
           ownerName: d.ownerName,
           designation: d.designation,
           idProofType: d.idProofType,
@@ -95,12 +97,14 @@ class _Step4ReviewState extends State<Step4Review>
             title: 'Account Information',
             onEdit: () => widget.onJumpToStep(0),
             rows: {
+              'Account Photo': d.accountPhoto != null ? 'Added' : '',
               'Account Name': d.accountName,
               'Address': d.address,
               'City / State': '${d.city}, ${d.state}',
               'ZIP': d.zip,
               'Phone': d.phone,
               'Account Email': d.accountEmail,
+              'GSTIN': d.gstin,
             },
           ),
           _ReviewSection(

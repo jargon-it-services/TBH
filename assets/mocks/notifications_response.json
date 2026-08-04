@@ -1,0 +1,206 @@
+{
+  "status": true,
+  "message": "Notifications loaded successfully.",
+  "data": {
+    "unread_count": 6,
+    "total_count": 14,
+    "notifications": [
+      {
+        "id": 114,
+        "title": "Payment Received",
+        "message": "Payment of ₹5,200 received successfully.",
+        "icon": "payments",
+        "image": null,
+        "priority": "normal",
+        "is_read": false,
+        "created_at": "2026-08-03T09:10:00Z",
+        "display_mode": "direct",
+        "destination": { "type": "payment", "reference_id": "PAY10021", "url": null },
+        "actions": []
+      },
+      {
+        "id": 113,
+        "title": "Payment Failed",
+        "message": "Your payment of ₹2,000 could not be processed.",
+        "icon": "error",
+        "image": null,
+        "priority": "high",
+        "is_read": false,
+        "created_at": "2026-08-03T08:40:00Z",
+        "display_mode": "notification_detail",
+        "destination": { "type": "payment", "reference_id": "PAY10022", "url": null },
+        "actions": [
+          { "title": "Retry Payment", "destination": { "type": "payment", "reference_id": "PAY10022" } },
+          { "title": "Contact Support", "destination": { "type": "webview", "url": "https://support.company.com" } }
+        ]
+      },
+      {
+        "id": 112,
+        "title": "Transaction Successful",
+        "message": "Your transaction TXN10001 was completed successfully.",
+        "icon": "check_circle",
+        "image": null,
+        "priority": "normal",
+        "is_read": true,
+        "created_at": "2026-08-02T18:05:00Z",
+        "display_mode": "direct",
+        "destination": { "type": "transaction", "reference_id": "TXN10001", "url": null },
+        "actions": []
+      },
+      {
+        "id": 111,
+        "title": "Subscription Expiring",
+        "message": "Your subscription expires in 5 days.",
+        "icon": "schedule",
+        "image": null,
+        "priority": "high",
+        "is_read": false,
+        "created_at": "2026-08-02T11:00:00Z",
+        "display_mode": "notification_detail",
+        "destination": { "type": "subscription", "reference_id": "SUB001", "url": null },
+        "actions": [
+          { "title": "Renew Now", "destination": { "type": "subscription", "reference_id": "SUB001" } }
+        ]
+      },
+      {
+        "id": 110,
+        "title": "Payslip Generated",
+        "message": "Your payslip for July 2026 is ready.",
+        "icon": "receipt_long",
+        "image": null,
+        "priority": "normal",
+        "is_read": true,
+        "created_at": "2026-08-01T07:30:00Z",
+        "display_mode": "direct",
+        "destination": { "type": "payslip", "reference_id": "PS202607", "url": null },
+        "actions": []
+      },
+      {
+        "id": 109,
+        "title": "Monthly P&L Ready",
+        "message": "Your Profit & Loss report for July 2026 is ready to view.",
+        "icon": "analytics",
+        "image": null,
+        "priority": "normal",
+        "is_read": false,
+        "created_at": "2026-07-31T20:15:00Z",
+        "display_mode": "notification_detail",
+        "destination": { "type": "pnl", "reference_id": "JUL2026", "url": null },
+        "actions": [
+          { "title": "View Report", "destination": { "type": "pnl", "reference_id": "JUL2026" } }
+        ]
+      },
+      {
+        "id": 108,
+        "title": "Revenue Summary Ready",
+        "message": "Your revenue and expense summary for July is ready.",
+        "icon": "trending_up",
+        "image": null,
+        "priority": "normal",
+        "is_read": true,
+        "created_at": "2026-07-30T09:00:00Z",
+        "display_mode": "direct",
+        "destination": { "type": "revenue_summary", "reference_id": "SUM202607", "url": null },
+        "actions": []
+      },
+      {
+        "id": 107,
+        "title": "Performance Report Ready",
+        "message": "Your staff performance report for July is ready.",
+        "icon": "insights",
+        "image": null,
+        "priority": "normal",
+        "is_read": true,
+        "created_at": "2026-07-29T14:20:00Z",
+        "display_mode": "notification_detail",
+        "destination": { "type": "performance", "reference_id": "PERF202607", "url": null },
+        "actions": [
+          { "title": "View Report", "destination": { "type": "performance", "reference_id": "PERF202607" } }
+        ]
+      },
+      {
+        "id": 106,
+        "title": "Privacy Policy Updated",
+        "message": "We've updated our privacy policy. Please review the changes.",
+        "icon": "info",
+        "image": null,
+        "priority": "low",
+        "is_read": true,
+        "created_at": "2026-07-28T10:00:00Z",
+        "display_mode": "direct",
+        "destination": { "type": "webview", "reference_id": null, "url": "https://company.com/privacy" },
+        "actions": []
+      },
+      {
+        "id": 105,
+        "title": "Rate Our App",
+        "message": "Enjoying the app? Leave us a rating on the Play Store.",
+        "icon": "star",
+        "image": null,
+        "priority": "low",
+        "is_read": true,
+        "created_at": "2026-07-27T09:00:00Z",
+        "display_mode": "direct",
+        "destination": { "type": "browser", "reference_id": null, "url": "https://play.google.com/store/apps/details?id=com.company.app" },
+        "actions": []
+      },
+      {
+        "id": 104,
+        "title": "50% Off Premium",
+        "message": "Upgrade to Premium today and save 50% for your first 3 months.",
+        "icon": "payments",
+        "image": null,
+        "priority": "normal",
+        "is_read": false,
+        "created_at": "2026-07-26T12:30:00Z",
+        "display_mode": "notification_detail",
+        "destination": { "type": "subscription", "reference_id": "PREM2026", "url": null },
+        "actions": [
+          { "title": "Upgrade", "destination": { "type": "subscription", "reference_id": "PREM2026" } },
+          { "title": "Learn More", "destination": { "type": "webview", "url": "https://company.com/offers" } }
+        ]
+      },
+      {
+        "id": 103,
+        "title": "New Login Detected",
+        "message": "We noticed a new login to your account from a new device.",
+        "icon": "warning",
+        "image": null,
+        "priority": "high",
+        "is_read": false,
+        "created_at": "2026-07-25T21:45:00Z",
+        "display_mode": "notification_detail",
+        "destination": { "type": "none", "reference_id": null, "url": null },
+        "actions": [
+          { "title": "Change Password", "destination": { "type": "webview", "url": "https://company.com/security" } }
+        ]
+      },
+      {
+        "id": 102,
+        "title": "Scheduled Maintenance",
+        "message": "The app will be under maintenance on Aug 10, 2026 from 1 AM to 3 AM.",
+        "icon": "info",
+        "image": null,
+        "priority": "low",
+        "is_read": true,
+        "created_at": "2026-07-20T08:00:00Z",
+        "display_mode": "notification_detail",
+        "destination": { "type": "none", "reference_id": null, "url": null },
+        "actions": []
+      },
+      {
+        "id": 101,
+        "title": "Welcome to TBH",
+        "message": "Thanks for joining! Here's a quick look at what you can do.",
+        "icon": "check_circle",
+        "image": null,
+        "priority": "normal",
+        "is_read": true,
+        "created_at": "2026-07-18T06:00:00Z",
+        "display_mode": "notification_detail",
+        "destination": { "type": "none", "reference_id": null, "url": null },
+        "actions": []
+      }
+    ]
+  }
+}

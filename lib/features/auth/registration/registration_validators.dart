@@ -59,6 +59,21 @@ class RegistrationValidators {
     return null;
   }
 
+  /// GSTIN is optional everywhere it appears (Registration's Account
+  /// Information step, Account Info) — this only validates format once
+  /// something's actually been typed; an empty value is always valid.
+  static String? gstin(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final trimmed = value.trim().toUpperCase();
+    // Indian GSTIN format: 2-digit state code, 10-char PAN, 1-digit
+    // entity code, 'Z' by default, 1 checksum char.
+    final gstinRegex = RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$');
+    if (!gstinRegex.hasMatch(trimmed)) {
+      return 'Enter a valid 15-character GSTIN';
+    }
+    return null;
+  }
+
   /// Validates the ID number against the format expected for
   /// [idProofType]. PAN and Aadhaar get real format checks (both have a
   /// well-defined, fixed structure); every other ID type keeps the

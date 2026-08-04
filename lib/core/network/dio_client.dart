@@ -267,6 +267,23 @@ class DioClient {
     }
   }
 
+  /// Mirrors [get]/[post] exactly (same pre-flight connectivity check,
+  /// same exception mapping). Added for the Notification Module's
+  /// `DELETE /notifications/{id}` / `DELETE /notifications` /
+  /// `DELETE /notifications/read` calls -- no prior feature has needed
+  /// a DELETE request before now.
+  Future<Response> delete(
+    String path, {
+    dynamic data,
+  }) async {
+    _ensureOnlineOrThrow();
+    try {
+      return await _dio.delete(path, data: data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   /// Fails fast, before touching Dio/the network at all, if the device
   /// is known to be offline. Reads a cached, synchronous flag —
   /// [ConnectivityService.isOnline] — so this adds no latency to any

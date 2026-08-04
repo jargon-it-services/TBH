@@ -5,6 +5,7 @@ import '../../../features/splash/splash_page.dart';
 import 'core/connectivity/connectivity_service.dart';
 import 'core/navigation/app_navigator.dart';
 import 'core/referral/deep_link_service.dart';
+import 'core/services/notification_push_service.dart';
 import 'core/theme/app_colors.dart';
 import 'core/widgets/connectivity_banner.dart';
 import 'features/auth/login_page.dart';
@@ -21,6 +22,12 @@ void main() {
   // independently of session/auth setup — DeepLinkService has no
   // concept of authentication and must never block app launch.
   DeepLinkService.instance.initialize();
+  // Same fire-and-forget treatment: initializes OneSignal, requests
+  // notification permission, and wires the foreground/click listeners.
+  // No-ops safely (see NotificationPushService.initialize) until
+  // Env.oneSignalAppId is set to a real App ID, so this is safe to
+  // ship even before OneSignal is configured.
+  NotificationPushService.initialize();
   runApp(const MyApp());
 }
 

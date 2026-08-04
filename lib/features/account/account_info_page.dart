@@ -120,6 +120,11 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
             titleIcon: Icons.store_mall_directory_outlined,
             rows: [
               InfoRowData(
+                icon: Icons.tag_outlined,
+                label: 'Account Code',
+                value: info.accountCode,
+              ),
+              InfoRowData(
                 icon: Icons.badge_outlined,
                 label: 'Account Name',
                 value: info.accountName,
@@ -142,6 +147,11 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
               ),
               InfoRowData(icon: Icons.location_city_outlined, label: 'City', value: info.city),
               InfoRowData(icon: Icons.map_outlined, label: 'State', value: info.state),
+              InfoRowData(
+                icon: Icons.receipt_long_outlined,
+                label: 'GSTIN',
+                value: info.gstin.isEmpty ? 'Not provided' : info.gstin,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.verticalMedium),
@@ -212,11 +222,17 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
     return CardWrapper(
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: AppColors.primary.withOpacity(0.12),
-            child: const Icon(Icons.store_mall_directory_outlined, color: AppColors.primary),
-          ),
+          info.hasAccountPhoto
+              ? CircleAvatar(
+                  radius: 30,
+                  backgroundColor: AppColors.primary.withOpacity(0.12),
+                  backgroundImage: NetworkImage(info.accountPhotoUrl!),
+                )
+              : CircleAvatar(
+                  radius: 30,
+                  backgroundColor: AppColors.primary.withOpacity(0.12),
+                  child: const Icon(Icons.store_mall_directory_outlined, color: AppColors.primary),
+                ),
           const SizedBox(width: AppSpacing.horizontalMedium),
           Expanded(
             child: Column(

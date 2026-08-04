@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:action_slider/action_slider.dart';
 import 'package:flutter/material.dart';
 
@@ -9,19 +11,20 @@ import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/inline_action_button.dart';
+import '../../core/widgets/logo_picker_field.dart';
 import '../../core/widgets/slide_action_button.dart';
 import '../auth/registration/registration_validators.dart';
 
 /// Edit Account Info form.
 ///
-/// Only five fields are ever editable — Phone Number, Address,
-/// Pincode/ZIP (City/State auto-derive from it, exactly like
-/// Registration's `Step1ContactInfo`), Full Name, and Designation.
-/// Every other Account Info field (Account Name, Account Email, ID
-/// Proof Type/Number/Document, Login Email) is shown as a disabled
-/// [AppTextField] instead — visible for context, but never an input —
-/// same disabled-field convention already used for Service's Type
-/// field and Staff's read-only fields elsewhere in the app.
+/// Shows only what's actually editable — Account Photo/Logo, Phone
+/// Number, Address, Pincode/ZIP (City/State auto-derive from it, shown
+/// read-only right below once verified), Full Name, Designation, and
+/// GSTIN. Everything else (Account Code, Account Name, Account Email,
+/// ID Proof details, Login Email) lives on the Account Info screen only
+/// — deliberately left off this form entirely, rather than shown
+/// disabled, so there's no ambiguity about what can and can't change
+/// here.
 class EditAccountInfoPage extends StatefulWidget {
   final AccountInfoResponse existing;
 
@@ -41,8 +44,12 @@ class _EditAccountInfoPageState extends State<EditAccountInfoPage> {
   late String _zip = widget.existing.zip;
   late String _city = widget.existing.city;
   late String _state = widget.existing.state;
+  late String _gstin = widget.existing.gstin;
   late String _ownerName = widget.existing.ownerName;
   late String _designation = widget.existing.designation;
+
+  File? _pickedAccountPhoto;
+  bool _accountPhotoRemoved = false;
 
   bool _verifyingZip = false;
   bool _zipVerified = false;
@@ -110,11 +117,16 @@ class _EditAccountInfoPageState extends State<EditAccountInfoPage> {
       'zip': _zip.trim(),
       'city': _city,
       'state': _state,
+      'gstin': _gstin.trim(),
       'owner_name': _ownerName.trim(),
       'designation': _designation.trim(),
     };
 
-    final response = await _api.updateAccountInfo(payload);
+    final response = await _api.updateAccountInfo(
+      payload,
+      accountPhoto: _pickedAccountPhoto,
+      removeAccountPhoto: _accountPhotoRemoved,
+    );
     if (!mounted) return;
     setState(() => _isSaving = false);
 
@@ -149,21 +161,25 @@ class _EditAccountInfoPageState extends State<EditAccountInfoPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _sectionTitle('Account Information'),
-                AppTextField(
-                  label: 'Account Name',
-                  icon: Icons.badge_outlined,
-                  initialValue: widget.existing.accountName,
-                  enabled: false,
-                  readOnly: true,
+                _editableNote(),
+                const SizedBox(height: AppSpacing.verticalLarge),
+                LogoPickerField(
+                  title: 'Account Photo / Logo (optional)',
+                  placeholderIcon: Icons.store_mall_directory_outlined,
+                  existingUrl: widget.existing.accountPhotoUrl,
+                  pickedFile: _pickedAccountPhoto,
+                  removed: _accountPhotoRemoved,
+                  allowRemove: widget.existing.hasAccountPhoto,
+                  onPicked: (file) => setState(() {
+                    _pickedAccountPhoto = file;
+                    _accountPhotoRemoved = false;
+                  }),
+                  onRemoved: () => setState(() {
+                    _pickedAccountPhoto = null;
+                    _accountPhotoRemoved = true;
+                  }),
                 ),
-                AppTextField(
-                  label: 'Account Email',
-                  icon: Icons.email_outlined,
-                  initialValue: widget.existing.accountEmail,
-                  enabled: false,
-                  readOnly: true,
-                ),
+                const SizedBox(height: AppSpacing.verticalMedium),
                 AppTextField(
                   label: 'Phone Number',
                   icon: Icons.phone_outlined,
@@ -187,8 +203,7 @@ class _EditAccountInfoPageState extends State<EditAccountInfoPage> {
                   initialValue: _zip,
                   onChanged: (v) {
                     _zip = v;
-                    if (_zipError != null) setState(() => _zipError = null);
-                    if (_zip.trim() != _lastVerifiedZip) setState(() {});
+                    setState(() => _zipError = null);
                   },
                   validator: RegistrationValidators.zip,
                   suffixIcon: _verifyingZip
@@ -237,10 +252,14 @@ class _EditAccountInfoPageState extends State<EditAccountInfoPage> {
                       ],
                     ),
                   ),
-                // City/State are never picked directly — same as
-                // Registration's Step1ContactInfo, they only ever
-                // change via the Pincode/ZIP Verify flow above.
+                // City/State are never picked directly — they only
+                // change via the Pincode/ZIP Verify flow above. Each
+                // is keyed to its own current value so the field
+                // actually remounts and shows the freshly-verified
+                // text — a plain `initialValue` change alone won't
+                // update an already-built TextFormField.
                 AppTextField(
+                  key: ValueKey('account-info-city-$_city'),
                   label: 'City',
                   icon: Icons.location_city_outlined,
                   initialValue: _city,
@@ -248,11 +267,20 @@ class _EditAccountInfoPageState extends State<EditAccountInfoPage> {
                   readOnly: true,
                 ),
                 AppTextField(
+                  key: ValueKey('account-info-state-$_state'),
                   label: 'State',
                   icon: Icons.map_outlined,
                   initialValue: _state,
                   enabled: false,
                   readOnly: true,
+                ),
+                AppTextField(
+                  label: 'GSTIN (optional)',
+                  icon: Icons.receipt_long_outlined,
+                  textCapitalization: TextCapitalization.characters,
+                  initialValue: _gstin,
+                  onChanged: (v) => _gstin = v,
+                  validator: RegistrationValidators.gstin,
                 ),
                 const SizedBox(height: AppSpacing.verticalSmall),
                 _sectionTitle('Owner Details'),
@@ -270,29 +298,6 @@ class _EditAccountInfoPageState extends State<EditAccountInfoPage> {
                   onChanged: (v) => _designation = v,
                   validator: (v) => RegistrationValidators.required(v, 'Designation'),
                 ),
-                AppTextField(
-                  label: 'ID Proof Type',
-                  icon: Icons.badge_outlined,
-                  initialValue: widget.existing.idProofType,
-                  enabled: false,
-                  readOnly: true,
-                ),
-                AppTextField(
-                  label: 'ID Proof Number',
-                  icon: Icons.confirmation_number_outlined,
-                  initialValue: widget.existing.idProofNumber,
-                  enabled: false,
-                  readOnly: true,
-                ),
-                const SizedBox(height: AppSpacing.verticalSmall),
-                _sectionTitle('Login'),
-                AppTextField(
-                  label: 'Login Email',
-                  icon: Icons.alternate_email,
-                  initialValue: widget.existing.loginEmail,
-                  enabled: false,
-                  readOnly: true,
-                ),
                 const SizedBox(height: AppSpacing.verticalLarge),
                 SlideActionButton(
                   label: 'Slide to Save',
@@ -304,6 +309,38 @@ class _EditAccountInfoPageState extends State<EditAccountInfoPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Sets expectations up front: this form only ever shows fields that
+  /// can change. Everything else is on the Account Info screen behind
+  /// it — addresses the "which fields are editable?" ambiguity
+  /// directly, rather than mixing editable and disabled fields
+  /// together.
+  Widget _editableNote() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(AppRadius.medium),
+        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Only the fields below can be updated. Everything else '
+              '(Account Code, Account Name, Account Email, ID Proof, '
+              'Login Email) is shown on the Account Info screen and '
+              "can't be changed here.",
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textPrimary),
+            ),
+          ),
+        ],
       ),
     );
   }

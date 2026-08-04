@@ -5,6 +5,7 @@ import '../../../core/services/DataModels/dashboard_models.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_fonts.dart';
 import '../../../core/widgets/sticky_org_header.dart';
+import '../../notifications/notification_list_page.dart';
 
 /// Sticky header for Account Admin / Branch Admin / Manager / Employee
 /// — the four roles whose header now arrives as `dashboard_header`
@@ -111,7 +112,10 @@ class _MergedDashboardHeaderState extends State<MergedDashboardHeader> {
             }
           : null,
       notificationCount: header.notificationCount,
-      onNotificationTap: () {},
+      onNotificationTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const NotificationListPage()),
+      ),
       profileInitials: header.profileInitials,
       onProfileTap: () {},
       allEntitiesLabel: 'All Branches',
@@ -133,12 +137,11 @@ class _MergedHeaderShimmer extends StatelessWidget {
       color: AppColors.primary,
       clipBehavior: Clip.antiAlias,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppRadius.large)),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(AppRadius.large),
+        ),
       ),
-      child: const SafeArea(
-        bottom: false,
-        child: SizedBox(height: 116),
-      ),
+      child: const SafeArea(bottom: false, child: SizedBox(height: 116)),
     );
   }
 }
@@ -165,16 +168,17 @@ class _MergedHeaderErrorBar extends StatelessWidget
       color: AppColors.primary,
       clipBehavior: Clip.antiAlias,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppRadius.large)),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(AppRadius.large),
+        ),
       ),
       child: SafeArea(
         bottom: false,
         child: MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaler: MediaQuery.textScalerOf(context).clamp(
-              minScaleFactor: 0.8,
-              maxScaleFactor: 1.2,
-            ),
+            textScaler: MediaQuery.textScalerOf(
+              context,
+            ).clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -190,7 +194,9 @@ class _MergedHeaderErrorBar extends StatelessWidget
                     message,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),

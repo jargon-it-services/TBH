@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../models/user_role.dart';
 import '../services/DataModels/login_response_model.dart';
+import '../services/notification_push_service.dart';
 import '../storage/secure_storage_service.dart';
 
 /// Authentication state of the app, as understood by [SessionManager].
@@ -245,6 +246,16 @@ class SessionManager {
     // Any future restoreSession() call after this point should reflect
     // the session we just saved, not a stale in-flight read from before login.
     _restoreFuture = Future.value(true);
+
+    // "Set external user id after login" (04_OneSignal_Integration.md) --
+    // hooked in here rather than in LoginPage so every path that ends
+    // in a saved session (including any future SSO/registration
+    // auto-login flow) stays in sync automatically. Fire-and-forget:
+    // push identity linkage must never block/fail the login flow
+    // itself, and NotificationPushService already no-ops safely if
+    // OneSignal isn't initialized.
+    final pushUserId = userInfo?.id.toString() ?? token;
+    NotificationPushService.registerExternalUserId(pushUserId);
   }
 
   /// Updates just the token (and optionally the refresh token) of an
@@ -345,6 +356,11 @@ class SessionManager {
     _session = null;
     _status = AuthStatus.unauthenticated;
     _restoreFuture = Future.value(false);
+
+    // "Remove association on logout" -- covers both an explicit
+    // Logout and a forced session-expiry logout with this one call,
+    // since both paths already funnel through clearSession().
+    NotificationPushService.removeExternalUserId();
   }
 
   String _encodeExtra({

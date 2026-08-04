@@ -2,6 +2,7 @@
   "status": true,
   "message": "Account info fetched successfully",
   "data": {
+    "account_code": "ACC-100234",
     "account_name": "Glow & Co Salon",
     "account_email": "accounts@glowandco.example",
     "phone": "9876500000",
@@ -9,6 +10,8 @@
     "city": "Bengaluru",
     "state": "Karnataka",
     "zip": "560025",
+    "gstin": "29ABCDE1234F1Z5",
+    "account_photo_url": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400",
     "owner_name": "Ananya Rao",
     "designation": "Founder",
     "id_proof_type": "PAN Card",

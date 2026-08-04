@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import '../../referral/invite_token_manager.dart';
+import '../../services/platform_info.dart';
 import '../api_call_helper.dart';
 import '../api_response.dart';
 import '../dio_client.dart';
@@ -15,11 +16,15 @@ class RegistrationResult {
   final String authToken;
   final String businessName;
   final String? businessId;
+  final String gstin;
+  final String? accountPhotoUrl;
 
   RegistrationResult({
     required this.authToken,
     required this.businessName,
     this.businessId,
+    this.gstin = '',
+    this.accountPhotoUrl,
   });
 
   factory RegistrationResult.fromJson(Map<String, dynamic> json) {
@@ -27,6 +32,8 @@ class RegistrationResult {
       authToken: json['token'] ?? '',
       businessName: json['business_name'] ?? '',
       businessId: json['business_id']?.toString(),
+      gstin: json['gstin'] ?? '',
+      accountPhotoUrl: json['account_photo_url'] as String?,
     );
   }
 }
@@ -51,6 +58,10 @@ class RegistrationApi {
   /// sent, this reads any invite token stored by [DeepLinkService] and
   /// attaches it silently. If none exists, this is a normal request,
   /// exactly as before.
+  ///
+  /// `platform` is never a field the user sees or fills in — it's
+  /// resolved via [PlatformInfo] right before the request goes out and
+  /// attached the same silent way the invite token is.
   Future<ApiResponse<RegistrationResult>> registerBusiness({
     // Contact
     required String address,
@@ -59,6 +70,9 @@ class RegistrationApi {
     required String zip,
     required String phone,
     required String businessEmail,
+    // Optional — Account Information
+    String gstin = '',
+    File? accountPhoto,
     // Owner
     required String ownerName,
     required String designation,
@@ -82,6 +96,9 @@ class RegistrationApi {
           "zip": zip,
           "phone": phone,
           "business_email": businessEmail,
+          if (gstin.trim().isNotEmpty) "gstin": gstin.trim(),
+          if (accountPhoto != null)
+            "account_photo": await MultipartFile.fromFile(accountPhoto.path),
           "owner_name": ownerName,
           "designation": designation,
           "id_proof_type": idProofType,
@@ -90,6 +107,7 @@ class RegistrationApi {
               await MultipartFile.fromFile(idProofDocument.path),
           "login_email": loginEmail,
           "password": password,
+          "platform": PlatformInfo.current,
           if (inviteToken != null && inviteToken.isNotEmpty)
             "invite_token": inviteToken,
         });

@@ -20,6 +20,9 @@ class DashboardIconMapper {
   static const Map<String, IconData> _icons = {
     'design_services': Icons.design_services_outlined,
     'payments': Icons.payments_outlined,
+    'payment': Icons.payments_outlined,
+    'star': Icons.star_rounded,
+    'security': Icons.security_rounded,
     'receipt_long': Icons.receipt_long_outlined,
     'trending_up': Icons.trending_up_rounded,
     'trending_down': Icons.trending_down_rounded,

@@ -34,6 +34,7 @@ dependencies:
   app_links: ^7.2.1
   share_plus: ^13.3.0
   intl: ^0.19.0
+  onesignal_flutter: ^5.3.3
 
 dev_dependencies:
   flutter_test:
@@ -110,6 +111,7 @@ flutter:
     - assets/mocks/branches_response.json
     - assets/mocks/branch_details_response.json
     - assets/mocks/branch_save_response.json
+    - assets/mocks/notifications_response.json
 
 # ---------------------------------------------------------------------
 # flutter_launcher_icons config

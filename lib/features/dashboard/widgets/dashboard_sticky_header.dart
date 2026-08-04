@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_fonts.dart';
 import '../../../core/widgets/shimmers/dashboard_header_shimmer.dart';
 import '../../../core/widgets/sticky_org_header.dart';
+import '../../notifications/notification_list_page.dart';
 
 /// Dashboard's role-aware sticky header — plugged in as [DashboardPage]'s
 /// `appBar`.
@@ -184,6 +185,19 @@ class _DashboardStickyHeaderState extends State<DashboardStickyHeader>
     );
   }
 
+  /// Single entry point into the Notification Module from the header
+  /// bell -- every role's header calls this exact same function, so
+  /// there's exactly one place that owns "what happens when the bell
+  /// is tapped", matching the "one navigation engine" requirement one
+  /// level up (`NotificationListPage` itself only ever hands off to
+  /// `NotificationNavigator`).
+  void _openNotifications(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationListPage()),
+    );
+  }
+
   Widget _buildHeaderForRole(
     BuildContext context,
     UserRole role,
@@ -202,7 +216,7 @@ class _DashboardStickyHeaderState extends State<DashboardStickyHeader>
           selectedBranch: _selectedScope ?? const AllBranches(),
           onBranchChanged: _onScopeChanged,
           notificationCount: header.notificationCount,
-          onNotificationTap: () {},
+          onNotificationTap: () => _openNotifications(context),
           profileInitials: header.profileInitials,
           onProfileTap: () {},
           allEntitiesLabel: 'All Organizations',
@@ -219,7 +233,7 @@ class _DashboardStickyHeaderState extends State<DashboardStickyHeader>
           selectedBranch: _selectedScope ?? const AllBranches(),
           onBranchChanged: _onScopeChanged,
           notificationCount: header.notificationCount,
-          onNotificationTap: () {},
+          onNotificationTap: () => _openNotifications(context),
           profileInitials: header.profileInitials,
           onProfileTap: () {},
           allEntitiesLabel: 'All Branches',
@@ -245,7 +259,7 @@ class _DashboardStickyHeaderState extends State<DashboardStickyHeader>
           selectedBranch: assignedBranch,
           onBranchChanged: null,
           notificationCount: header.notificationCount,
-          onNotificationTap: () {},
+          onNotificationTap: () => _openNotifications(context),
           profileInitials: header.profileInitials,
           onProfileTap: () {},
           switcherIcon: Icons.storefront_rounded,

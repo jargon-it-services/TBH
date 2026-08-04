@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_fonts.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/inline_action_button.dart';
+import '../../../../core/widgets/logo_picker_field.dart';
 import '../registration_data.dart';
 import '../registration_validators.dart';
 import '../widgets/registration_step_scaffold.dart';
@@ -219,6 +220,15 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
       },
       child: Column(
         children: [
+          LogoPickerField(
+            title: 'Account Photo / Logo (optional)',
+            placeholderIcon: Icons.store_mall_directory_outlined,
+            pickedFile: d.accountPhoto,
+            onPicked: (file) => setState(() => d.accountPhoto = file),
+            onRemoved: () => setState(() => d.accountPhoto = null),
+            allowRemove: d.accountPhoto != null,
+          ),
+          const SizedBox(height: AppSpacing.verticalMedium),
           AppTextField(
             label: 'Account Name',
             icon: Icons.person_outline,
@@ -242,6 +252,14 @@ class _Step1ContactInfoState extends State<Step1ContactInfo>
             initialValue: d.accountEmail,
             onChanged: (v) => d.accountEmail = v,
             validator: RegistrationValidators.email,
+          ),
+          AppTextField(
+            label: 'GSTIN (optional)',
+            icon: Icons.receipt_long_outlined,
+            textCapitalization: TextCapitalization.characters,
+            initialValue: d.gstin,
+            onChanged: (v) => d.gstin = v,
+            validator: RegistrationValidators.gstin,
           ),
           AppTextField(
             label: 'Address',

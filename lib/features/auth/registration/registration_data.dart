@@ -13,6 +13,13 @@ class RegistrationData {
   String phone = '';
   String accountEmail = '';
 
+  /// Optional — Indian GSTIN, 15 characters when provided.
+  String gstin = '';
+
+  /// Optional — the account's photo/logo. Distinct from the Owner's ID
+  /// proof document ([idProofDocument]).
+  File? accountPhoto;
+
   // ---- Step 2: Owner ----
   String ownerName = '';
   String designation = '';
