@@ -1,0 +1,19 @@
+{
+  "status": true,
+  "message": "Account info fetched successfully",
+  "data": {
+    "account_name": "Glow & Co Salon",
+    "account_email": "accounts@glowandco.example",
+    "phone": "9876500000",
+    "address": "221B, Residency Road",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "zip": "560025",
+    "owner_name": "Ananya Rao",
+    "designation": "Founder",
+    "id_proof_type": "PAN Card",
+    "id_proof_number": "ABCDE1234F",
+    "id_proof_document_url": "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400",
+    "login_email": "ananya.rao@glowandco.example"
+  }
+}

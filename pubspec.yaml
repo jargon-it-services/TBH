@@ -105,6 +105,8 @@ flutter:
     - assets/mocks/salary_rule_detail_response.json
     - assets/mocks/salary_rule_save_response.json
     - assets/mocks/salary_rule_delete_response.json
+    - assets/mocks/account_info_response.json
+    - assets/mocks/account_info_update_response.json
     - assets/mocks/branches_response.json
     - assets/mocks/branch_details_response.json
     - assets/mocks/branch_save_response.json

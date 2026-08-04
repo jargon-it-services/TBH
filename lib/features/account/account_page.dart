@@ -31,6 +31,7 @@ import '../auth/forgot_password/forgot_password_page.dart';
 import '../payments/payment_history_page.dart';
 import '../subscriptions/subscription_plans_page.dart';
 import 'account_deleted_page.dart';
+import 'account_info_page.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -127,6 +128,13 @@ class _AccountPageState extends State<AccountPage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const SubscriptionPlansPage()),
+    );
+  }
+
+  Future<void> _handleAccountInfo() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AccountInfoPage()),
     );
   }
 
@@ -599,6 +607,11 @@ class _AccountPageState extends State<AccountPage>
         title: "Account Management",
         items: [
           if (isAccountAdmin) ...[
+            _AccountTile(
+              icon: Icons.badge_outlined,
+              title: "Account Info",
+              onTap: _handleAccountInfo,
+            ),
             _AccountTile(
               icon: Icons.subject_outlined,
               title: "Subscription",
