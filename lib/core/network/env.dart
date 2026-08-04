@@ -6,5 +6,5 @@ class Env {
   /// dashboard). Left as a placeholder here -- `NotificationPushService`
   /// checks for this exact placeholder and skips initialization rather
   /// than crashing/spamming errors when it hasn't been configured yet.
-  static const String oneSignalAppId = 'YOUR_ONESIGNAL_APP_ID';
+  static const String oneSignalAppId = '57014558-858c-4e0f-b382-f47072708b9e';
 }
