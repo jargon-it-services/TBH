@@ -85,6 +85,11 @@ class LoginResult {
 class LoginApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_001 - Login
+  // Endpoint: POST /auth/login
+  // Backend Doc Ref: API_001
+  // ==========================================================
   Future<ApiResponse<LoginResult>> login({
     required String organizationCode,
     required String email,

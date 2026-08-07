@@ -41,6 +41,11 @@ class RefreshTokenResult {
 class RefreshTokenApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_002 - Refresh Token
+  // Endpoint: POST /auth/refresh
+  // Backend Doc Ref: API_002
+  // ==========================================================
   Future<ApiResponse<RefreshTokenResult>> refresh({
     required String refreshToken,
   }) {

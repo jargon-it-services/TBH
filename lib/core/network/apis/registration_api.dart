@@ -53,6 +53,11 @@ class RegistrationApi {
     'invite_revoked',
   };
 
+  // ==========================================================
+  // API_004 - Register Business
+  // Endpoint: POST /register
+  // Backend Doc Ref: API_004
+  // ==========================================================
   /// Registration UI stays untouched — it has no Account Code/Referral
   /// Code field and never will. Instead, right before the request is
   /// sent, this reads any invite token stored by [DeepLinkService] and

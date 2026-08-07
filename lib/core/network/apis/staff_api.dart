@@ -22,6 +22,11 @@ import '../dio_client.dart';
 class StaffApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_031 - Fetch Staff Form Config
+  // Endpoint: GET /staff/form-config
+  // Backend Doc Ref: API_031
+  // ==========================================================
   /// GET /staff/form-config — Branch list + Salary Rule list +
   /// Specialist list in one call, instead of the form making three
   /// separate lookups. Branches/Salary Rules reuse `BranchesApi`/
@@ -37,6 +42,11 @@ class StaffApi {
     );
   }
 
+  // ==========================================================
+  // API_032 - Fetch Staff List
+  // Endpoint: GET /staff/list
+  // Backend Doc Ref: API_032
+  // ==========================================================
   /// GET /staff/list
   Future<ApiResponse<List<StaffListItem>>> fetchStaffList() {
     return callApi<List<StaffListItem>>(
@@ -49,6 +59,11 @@ class StaffApi {
     );
   }
 
+  // ==========================================================
+  // API_033 - Fetch Staff Detail
+  // Endpoint: GET /staff/{staffId}/details
+  // Backend Doc Ref: API_033
+  // ==========================================================
   /// GET /staff/{staffId}/details
   Future<ApiResponse<StaffDetailResponse>> fetchStaffDetail(int staffId) {
     return callApi<StaffDetailResponse>(
@@ -59,6 +74,11 @@ class StaffApi {
     );
   }
 
+  // ==========================================================
+  // API_034 - Fetch Next Employee Code
+  // Endpoint: GET /staff/next-employee-code
+  // Backend Doc Ref: API_034
+  // ==========================================================
   /// GET /staff/next-employee-code — a backend-suggested Employee Code
   /// for a brand-new staff member. Per the spec ("Auto-generate if
   /// supported by backend. Otherwise allow manual entry."), the Add
@@ -74,6 +94,11 @@ class StaffApi {
     );
   }
 
+  // ==========================================================
+  // API_035 - Create Staff
+  // Endpoint: POST /staff
+  // Backend Doc Ref: API_035
+  // ==========================================================
   /// POST /staff — create a new staff member.
   Future<ApiResponse<bool>> createStaff(
     Map<String, dynamic> payload, {
@@ -91,6 +116,11 @@ class StaffApi {
     );
   }
 
+  // ==========================================================
+  // API_036 - Update Staff
+  // Endpoint: POST /staff/{staffId}
+  // Backend Doc Ref: API_036
+  // ==========================================================
   /// POST /staff/{staffId} — update an existing staff member.
   Future<ApiResponse<bool>> updateStaff(
     int staffId,
@@ -117,6 +147,11 @@ class StaffApi {
     );
   }
 
+  // ==========================================================
+  // API_037 - Delete Staff
+  // Endpoint: POST /staff/{staffId}/delete
+  // Backend Doc Ref: API_037
+  // ==========================================================
   /// POST /staff/{staffId}/delete
   Future<ApiResponse<bool>> deleteStaff(int staffId) {
     return callApi<bool>(

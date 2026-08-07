@@ -19,6 +19,11 @@ import '../dio_client.dart';
 class AccountInfoApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_011 - Fetch Account Info
+  // Endpoint: GET /account/info
+  // Backend Doc Ref: API_011
+  // ==========================================================
   /// GET /account/info
   Future<ApiResponse<AccountInfoResponse>> fetchAccountInfo() {
     return callApi<AccountInfoResponse>(
@@ -29,6 +34,11 @@ class AccountInfoApi {
     );
   }
 
+  // ==========================================================
+  // API_012 - Update Account Info
+  // Endpoint: POST /account/info
+  // Backend Doc Ref: API_012
+  // ==========================================================
   /// POST /account/info — only Phone Number, Address, Pincode/ZIP
   /// (City/State travel along, auto-derived from it), Full Name,
   /// Designation, GSTIN, and Account Photo/Logo are ever included in

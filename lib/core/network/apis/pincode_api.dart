@@ -34,6 +34,11 @@ class PincodeApi {
     ),
   );
 
+  // ==========================================================
+  // API_075 - Verify Pincode (3rd-Party)
+  // Endpoint: GET https://api.postalpincode.in/pincode/{pincode}
+  // Backend Doc Ref: API_075
+  // ==========================================================
   Future<PincodeLookupResult> verify(String pincode) async {
     if (!await _networkInfo.isConnected) {
       return PincodeLookupResult(isValid: false, isOffline: true);

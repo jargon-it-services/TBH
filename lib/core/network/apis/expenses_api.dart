@@ -20,6 +20,11 @@ import '../dio_client.dart';
 class ExpensesApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_044 - Fetch Expense List
+  // Endpoint: GET /expenses/list
+  // Backend Doc Ref: API_044
+  // ==========================================================
   /// GET /expenses/list
   Future<ApiResponse<List<ExpenseListItem>>> fetchExpenseList() {
     return callApi<List<ExpenseListItem>>(
@@ -32,6 +37,11 @@ class ExpensesApi {
     );
   }
 
+  // ==========================================================
+  // API_045 - Fetch Expense Detail
+  // Endpoint: GET /expenses/{expenseId}/details
+  // Backend Doc Ref: API_045
+  // ==========================================================
   /// GET /expenses/{expenseId}/details
   Future<ApiResponse<ExpenseDetailResponse>> fetchExpenseDetail(int expenseId) {
     return callApi<ExpenseDetailResponse>(
@@ -42,6 +52,11 @@ class ExpensesApi {
     );
   }
 
+  // ==========================================================
+  // API_046 - Create Expense
+  // Endpoint: POST /expenses
+  // Backend Doc Ref: API_046
+  // ==========================================================
   /// POST /expenses — create a new expense type.
   Future<ApiResponse<bool>> createExpense(Map<String, dynamic> payload) {
     return callApi<bool>(
@@ -52,6 +67,11 @@ class ExpensesApi {
     );
   }
 
+  // ==========================================================
+  // API_047 - Update Expense
+  // Endpoint: POST /expenses/{expenseId}
+  // Backend Doc Ref: API_047
+  // ==========================================================
   /// POST /expenses/{expenseId} — update an existing expense type.
   Future<ApiResponse<bool>> updateExpense(int expenseId, Map<String, dynamic> payload) {
     return callApi<bool>(
@@ -62,6 +82,11 @@ class ExpensesApi {
     );
   }
 
+  // ==========================================================
+  // API_048 - Delete Expense
+  // Endpoint: POST /expenses/{expenseId}/delete
+  // Backend Doc Ref: API_048
+  // ==========================================================
   /// POST /expenses/{expenseId}/delete
   Future<ApiResponse<bool>> deleteExpense(int expenseId) {
     return callApi<bool>(

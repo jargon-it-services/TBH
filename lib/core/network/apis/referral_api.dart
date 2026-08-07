@@ -33,6 +33,11 @@ class InviteLinkResult {
 class ReferralApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_014 - Get Referral Invite Link
+  // Endpoint: GET /referrals/invite-link
+  // Backend Doc Ref: API_014
+  // ==========================================================
   Future<ApiResponse<InviteLinkResult>> getInviteLink() {
     return callApi<InviteLinkResult>(
       mockAsset: 'assets/mocks/referral_invite_link_response.json',

@@ -12,6 +12,11 @@ import '../env.dart';
 class RazorpayApiService {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_062 - Create Razorpay Order
+  // Endpoint: POST /payments/razorpay/order
+  // Backend Doc Ref: API_062
+  // ==========================================================
   /// ----------------------------------------
   /// 1️⃣ Create Razorpay Order (Backend / Mock)
   /// ----------------------------------------
@@ -56,6 +61,11 @@ class RazorpayApiService {
     }
   }
 
+  // ==========================================================
+  // API_063 - Save Razorpay Payment Result
+  // Endpoint: POST /payments/razorpay/result
+  // Backend Doc Ref: API_063
+  // ==========================================================
   /// -------------------------------------------------
   /// 2️⃣ Save Razorpay Payment Result (ALL CASES)
   /// -------------------------------------------------

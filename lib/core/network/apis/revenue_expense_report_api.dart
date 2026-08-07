@@ -13,6 +13,11 @@ import '../dio_client.dart';
 class RevenueExpenseReportApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_057 - Fetch Revenue & Expense Report
+  // Endpoint: GET /reports/revenue-expense
+  // Backend Doc Ref: API_057
+  // ==========================================================
   /// GET /reports/revenue-expense?period=&branch_id=&start_date=&end_date=
   Future<ApiResponse<RevenueExpenseReportData>> fetchReport({
     required String period,
@@ -47,6 +52,11 @@ class RevenueExpenseReportApi {
     );
   }
 
+  // ==========================================================
+  // API_058 - Export Revenue & Expense Report
+  // Endpoint: GET /reports/revenue-expense/export
+  // Backend Doc Ref: API_058
+  // ==========================================================
   /// GET /reports/revenue-expense/export?format=pdf|excel
   ///
   /// Same "backend hands back a URL, screen just launches it" contract

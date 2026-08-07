@@ -20,6 +20,11 @@ import '../env.dart';
 class NotificationApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_067 - Fetch Notifications
+  // Endpoint: GET /api/v1/notifications
+  // Backend Doc Ref: API_067
+  // ==========================================================
   /// `GET /api/v1/notifications` -- returns the full, unpaginated list.
   /// Per the contract there is no server-side search/filtering yet, so
   /// this is the only call `NotificationListPage` makes to populate
@@ -55,6 +60,11 @@ class NotificationApi {
     }
   }
 
+  // ==========================================================
+  // API_068 - Fetch Notification By Id
+  // Endpoint: GET /api/v1/notifications/{id}
+  // Backend Doc Ref: API_068
+  // ==========================================================
   /// `GET /api/v1/notifications/{id}` -- optional per the contract
   /// ("use only if notification detail is not fully included in the
   /// list response"). `NotificationNavigator` calls this specifically
@@ -103,6 +113,11 @@ class NotificationApi {
     }
   }
 
+  // ==========================================================
+  // API_069 - Mark Notification Read
+  // Endpoint: POST /api/v1/notifications/read
+  // Backend Doc Ref: API_069
+  // ==========================================================
   /// `POST /api/v1/notifications/read` -- marks a single notification
   /// read. Callers apply the local optimistic update themselves (see
   /// `NotificationNavigator`/`NotificationListPage`) and treat this as
@@ -131,6 +146,11 @@ class NotificationApi {
     }
   }
 
+  // ==========================================================
+  // API_070 - Mark All Notifications Read
+  // Endpoint: POST /api/v1/notifications/read-all
+  // Backend Doc Ref: API_070
+  // ==========================================================
   /// `POST /api/v1/notifications/read-all`.
   Future<ApiResponse<bool>> markAllRead() async {
     try {
@@ -154,6 +174,11 @@ class NotificationApi {
     }
   }
 
+  // ==========================================================
+  // API_071 - Delete Notification
+  // Endpoint: DELETE /api/v1/notifications/{id}
+  // Backend Doc Ref: API_071
+  // ==========================================================
   /// `DELETE /api/v1/notifications/{id}`.
   Future<ApiResponse<bool>> deleteNotification(int notificationId) async {
     try {
@@ -176,6 +201,11 @@ class NotificationApi {
     }
   }
 
+  // ==========================================================
+  // API_072 - Delete All Read Notifications
+  // Endpoint: DELETE /api/v1/notifications/read
+  // Backend Doc Ref: API_072
+  // ==========================================================
   /// `DELETE /api/v1/notifications/read` -- "Delete All Read" overflow
   /// action.
   Future<ApiResponse<bool>> deleteAllRead() async {

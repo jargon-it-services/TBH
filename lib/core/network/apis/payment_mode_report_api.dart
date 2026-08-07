@@ -13,6 +13,11 @@ import '../dio_client.dart';
 class PaymentModeReportApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_059 - Fetch Payment Mode Report
+  // Endpoint: GET /reports/payment-mode
+  // Backend Doc Ref: API_059
+  // ==========================================================
   /// GET /reports/payment-mode?period=&branch_id=&start_date=&end_date=
   Future<ApiResponse<PaymentModeReportData>> fetchPaymentModeReport({
     required String period,

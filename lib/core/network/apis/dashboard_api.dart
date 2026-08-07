@@ -12,6 +12,11 @@ import '../env.dart';
 class DashboardApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_015 - Fetch Admin Dashboard
+  // Endpoint: GET /dashboard
+  // Backend Doc Ref: API_015
+  // ==========================================================
   Future<ApiResponse<DashboardResponse>> fetchAdminDashboard() async {
     try {
       if (Env.isMock) {
@@ -39,6 +44,11 @@ class DashboardApi {
     }
   }
 
+  // ==========================================================
+  // API_016 - Fetch Revenue Trend
+  // Endpoint: GET /dashboard/revenue-trend
+  // Backend Doc Ref: API_016
+  // ==========================================================
   /// Fetch revenue trend (cursor based pagination)
   Future<ApiResponse<OverviewTrendModel>> fetchRevenueTrend({
     required String period,

@@ -29,6 +29,11 @@ class LocationApi {
     }
   }
 
+  // ==========================================================
+  // API_073 - Fetch Indian States (3rd-Party)
+  // Endpoint: POST https://countriesnow.space/api/v0.1/countries/states
+  // Backend Doc Ref: API_073
+  // ==========================================================
   Future<List<String>> fetchIndianStates() async {
     await _ensureConnected();
     try {
@@ -50,6 +55,11 @@ class LocationApi {
     }
   }
 
+  // ==========================================================
+  // API_074 - Fetch Cities For State (3rd-Party)
+  // Endpoint: POST https://countriesnow.space/api/v0.1/countries/state/cities
+  // Backend Doc Ref: API_074
+  // ==========================================================
   Future<List<String>> fetchCitiesForState(String state) async {
     await _ensureConnected();
     try {

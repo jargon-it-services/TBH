@@ -25,6 +25,11 @@ import '../dio_client.dart';
 class BranchesApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_021 - Fetch Branches
+  // Endpoint: GET /branches
+  // Backend Doc Ref: API_021
+  // ==========================================================
   /// GET /branches
   Future<ApiResponse<List<BranchModel>>> fetchBranches() {
     return callApi<List<BranchModel>>(
@@ -37,6 +42,11 @@ class BranchesApi {
     );
   }
 
+  // ==========================================================
+  // API_022 - Fetch Branch Detail
+  // Endpoint: GET /branches/{branchId}/details
+  // Backend Doc Ref: API_022
+  // ==========================================================
   /// GET /branches/{branchId}/details
   Future<ApiResponse<BranchDetailResponse>> fetchBranchDetail(
     int branchId,
@@ -49,6 +59,11 @@ class BranchesApi {
     );
   }
 
+  // ==========================================================
+  // API_023 - Create Branch
+  // Endpoint: POST /branches
+  // Backend Doc Ref: API_023
+  // ==========================================================
   /// POST /branches — create a new branch.
   ///
   /// Previously this called `_client.post(...)` directly inside its own
@@ -81,6 +96,11 @@ class BranchesApi {
     );
   }
 
+  // ==========================================================
+  // API_024 - Update Branch
+  // Endpoint: POST /branches/{branchId}
+  // Backend Doc Ref: API_024
+  // ==========================================================
   /// POST /branches/{branchId} — update an existing branch. Same root
   /// cause and same fix as [createBranch] above.
   Future<ApiResponse<bool>> updateBranch(

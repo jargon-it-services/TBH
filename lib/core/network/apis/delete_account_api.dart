@@ -42,6 +42,11 @@ class DeleteAccountResult {
 class DeleteAccountApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_013 - Delete Account
+  // Endpoint: POST /user/delete-account
+  // Backend Doc Ref: API_013
+  // ==========================================================
   Future<ApiResponse<DeleteAccountResult>> deleteAccount() {
     return callApi<DeleteAccountResult>(
       mockAsset: 'assets/mocks/delete_account_response.json',

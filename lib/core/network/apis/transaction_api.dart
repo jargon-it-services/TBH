@@ -14,6 +14,11 @@ import '../env.dart';
 class TransactionApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_049 - Fetch Transaction Bootstrap
+  // Endpoint: GET /transactions/bootstrap
+  // Backend Doc Ref: API_049
+  // ==========================================================
   /// GET /transactions/bootstrap — everything the Transaction Entry
   /// screen needs (services/expenses/staff/branches/role/last-used
   /// prefs) in one call. Fetched once per screen open, per the
@@ -28,6 +33,11 @@ class TransactionApi {
     );
   }
 
+  // ==========================================================
+  // API_050 - Create Transaction
+  // Endpoint: POST /transactions
+  // Backend Doc Ref: API_050
+  // ==========================================================
   /// POST /transactions — create. `idempotency_key` is generated once
   /// per screen-open by the caller (see
   /// `TransactionEntryPage._idempotencyKey`) and resent unchanged on
@@ -46,6 +56,11 @@ class TransactionApi {
     );
   }
 
+  // ==========================================================
+  // API_051 - Update Transaction
+  // Endpoint: PUT /transactions/{id}
+  // Backend Doc Ref: API_051
+  // ==========================================================
   /// PUT /transactions/{id} — edit, within the backend-enforced window.
   /// A `409` here (window closed since the Edit screen was opened) still
   /// comes back as a normal [ApiResponse.failure] with `statusCode: 409`
@@ -64,6 +79,11 @@ class TransactionApi {
     );
   }
 
+  // ==========================================================
+  // API_052 - Mark Transaction Paid
+  // Endpoint: POST /transactions/{id}/mark-paid
+  // Backend Doc Ref: API_052
+  // ==========================================================
   /// POST /transactions/{id}/mark-paid — settles a Pending transaction.
   /// Deliberately separate from [updateTransaction]: only ever changes
   /// `status`/`paid_at`, never gated by the edit window (see the
@@ -77,6 +97,11 @@ class TransactionApi {
     );
   }
 
+  // ==========================================================
+  // API_053 - Fetch Transactions List
+  // Endpoint: GET /transactions
+  // Backend Doc Ref: API_053
+  // ==========================================================
   /// Fetch all transactions list (no pagination, no filters)
   Future<ApiResponse<TransactionsResponse>> fetchTransactions() async {
     try {
@@ -111,6 +136,11 @@ class TransactionApi {
     }
   }
 
+  // ==========================================================
+  // API_054 - Fetch Transaction Details
+  // Endpoint: GET /transactions/{id}
+  // Backend Doc Ref: API_054
+  // ==========================================================
   /// Fetch transaction details by ID
   Future<ApiResponse<TransactionDetailsResponse>> fetchTransactionDetails({
     required String transactionId,

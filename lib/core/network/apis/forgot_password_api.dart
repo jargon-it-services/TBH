@@ -62,6 +62,11 @@ class ResetPasswordResult {
 class ForgotPasswordApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_005 - Verify Organization
+  // Endpoint: POST /forgot-password/verify-organization
+  // Backend Doc Ref: API_005
+  // ==========================================================
   Future<ApiResponse<OrganizationVerifyResult>> verifyOrganization({
     required String orgCode,
   }) {
@@ -77,6 +82,11 @@ class ForgotPasswordApi {
     );
   }
 
+  // ==========================================================
+  // API_006 - Send OTP
+  // Endpoint: POST /forgot-password/send-otp
+  // Backend Doc Ref: API_006
+  // ==========================================================
   Future<ApiResponse<OtpSendResult>> sendOtp({
     required String orgCode,
     required String email,
@@ -93,6 +103,11 @@ class ForgotPasswordApi {
     );
   }
 
+  // ==========================================================
+  // API_007 - Verify OTP
+  // Endpoint: POST /forgot-password/verify-otp
+  // Backend Doc Ref: API_007
+  // ==========================================================
   Future<ApiResponse<OtpVerifyResult>> verifyOtp({
     required String orgCode,
     required String email,
@@ -110,6 +125,11 @@ class ForgotPasswordApi {
     );
   }
 
+  // ==========================================================
+  // API_008 - Reset Password
+  // Endpoint: POST /forgot-password/reset
+  // Backend Doc Ref: API_008
+  // ==========================================================
   Future<ApiResponse<ResetPasswordResult>> resetPassword({
     required String orgCode,
     required String email,

@@ -78,6 +78,11 @@ class ProfileResult {
 class ProfileApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_010 - Fetch Profile
+  // Endpoint: GET /user/profile
+  // Backend Doc Ref: API_010
+  // ==========================================================
   Future<ApiResponse<ProfileResult>> fetchProfile() {
     return callApi<ProfileResult>(
       mockAsset: 'assets/mocks/profile_response.json',

@@ -13,6 +13,11 @@ import '../env.dart';
 class FirmsApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_018 - Create Firm
+  // Endpoint: POST /create-firm
+  // Backend Doc Ref: API_018
+  // ==========================================================
   Future<ApiResponse<bool>> createFirm({
     required String firmName,
     required String address,
@@ -54,6 +59,11 @@ class FirmsApi {
     }
   }
 
+  // ==========================================================
+  // API_019 - Fetch Firms
+  // Endpoint: GET /firms
+  // Backend Doc Ref: API_019
+  // ==========================================================
   Future<ApiResponse<List<FirmModel>>> fetchFirms() async {
     try {
       if (Env.isMock) {
@@ -87,6 +97,11 @@ class FirmsApi {
     }
   }
 
+  // ==========================================================
+  // API_020 - Fetch Firm Detail
+  // Endpoint: GET /firms/{firmId}/details
+  // Backend Doc Ref: API_020
+  // ==========================================================
   /// =======================
   /// FIRM DETAIL API ✅
   /// =======================

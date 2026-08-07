@@ -65,6 +65,11 @@ class AppVersionResult {
 class AppVersionApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_009 - Check App Version
+  // Endpoint: GET /app/version
+  // Backend Doc Ref: API_009
+  // ==========================================================
   Future<ApiResponse<AppVersionResult>> checkVersion() {
     return callApi<AppVersionResult>(
       mockAsset: 'assets/mocks/app_version_response.json',

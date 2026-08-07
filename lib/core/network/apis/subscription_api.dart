@@ -46,6 +46,11 @@ enum SubscriptionMockScenario {
 class SubscriptionApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_064 - Fetch Plan Catalog
+  // Endpoint: GET /plans
+  // Backend Doc Ref: API_064
+  // ==========================================================
   /// `GET /plans` -- the static-ish plan catalog, independent of any
   /// one org.
   Future<ApiResponse<PlanCatalogResponse>> fetchPlanCatalog() async {
@@ -71,6 +76,11 @@ class SubscriptionApi {
     }
   }
 
+  // ==========================================================
+  // API_065 - Fetch Subscription Status
+  // Endpoint: GET /organizations/{orgId}/subscription
+  // Backend Doc Ref: API_065
+  // ==========================================================
   /// `GET /organizations/{orgId}/subscription` -- same response shape
   /// for every lifecycle state; only field values differ (see
   /// [SubscriptionStatusResponse]). [mockScenario] only matters when
@@ -102,6 +112,11 @@ class SubscriptionApi {
     }
   }
 
+  // ==========================================================
+  // API_066 - Activate Free Trial
+  // Endpoint: POST /organizations/{orgId}/subscription/activate-trial
+  // Backend Doc Ref: API_066
+  // ==========================================================
   /// Activates a free trial directly (contract §9: `isFree: true` plans
   /// skip the Razorpay flow entirely and call activation directly).
   ///

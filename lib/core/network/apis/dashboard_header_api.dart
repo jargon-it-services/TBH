@@ -24,6 +24,11 @@ import '../dio_client.dart';
 class DashboardHeaderApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_017 - Fetch Dashboard Header
+  // Endpoint: GET /dashboard/header
+  // Backend Doc Ref: API_017
+  // ==========================================================
   Future<ApiResponse<DashboardHeaderModel>> fetchHeader() {
     return callApi<DashboardHeaderModel>(
       // A live backend infers the role from the auth token and always

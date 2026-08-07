@@ -39,6 +39,11 @@ class LogoutResult {
 class LogoutApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_003 - Logout
+  // Endpoint: POST /auth/logout
+  // Backend Doc Ref: API_003
+  // ==========================================================
   Future<ApiResponse<LogoutResult>> logout() {
     return callApi<LogoutResult>(
       mockAsset: 'assets/mocks/logout_response.json',

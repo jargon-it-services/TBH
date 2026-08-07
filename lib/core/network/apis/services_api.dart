@@ -28,6 +28,11 @@ import '../dio_client.dart';
 class ServicesApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_025 - Fetch Services Catalog
+  // Endpoint: GET /services
+  // Backend Doc Ref: API_025
+  // ==========================================================
   /// GET /services — the master catalog a branch's services are picked
   /// from. Left untouched: still returns the lightweight [ServiceModel]
   /// shape the Branch Create/Edit form relies on.
@@ -42,6 +47,11 @@ class ServicesApi {
     );
   }
 
+  // ==========================================================
+  // API_026 - Fetch Service List
+  // Endpoint: GET /services/list
+  // Backend Doc Ref: API_026
+  // ==========================================================
   /// GET /services/list — the full Service List screen's data (richer
   /// than the catalog above: category, pricing, status, photo, etc).
   /// Kept as a separate endpoint/parse from [fetchServices] so the
@@ -58,6 +68,11 @@ class ServicesApi {
     );
   }
 
+  // ==========================================================
+  // API_027 - Fetch Service Detail
+  // Endpoint: GET /services/{serviceId}/details
+  // Backend Doc Ref: API_027
+  // ==========================================================
   /// GET /services/{serviceId}/details
   Future<ApiResponse<ServiceDetailResponse>> fetchServiceDetail(
     int serviceId,
@@ -70,6 +85,11 @@ class ServicesApi {
     );
   }
 
+  // ==========================================================
+  // API_028 - Create Service
+  // Endpoint: POST /services
+  // Backend Doc Ref: API_028
+  // ==========================================================
   /// POST /services — create a new service.
   Future<ApiResponse<bool>> createService(
     Map<String, dynamic> payload, {
@@ -86,6 +106,11 @@ class ServicesApi {
     );
   }
 
+  // ==========================================================
+  // API_029 - Update Service
+  // Endpoint: POST /services/{serviceId}
+  // Backend Doc Ref: API_029
+  // ==========================================================
   /// POST /services/{serviceId} — update an existing service.
   Future<ApiResponse<bool>> updateService(
     int serviceId,
@@ -104,6 +129,11 @@ class ServicesApi {
     );
   }
 
+  // ==========================================================
+  // API_030 - Delete Service
+  // Endpoint: POST /services/{serviceId}/delete
+  // Backend Doc Ref: API_030
+  // ==========================================================
   /// POST /services/{serviceId}/delete
   Future<ApiResponse<bool>> deleteService(int serviceId) {
     return callApi<bool>(

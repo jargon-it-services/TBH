@@ -18,6 +18,11 @@ import '../dio_client.dart';
 class PnlReportApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_055 - Fetch P&L Report
+  // Endpoint: GET /reports/pnl
+  // Backend Doc Ref: API_055
+  // ==========================================================
   /// GET /reports/pnl?period=&branch_id=&start_date=&end_date=
   ///
   /// [period] is one of the keys the response's own `meta.periods[]`
@@ -59,6 +64,11 @@ class PnlReportApi {
     );
   }
 
+  // ==========================================================
+  // API_056 - Export P&L Report
+  // Endpoint: GET /reports/pnl/export
+  // Backend Doc Ref: API_056
+  // ==========================================================
   /// GET /reports/pnl/export?format=pdf|excel
   ///
   /// Returns a downloadable file URL — same "backend hands back a URL,

@@ -23,6 +23,11 @@ import '../dio_client.dart';
 class SalaryRulesApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_038 - Fetch Salary Rules Catalog
+  // Endpoint: GET /salary-rules
+  // Backend Doc Ref: API_038
+  // ==========================================================
   /// GET /salary-rules — the list a staff member's Salary Rule is
   /// picked from. Left untouched: still returns the lightweight
   /// [SalaryRuleModel] shape the Staff Create/Edit form relies on.
@@ -37,6 +42,11 @@ class SalaryRulesApi {
     );
   }
 
+  // ==========================================================
+  // API_039 - Fetch Salary Rule List
+  // Endpoint: GET /salary-rules/list
+  // Backend Doc Ref: API_039
+  // ==========================================================
   /// GET /salary-rules/list — the full Salary Rule List screen's data.
   Future<ApiResponse<List<SalaryRuleListItem>>> fetchSalaryRuleList() {
     return callApi<List<SalaryRuleListItem>>(
@@ -49,6 +59,11 @@ class SalaryRulesApi {
     );
   }
 
+  // ==========================================================
+  // API_040 - Fetch Salary Rule Detail
+  // Endpoint: GET /salary-rules/{ruleId}/details
+  // Backend Doc Ref: API_040
+  // ==========================================================
   /// GET /salary-rules/{ruleId}/details
   Future<ApiResponse<SalaryRuleDetailResponse>> fetchSalaryRuleDetail(int ruleId) {
     return callApi<SalaryRuleDetailResponse>(
@@ -59,6 +74,11 @@ class SalaryRulesApi {
     );
   }
 
+  // ==========================================================
+  // API_041 - Create Salary Rule
+  // Endpoint: POST /salary-rules
+  // Backend Doc Ref: API_041
+  // ==========================================================
   /// POST /salary-rules — create a new salary rule.
   Future<ApiResponse<bool>> createSalaryRule(Map<String, dynamic> payload) {
     return callApi<bool>(
@@ -69,6 +89,11 @@ class SalaryRulesApi {
     );
   }
 
+  // ==========================================================
+  // API_042 - Update Salary Rule
+  // Endpoint: POST /salary-rules/{ruleId}
+  // Backend Doc Ref: API_042
+  // ==========================================================
   /// POST /salary-rules/{ruleId} — update an existing salary rule.
   Future<ApiResponse<bool>> updateSalaryRule(int ruleId, Map<String, dynamic> payload) {
     return callApi<bool>(
@@ -79,6 +104,11 @@ class SalaryRulesApi {
     );
   }
 
+  // ==========================================================
+  // API_043 - Delete Salary Rule
+  // Endpoint: POST /salary-rules/{ruleId}/delete
+  // Backend Doc Ref: API_043
+  // ==========================================================
   /// POST /salary-rules/{ruleId}/delete
   Future<ApiResponse<bool>> deleteSalaryRule(int ruleId) {
     return callApi<bool>(

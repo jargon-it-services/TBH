@@ -19,6 +19,11 @@ import '../env.dart';
 class PaymentHistoryApi {
   final DioClient _client = DioClient();
 
+  // ==========================================================
+  // API_060 - Fetch Payment History
+  // Endpoint: GET /api/v1/payments/history
+  // Backend Doc Ref: API_060
+  // ==========================================================
   /// `GET /api/v1/payments/history` -- returns the full, unpaginated,
   /// unfiltered list. Per the feature contract there is no server-side
   /// search/pagination/filtering, so this is the only call the Payment
@@ -56,6 +61,11 @@ class PaymentHistoryApi {
     }
   }
 
+  // ==========================================================
+  // API_061 - Fetch Payment Details
+  // Endpoint: GET /api/v1/payments/{id}
+  // Backend Doc Ref: API_061
+  // ==========================================================
   /// `GET /api/v1/payments/{id}` -- always fetched fresh (the Details
   /// screen never receives more than the id from the list screen), so
   /// this is called independently every time the details screen opens.
