@@ -70,6 +70,17 @@ class _MergedDashboardHeaderState extends State<MergedDashboardHeader> {
     return const BranchModel(id: '', name: 'No Branch Assigned');
   }
 
+  /// Single entry point into the Notification Module from the header
+  /// bell for these four roles — mirrors
+  /// `DashboardStickyHeader._openNotifications` exactly (Super Admin's
+  /// untouched header), so every role's bell behaves identically.
+  void _openNotifications(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationListPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.loading && widget.headerData == null) {
@@ -112,10 +123,7 @@ class _MergedDashboardHeaderState extends State<MergedDashboardHeader> {
             }
           : null,
       notificationCount: header.notificationCount,
-      onNotificationTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const NotificationListPage()),
-      ),
+      onNotificationTap: () => _openNotifications(context),
       profileInitials: header.profileInitials,
       onProfileTap: () {},
       allEntitiesLabel: 'All Branches',
@@ -137,11 +145,12 @@ class _MergedHeaderShimmer extends StatelessWidget {
       color: AppColors.primary,
       clipBehavior: Clip.antiAlias,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(AppRadius.large),
-        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppRadius.large)),
       ),
-      child: const SafeArea(bottom: false, child: SizedBox(height: 116)),
+      child: const SafeArea(
+        bottom: false,
+        child: SizedBox(height: 116),
+      ),
     );
   }
 }
@@ -168,17 +177,16 @@ class _MergedHeaderErrorBar extends StatelessWidget
       color: AppColors.primary,
       clipBehavior: Clip.antiAlias,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(AppRadius.large),
-        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppRadius.large)),
       ),
       child: SafeArea(
         bottom: false,
         child: MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaler: MediaQuery.textScalerOf(
-              context,
-            ).clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
+            textScaler: MediaQuery.textScalerOf(context).clamp(
+              minScaleFactor: 0.8,
+              maxScaleFactor: 1.2,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -194,9 +202,7 @@ class _MergedHeaderErrorBar extends StatelessWidget
                     message,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: Colors.white,
-                    ),
+                    style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
                   ),
                 ),
                 const SizedBox(width: 8),

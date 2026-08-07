@@ -1,0 +1,60 @@
+{
+  "status": true,
+  "message": "P&L report fetched successfully",
+  "data": {
+    "meta": {
+      "currency_symbol": "₹",
+      "date_format": "dd MMM yyyy",
+      "periods": [
+        { "key": "3m", "label": "3M" },
+        { "key": "6m", "label": "6M" },
+        { "key": "12m", "label": "12M" },
+        { "key": "custom", "label": "Custom" }
+      ],
+      "selected_period": "3m",
+      "branches": [
+        { "id": "all", "name": "All Branches" },
+        { "id": "1", "name": "MG Road Branch" },
+        { "id": "2", "name": "Andheri West Branch" },
+        { "id": "3", "name": "Connaught Place Branch" }
+      ],
+      "selected_branch_id": "all"
+    },
+    "summary": {
+      "revenue": 825000,
+      "expenses": 450000,
+      "profit": 375000
+    },
+    "trend": {
+      "title": "P&L Trend",
+      "points": [
+        { "label": "Mar", "revenue": 260000, "expense": 145000 },
+        { "label": "Apr", "revenue": 285000, "expense": 160000 },
+        { "label": "May", "revenue": 280000, "expense": 145000 }
+      ]
+    },
+    "expense_categories": {
+      "title": "Expense Categories",
+      "items": [
+        { "label": "Salary", "value": 35 },
+        { "label": "Rent", "value": 20 },
+        { "label": "Products", "value": 18 },
+        { "label": "Marketing", "value": 10 },
+        { "label": "Utilities", "value": 8 },
+        { "label": "Others", "value": 9 }
+      ]
+    },
+    "monthly_comparison": {
+      "title": "Monthly Comparison",
+      "rows": [
+        { "month": "Mar", "revenue": 260000, "expenses": 145000, "profit": 115000 },
+        { "month": "Apr", "revenue": 285000, "expenses": 160000, "profit": 125000 },
+        { "month": "May", "revenue": 280000, "expenses": 145000, "profit": 135000 }
+      ]
+    },
+    "export": {
+      "pdf_url": "https://api.yourdomain.com/reports/pnl/export.pdf",
+      "excel_url": "https://api.yourdomain.com/reports/pnl/export.xlsx"
+    }
+  }
+}

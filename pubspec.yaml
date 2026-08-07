@@ -56,6 +56,9 @@ flutter:
     - assets/mocks/trend_next.json
     - assets/mocks/transactions_list_response.json
     - assets/mocks/transaction_detail.json
+    - assets/mocks/transactions_bootstrap_response.json
+    - assets/mocks/transaction_save_response.json
+    - assets/mocks/transaction_mark_paid_response.json
     - assets/mocks/firms_response.json
     - assets/mocks/firm_details_response.json
     - assets/mocks/razorpay_create_order_response.json
@@ -112,6 +115,23 @@ flutter:
     - assets/mocks/branch_details_response.json
     - assets/mocks/branch_save_response.json
     - assets/mocks/notifications_response.json
+    - assets/mocks/pnl_report_3m_response.json
+    - assets/mocks/pnl_report_6m_response.json
+    - assets/mocks/pnl_report_12m_response.json
+    - assets/mocks/pnl_export_response.json
+    - assets/mocks/payment_mode_today_response.json
+    - assets/mocks/payment_mode_this_week_response.json
+    - assets/mocks/payment_mode_this_month_response.json
+    - assets/mocks/payment_mode_3m_response.json
+    - assets/mocks/payment_mode_6m_response.json
+    - assets/mocks/payment_mode_12m_response.json
+    - assets/mocks/revenue_expense_today_response.json
+    - assets/mocks/revenue_expense_this_week_response.json
+    - assets/mocks/revenue_expense_this_month_response.json
+    - assets/mocks/revenue_expense_3m_response.json
+    - assets/mocks/revenue_expense_6m_response.json
+    - assets/mocks/revenue_expense_12m_response.json
+    - assets/mocks/revenue_expense_export_response.json
 
 # ---------------------------------------------------------------------
 # flutter_launcher_icons config

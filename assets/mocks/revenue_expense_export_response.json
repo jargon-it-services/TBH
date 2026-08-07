@@ -1,0 +1,8 @@
+{
+  "status": true,
+  "message": "Export link generated successfully",
+  "data": {
+    "pdf_url": "https://api.yourdomain.com/reports/revenue-expense/export.pdf",
+    "excel_url": "https://api.yourdomain.com/reports/revenue-expense/export.xlsx"
+  }
+}

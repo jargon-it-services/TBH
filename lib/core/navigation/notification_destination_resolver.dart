@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../features/payments/payment_details_page.dart';
+import '../../features/reports/payment_mode_report_page.dart';
+import '../../features/reports/pnl_report_page.dart';
+import '../../features/reports/revenue_expense_report_page.dart';
 import '../../features/subscriptions/subscription_plans_page.dart';
 import '../../features/transactions/transaction_details_page.dart';
 import '../services/DataModels/notification_model.dart';
@@ -47,12 +50,26 @@ class NotificationDestinationResolver {
           await _openSubscription(context);
           return;
 
+        // P&L, Payment Mode, and Revenue Summary now have real screens
+        // -- wired up per the "Future Extensibility" note below
+        // instead of falling through to `_openNotYetAvailable`.
+        case 'pnl':
+          await _openPnlReport(context);
+          return;
+
+        case 'payment_mode':
+          await _openPaymentModeReport(context);
+          return;
+
+        case 'revenue_summary':
+          await _openRevenueExpenseReport(context);
+          return;
+
         // ---------------------------------------------------------
         // Part of the contract (02_API_Contracts.md /
         // Enterprise_Notification_Module_Prompt.md) but no
         // corresponding screen exists in this project yet (no
-        // Payslip / P&L / Revenue Summary / Payment Mode /
-        // Performance feature has been built). Per "Future
+        // Payslip / Performance feature has been built). Per "Future
         // Extensibility", wiring a real screen up later is a
         // one-line change *right here* -- replace the branch below
         // with a real `Navigator.push(...)` once that screen exists.
@@ -61,9 +78,6 @@ class NotificationDestinationResolver {
         // ---------------------------------------------------------
         case 'payslip':
         case 'payslip_list':
-        case 'pnl':
-        case 'revenue_summary':
-        case 'payment_mode':
         case 'performance':
           _openNotYetAvailable(context);
           return;
@@ -135,6 +149,27 @@ class NotificationDestinationResolver {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const SubscriptionPlansPage()),
+    );
+  }
+
+  static Future<void> _openPnlReport(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PnlReportPage()),
+    );
+  }
+
+  static Future<void> _openPaymentModeReport(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PaymentModeReportPage()),
+    );
+  }
+
+  static Future<void> _openRevenueExpenseReport(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const RevenueExpenseReportPage()),
     );
   }
 

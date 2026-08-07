@@ -7,9 +7,11 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/info_card.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/payment_mode_chip.dart';
 import '../../core/widgets/shimmers/transaction_details_shimmer.dart';
 import '../../core/widgets/status_badge.dart';
+import 'transaction_entry_page.dart';
 
 class TransactionDetailsPage extends StatefulWidget {
   final String transactionId;
@@ -25,6 +27,7 @@ class _TransactionDetailsPageState extends State<TransactionDetailsPage> {
 
   bool _isLoading = false;
   String? _error;
+  bool _markingPaid = false;
 
   TransactionDetails? transaction;
 
@@ -56,6 +59,66 @@ class _TransactionDetailsPageState extends State<TransactionDetailsPage> {
     }
   }
 
+  /// Reopens the same Transaction Entry screen used for creation,
+  /// pre-filled with what's already loaded here (see
+  /// `TransactionEntryPage`'s "Edit" doc comment for what does/doesn't
+  /// carry over cleanly from this read-only model). Only ever reachable
+  /// when `transaction!.canEdit` — the backend independently
+  /// re-validates the window on save regardless.
+  Future<void> _openEdit() async {
+    if (transaction == null) return;
+    final updated = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TransactionEntryPage(
+          existingTransactionId: transaction!.id,
+          existingDetails: transaction,
+        ),
+      ),
+    );
+    if (updated == true) _loadTransaction();
+  }
+
+  /// Settles a Pending transaction — deliberately not the edit flow:
+  /// only ever changes status/paid_at, and (per the module spec) isn't
+  /// gated by the edit window the way a full Edit is.
+  Future<void> _confirmAndMarkPaid() async {
+    if (transaction == null || _markingPaid) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.pageBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.large)),
+        title: const Text('Mark as Paid?', style: AppTextStyles.h3),
+        content: const Text(
+          'This transaction will be marked as Paid. This only updates the payment status.',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Mark as Paid', style: TextStyle(color: AppColors.success)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _markingPaid = true);
+    final response = await _api.markAsPaid(widget.transactionId);
+    if (!mounted) return;
+    setState(() => _markingPaid = false);
+
+    if (response.isSuccess) {
+      AppSnackbar.success(context, 'Transaction marked as paid');
+      _loadTransaction();
+    } else {
+      AppSnackbar.error(context, response.error ?? 'Failed to mark as paid. Please try again.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,6 +131,14 @@ class _TransactionDetailsPageState extends State<TransactionDetailsPage> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
+        actions: [
+          if (transaction != null && transaction!.canEdit)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, color: Colors.white),
+              tooltip: 'Edit Transaction',
+              onPressed: _openEdit,
+            ),
+        ],
       ),
       body: SafeArea(
         child: _isLoading
@@ -97,7 +168,36 @@ class _TransactionDetailsPageState extends State<TransactionDetailsPage> {
           _firmInfoCard(),
           const SizedBox(height: AppSpacing.verticalLarge),
           _buildNotesCard(),
+          if (transaction!.status == 'pending') ...[
+            const SizedBox(height: AppSpacing.verticalLarge),
+            _markAsPaidButton(),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _markAsPaidButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _markingPaid ? null : _confirmAndMarkPaid,
+        icon: _markingPaid
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : const Icon(Icons.check_circle_outline, color: Colors.white),
+        label: Text(
+          _markingPaid ? 'Marking as Paid…' : 'Mark as Paid',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.success,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium)),
+        ),
       ),
     );
   }

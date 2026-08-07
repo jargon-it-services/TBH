@@ -1,0 +1,9 @@
+{
+  "status": true,
+  "message": "Transaction marked as paid.",
+  "data": {
+    "id": 5231,
+    "status": "paid",
+    "paid_at": "2026-08-06T09:12:00Z"
+  }
+}

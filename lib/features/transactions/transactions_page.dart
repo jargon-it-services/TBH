@@ -11,6 +11,7 @@ import '../../core/widgets/shimmers/transaction_list_shimmer.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/transaction_type_chip.dart';
 import 'transaction_details_page.dart';
+import 'transaction_entry_page.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -160,12 +161,25 @@ class _TransactionsPageState extends State<TransactionsPage>
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 0.0),
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: _openNewTransaction,
           backgroundColor: AppColors.primary,
           child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
     );
+  }
+
+  /// New Transaction never navigates back here automatically on save —
+  /// it resets in place so staff can process the next transaction
+  /// immediately (see `TransactionEntryPage`'s class doc). This list
+  /// only needs a silent refresh for whenever the user does eventually
+  /// come back (back button/bottom nav).
+  Future<void> _openNewTransaction() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const TransactionEntryPage()),
+    );
+    _fetchTransactions(silent: true);
   }
 
   /// ---------------- SEARCH + FILTER ----------------

@@ -28,6 +28,7 @@ class AppSnackbar {
     String message, {
     AppSnackbarType type = AppSnackbarType.info,
     Duration? duration,
+    SnackBarAction? action,
   }) {
     if (!context.mounted) return;
 
@@ -57,6 +58,7 @@ class AppSnackbar {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.medium),
           ),
+          action: action,
         ),
       );
   }
@@ -64,8 +66,9 @@ class AppSnackbar {
   /// Positive confirmation — e.g. "Registration submitted", "Payment
   /// successful".
   static void success(BuildContext context, String message,
-          {Duration? duration}) =>
-      show(context, message, type: AppSnackbarType.success, duration: duration);
+          {Duration? duration, SnackBarAction? action}) =>
+      show(context, message,
+          type: AppSnackbarType.success, duration: duration, action: action);
 
   /// API failures, blocked actions — anything that stopped the user.
   static void error(BuildContext context, String message,

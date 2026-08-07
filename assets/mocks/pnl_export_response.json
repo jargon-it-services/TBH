@@ -1,0 +1,8 @@
+{
+  "status": true,
+  "message": "Export link generated successfully",
+  "data": {
+    "pdf_url": "https://api.yourdomain.com/reports/pnl/export.pdf",
+    "excel_url": "https://api.yourdomain.com/reports/pnl/export.xlsx"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "status": true,
+  "message": "Revenue & expense report fetched successfully",
+  "data": {
+    "meta": {
+      "currency_symbol": "₹",
+      "periods": [
+        { "key": "today", "label": "Today" },
+        { "key": "this_week", "label": "This Week" },
+        { "key": "this_month", "label": "This Month" },
+        { "key": "3m", "label": "3M" },
+        { "key": "6m", "label": "6M" },
+        { "key": "12m", "label": "12M" },
+        { "key": "custom", "label": "Custom" }
+      ],
+      "selected_period": "3m",
+      "branches": [
+        { "id": "all", "name": "All Branches" },
+        { "id": "1", "name": "MG Road Branch" },
+        { "id": "2", "name": "Andheri West Branch" },
+        { "id": "3", "name": "Connaught Place Branch" }
+      ],
+      "selected_branch_id": "all"
+    },
+    "summary": {
+      "revenue": 6500000,
+      "revenue_change_percent": 8.6,
+      "expenses": 1695000,
+      "expenses_change_percent": 3.1,
+      "net_profit": 4805000,
+      "net_profit_change_percent": 11.9,
+      "comparison_label": "vs previous 3 months"
+    },
+    "trend": {
+      "title": "Revenue Trend",
+      "points": [
+        { "label": "Mar", "value": 2000000 },
+        { "label": "Apr", "value": 2200000 },
+        { "label": "May", "value": 2300000 }
+      ]
+    },
+    "expense_breakdown": {
+      "title": "Expense Breakdown",
+      "items": [
+        { "label": "Salary", "percent": 40, "amount": 678000 },
+        { "label": "Rent", "percent": 25, "amount": 423750 },
+        { "label": "Products", "percent": 15, "amount": 254250 },
+        { "label": "Utilities", "percent": 10, "amount": 169500 },
+        { "label": "Others", "percent": 10, "amount": 169500 }
+      ]
+    },
+    "top_services": {
+      "title": "Top Services by Revenue",
+      "items": [
+        { "label": "Hair Cut", "amount": 2145000, "percent": 33 },
+        { "label": "Hair Spa", "amount": 1625000, "percent": 25 },
+        { "label": "Facial", "amount": 1105000, "percent": 17 },
+        { "label": "Coloring", "amount": 845000, "percent": 13 }
+      ]
+    },
+    "export": {
+      "pdf_url": "https://api.yourdomain.com/reports/revenue-expense/export.pdf",
+      "excel_url": "https://api.yourdomain.com/reports/revenue-expense/export.xlsx"
+    }
+  }
+}

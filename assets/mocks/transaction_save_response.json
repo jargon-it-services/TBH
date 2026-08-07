@@ -1,0 +1,23 @@
+{
+  "status": true,
+  "message": "Transaction saved.",
+  "data": {
+    "id": 5231,
+    "transaction_type": "service",
+    "status": "paid",
+    "grand_total": 2100,
+    "branch_id": 2,
+    "staff_id": 15,
+    "customer_name": null,
+    "customer_mobile": null,
+    "payment_mode": "upi",
+    "transaction_datetime": "2026-08-04T14:30:00Z",
+    "duration_minutes": 1,
+    "remark": null,
+    "can_edit": true,
+    "editable_until": "2026-08-04T15:10:00Z",
+    "last_edited_by": null,
+    "last_edited_at": null,
+    "edit_count": 0
+  }
+}

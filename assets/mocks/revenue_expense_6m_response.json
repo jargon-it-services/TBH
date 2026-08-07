@@ -1,0 +1,69 @@
+{
+  "status": true,
+  "message": "Revenue & expense report fetched successfully",
+  "data": {
+    "meta": {
+      "currency_symbol": "₹",
+      "periods": [
+        { "key": "today", "label": "Today" },
+        { "key": "this_week", "label": "This Week" },
+        { "key": "this_month", "label": "This Month" },
+        { "key": "3m", "label": "3M" },
+        { "key": "6m", "label": "6M" },
+        { "key": "12m", "label": "12M" },
+        { "key": "custom", "label": "Custom" }
+      ],
+      "selected_period": "6m",
+      "branches": [
+        { "id": "all", "name": "All Branches" },
+        { "id": "1", "name": "MG Road Branch" },
+        { "id": "2", "name": "Andheri West Branch" },
+        { "id": "3", "name": "Connaught Place Branch" }
+      ],
+      "selected_branch_id": "all"
+    },
+    "summary": {
+      "revenue": 12800000,
+      "revenue_change_percent": 10.4,
+      "expenses": 3340000,
+      "expenses_change_percent": 4.7,
+      "net_profit": 9460000,
+      "net_profit_change_percent": 13.2,
+      "comparison_label": "vs previous 6 months"
+    },
+    "trend": {
+      "title": "Revenue Trend",
+      "points": [
+        { "label": "Dec", "value": 1900000 },
+        { "label": "Jan", "value": 2000000 },
+        { "label": "Feb", "value": 2100000 },
+        { "label": "Mar", "value": 2150000 },
+        { "label": "Apr", "value": 2250000 },
+        { "label": "May", "value": 2400000 }
+      ]
+    },
+    "expense_breakdown": {
+      "title": "Expense Breakdown",
+      "items": [
+        { "label": "Salary", "percent": 40, "amount": 1336000 },
+        { "label": "Rent", "percent": 25, "amount": 835000 },
+        { "label": "Products", "percent": 15, "amount": 501000 },
+        { "label": "Utilities", "percent": 10, "amount": 334000 },
+        { "label": "Others", "percent": 10, "amount": 334000 }
+      ]
+    },
+    "top_services": {
+      "title": "Top Services by Revenue",
+      "items": [
+        { "label": "Hair Cut", "amount": 4224000, "percent": 33 },
+        { "label": "Hair Spa", "amount": 3200000, "percent": 25 },
+        { "label": "Facial", "amount": 2176000, "percent": 17 },
+        { "label": "Coloring", "amount": 1664000, "percent": 13 }
+      ]
+    },
+    "export": {
+      "pdf_url": "https://api.yourdomain.com/reports/revenue-expense/export.pdf",
+      "excel_url": "https://api.yourdomain.com/reports/revenue-expense/export.xlsx"
+    }
+  }
+}

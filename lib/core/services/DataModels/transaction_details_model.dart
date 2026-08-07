@@ -27,6 +27,23 @@ class TransactionDetails {
   final StaffInfo staff;
   final String? remark;
 
+  /// Whether the Edit action should be shown on Transaction Details —
+  /// purely a display decision. The backend independently re-validates
+  /// the edit window server-side on every update request regardless of
+  /// what this said when the screen was opened (see
+  /// `TransactionApi.updateTransaction`'s 409 handling) — the app never
+  /// hardcodes the actual window duration anywhere.
+  final bool canEdit;
+
+  /// ISO-8601 deadline this transaction stops being editable — display
+  /// only (e.g. "editable for x more minutes"); the app never computes
+  /// or stores a duration from this, just shows it as-is if needed.
+  final DateTime? editableUntil;
+
+  final String? lastEditedBy;
+  final DateTime? lastEditedAt;
+  final int editCount;
+
   TransactionDetails({
     required this.id,
     required this.status,
@@ -38,6 +55,11 @@ class TransactionDetails {
     required this.firm,
     required this.staff,
     this.remark,
+    this.canEdit = false,
+    this.editableUntil,
+    this.lastEditedBy,
+    this.lastEditedAt,
+    this.editCount = 0,
   });
 
   factory TransactionDetails.fromJson(Map<String, dynamic> json) {
@@ -52,6 +74,15 @@ class TransactionDetails {
       firm: FirmInfo.fromJson(json['firm']),
       staff: StaffInfo.fromJson(json['staff']),
       remark: json['remark'],
+      canEdit: json['can_edit'] ?? false,
+      editableUntil: json['editable_until'] != null
+          ? DateTime.tryParse(json['editable_until'])
+          : null,
+      lastEditedBy: json['last_edited_by'],
+      lastEditedAt: json['last_edited_at'] != null
+          ? DateTime.tryParse(json['last_edited_at'])
+          : null,
+      editCount: (json['edit_count'] as num?)?.toInt() ?? 0,
     );
   }
 }

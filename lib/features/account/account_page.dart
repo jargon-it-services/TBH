@@ -29,6 +29,9 @@ import '../../core/widgets/InitialsAvatar.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../auth/forgot_password/forgot_password_page.dart';
 import '../payments/payment_history_page.dart';
+import '../reports/payment_mode_report_page.dart';
+import '../reports/pnl_report_page.dart';
+import '../reports/revenue_expense_report_page.dart';
 import '../subscriptions/subscription_plans_page.dart';
 import 'account_deleted_page.dart';
 import 'account_info_page.dart';
@@ -177,6 +180,27 @@ class _AccountPageState extends State<AccountPage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const SalaryRuleListPage()),
+    );
+  }
+
+  Future<void> _handlePnlReport() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PnlReportPage()),
+    );
+  }
+
+  Future<void> _handlePaymentModeReport() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PaymentModeReportPage()),
+    );
+  }
+
+  Future<void> _handleRevenueExpenseReport() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const RevenueExpenseReportPage()),
     );
   }
 
@@ -506,21 +530,34 @@ class _AccountPageState extends State<AccountPage>
     final isAccountAdmin = roleLabel == 'Account Admin';
     final isBranchAdmin = roleLabel == 'Branch Admin';
     final hasAccountSetup = isAccountAdmin || isBranchAdmin;
-    const fullReports = [
+    final fullReports = [
       _AccountTile(icon: Icons.receipt_long_outlined, title: "Payslip"),
-      _AccountTile(icon: Icons.subject_outlined, title: "PnL"),
+      _AccountTile(
+        icon: Icons.subject_outlined,
+        title: "PnL",
+        onTap: _handlePnlReport,
+      ),
+      _AccountTile(
+        icon: Icons.pie_chart_outline_rounded,
+        title: "Payment Mode Breakdown",
+        onTap: _handlePaymentModeReport,
+      ),
       _AccountTile(
         icon: Icons.summarize_outlined,
         title: "Revenue & Expense Summary",
-      ),
-
-      _AccountTile(
-        icon: Icons.pie_chart_outline,
-        title: "Payment Mode Breakdown Charts",
+        onTap: _handleRevenueExpenseReport,
       ),
       _AccountTile(
         icon: Icons.insights_outlined,
         title: "Employee Performance Report",
+      ),
+      _AccountTile(
+        icon: Icons.storefront_outlined,
+        title: "Branch Performance Report",
+      ),
+      _AccountTile(
+        icon: Icons.receipt_long_outlined,
+        title: "Expense Category Breakdown",
       ),
     ];
     const reportPayslipOnly = [

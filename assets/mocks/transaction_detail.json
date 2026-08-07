@@ -69,7 +69,12 @@
           "name": "Alex"
         },
   
-        "remark": "Monthly utility payment processed on time. Receipt saved in accounting folder."
+        "remark": "Monthly utility payment processed on time. Receipt saved in accounting folder.",
+        "can_edit": true,
+        "editable_until": "2099-01-01T00:00:00+05:30",
+        "last_edited_by": null,
+        "last_edited_at": null,
+        "edit_count": 0
       }
     },
     "error": null

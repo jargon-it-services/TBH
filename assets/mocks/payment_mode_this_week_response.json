@@ -1,0 +1,36 @@
+{
+  "status": true,
+  "message": "Payment mode breakdown fetched successfully",
+  "data": {
+    "meta": {
+      "currency_symbol": "₹",
+      "periods": [
+        { "key": "today", "label": "Today" },
+        { "key": "this_week", "label": "This Week" },
+        { "key": "this_month", "label": "This Month" },
+        { "key": "3m", "label": "3M" },
+        { "key": "6m", "label": "6M" },
+        { "key": "12m", "label": "12M" },
+        { "key": "custom", "label": "Custom" }
+      ],
+      "selected_period": "this_week",
+      "branches": [
+        { "id": "all", "name": "All Branches" },
+        { "id": "1", "name": "MG Road Branch" },
+        { "id": "2", "name": "Andheri West Branch" },
+        { "id": "3", "name": "Connaught Place Branch" }
+      ],
+      "selected_branch_id": "all"
+    },
+    "summary": {
+      "total_received": 64800,
+      "change_percent": 8.9,
+      "comparison_label": "vs last week"
+    },
+    "modes": [
+      { "key": "cash", "label": "Cash", "amount": 21000, "percent": 32.4, "transaction_count": 58 },
+      { "key": "upi", "label": "UPI", "amount": 34000, "percent": 52.5, "transaction_count": 132 },
+      { "key": "card", "label": "Card", "amount": 9800, "percent": 15.1, "transaction_count": 22 }
+    ]
+  }
+}

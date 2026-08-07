@@ -1,0 +1,37 @@
+{
+  "status": true,
+  "message": "Success",
+  "data": {
+    "services": [
+      { "id": 1, "name": "Hair Cut", "price": 500, "frequent": true },
+      { "id": 2, "name": "Hair Spa", "price": 800, "frequent": true },
+      { "id": 3, "name": "Facial", "price": 900, "frequent": true },
+      { "id": 4, "name": "Massage", "price": 1200, "frequent": true },
+      { "id": 5, "name": "Manicure", "price": 400, "frequent": false },
+      { "id": 6, "name": "Pedicure", "price": 500, "frequent": false },
+      { "id": 7, "name": "Beard Trim", "price": 250, "frequent": false },
+      { "id": 8, "name": "Bridal Makeup", "price": 8000, "frequent": false }
+    ],
+    "expenses": [
+      { "id": 11, "name": "Rent" },
+      { "id": 12, "name": "Electricity" },
+      { "id": 13, "name": "Water" },
+      { "id": 14, "name": "Marketing" },
+      { "id": 15, "name": "Staff Welfare" }
+    ],
+    "staff": [
+      { "id": 15, "name": "Riya Sharma" },
+      { "id": 16, "name": "Arjun Mehta" },
+      { "id": 17, "name": "Karan Singh" }
+    ],
+    "branches": [
+      { "id": 2, "name": "Downtown Branch" },
+      { "id": 3, "name": "Uptown Branch" }
+    ],
+    "user_role": "manager",
+    "logged_in_user_id": 15,
+    "logged_in_branch_id": 2,
+    "last_payment_mode": "upi",
+    "last_transaction_type": "service"
+  }
+}
