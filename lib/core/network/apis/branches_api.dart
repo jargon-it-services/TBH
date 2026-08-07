@@ -70,7 +70,7 @@ class BranchesApi {
   /// try/catch, bypassing [callApi] entirely. That meant it never went
   /// through the mock branch that every other API method in this app
   /// uses — with `Env.isMock` true (see `env.dart`) and no real backend
-  /// behind `Env.apiBaseUrl`, every save attempt made a real HTTP call
+  /// behind `Env.appBaseUrl`, every save attempt made a real HTTP call
   /// to a host that doesn't exist. Dio surfaces that as a
   /// `DioException` that `ApiException.fromDioError` doesn't have a
   /// specific case for, so it falls through to its generic `default`

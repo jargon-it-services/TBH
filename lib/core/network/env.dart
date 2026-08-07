@@ -1,6 +1,15 @@
 class Env {
   static const bool isMock = true; // change to false for prod
-  static const String apiBaseUrl = 'https://api.yourdomain.com';
+
+  /// Hosts the auth/identity/account surface — see [DioClient]'s
+  /// `_authServicePaths` for exactly which relative paths route here.
+  /// No trailing slash, to match how every `*_api.dart` file's path
+  /// strings already start with '/' (avoids a double-slash join).
+  static const String authBaseUrl = 'https://authapi.jargonits.com/api';
+
+  /// Hosts everything else — the default for any path not explicitly
+  /// listed in `_authServicePaths`.
+  static const String appBaseUrl = 'https://tbhapi.jargonits.com/api';
 
   /// OneSignal App ID (Settings > Keys & IDs in the OneSignal
   /// dashboard). Left as a placeholder here -- `NotificationPushService`

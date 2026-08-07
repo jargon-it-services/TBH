@@ -72,6 +72,45 @@ class DioClient {
   static bool _skipsSessionHandling(String path) =>
       _matchesPath(path, _skipSessionHandlingPaths);
 
+  /// Paths hosted on [Env.authBaseUrl] rather than [Env.appBaseUrl].
+  /// Deliberately a *separate* list from [_publicPaths]: this is purely
+  /// about which backend service owns the path, not whether it needs a
+  /// Bearer token. Several entries here (`/user/profile`,
+  /// `/account/info`, `/user/delete-account`, `/referrals/invite-link`)
+  /// are still protected — they stay out of [_publicPaths] and keep
+  /// getting the Authorization header exactly as before.
+  ///
+  /// Matched via [_matchesPath], same path-segment-boundary rule as
+  /// [_publicPaths] — e.g. '/forgot-password' here also covers
+  /// '/forgot-password/verify-otp', '/forgot-password/send-otp', etc.
+  ///
+  /// To add a new endpoint to the auth service later, add its path
+  /// here — nothing else in this file, or in any `*_api.dart` file,
+  /// needs to change.
+  static const List<String> _authServicePaths = [
+    '/auth/login',
+    '/auth/refresh',
+    '/auth/logout',
+    '/register',
+    '/forgot-password',
+    '/app/version',
+    '/user/profile',
+    '/account/info',
+    '/user/delete-account',
+    '/referrals/invite-link',
+  ];
+
+  static bool _isAuthService(String path) =>
+      _matchesPath(path, _authServicePaths);
+
+  /// Resolves which backend host a given relative path should be sent
+  /// to. Called from the request interceptor below, so every call site
+  /// (`get`/`post`/`put`/`delete`, plus the retry path after a token
+  /// refresh) is routed correctly without any of them needing to know
+  /// about the split.
+  static String _resolveBaseUrl(String path) =>
+      _isAuthService(path) ? Env.authBaseUrl : Env.appBaseUrl;
+
   // Shared across every call site, coalescing a burst of concurrent
   // 401s into exactly one in-flight refresh attempt instead of one per
   // caller. (Kept `static` rather than instance-level even though
@@ -82,7 +121,12 @@ class DioClient {
   DioClient._internal() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: Env.apiBaseUrl,
+        // Left blank on purpose: with two backend hosts now in play,
+        // `baseUrl` is resolved per-request in the onRequest
+        // interceptor below (see `_resolveBaseUrl`), not fixed once
+        // here. Every request — including a post-refresh retry, which
+        // re-enters this same interceptor — gets routed correctly
+        // regardless of this default.
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         responseType: ResponseType.json,
@@ -92,6 +136,13 @@ class DioClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          /// 0️⃣ Route to the correct backend host for this path —
+          /// see [_resolveBaseUrl]/[_authServicePaths]. Must run before
+          /// anything else in this interceptor; token attachment and
+          /// every other step below are unaffected by which host the
+          /// request ends up going to.
+          options.baseUrl = _resolveBaseUrl(options.path);
+
           /// 1️⃣ Attach token — skipped for public (unauthenticated) APIs.
           /// (Connectivity is checked in get()/post() below, before this
           /// interceptor even runs, using ConnectivityService's cached
