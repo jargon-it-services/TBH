@@ -5,11 +5,13 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_fonts.dart';
 
 /// Segment toggle — "Today / This Week / This Month / 3M / 6M / 12M /
-/// Custom" — driven by `meta.periods[]`. Seven segments don't fit a
-/// phone-width pill row the way P&L's four periods do, so unlike
-/// `PnlPeriodSelector` this scrolls horizontally instead of using
-/// `Expanded` tabs; the active-pill visual language is otherwise the
-/// same.
+/// Custom" — driven by `meta.periods[]`. Shared by all three report
+/// screens (Payment Mode, Revenue & Expense, and PnL — see
+/// `pnl_report_page.dart`); kept in one place rather than one copy per
+/// screen after PnL switched from its old 4-tab `Expanded`-row
+/// selector to this same seven-segment one. Seven segments don't fit a
+/// phone-width pill row the way four did, so this scrolls horizontally
+/// instead.
 class PaymentModeSegmentSelector extends StatelessWidget {
   final List<PnlPeriodOption> periods;
   final String selectedKey;

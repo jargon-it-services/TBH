@@ -60,22 +60,27 @@ class PnlExpenseCategoriesChart extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  height: 150,
-                  width: 150,
-                  child: PieChart(
-                    PieChartData(
-                      centerSpaceRadius: 42,
-                      sectionsSpace: 2,
-                      sections: List.generate(slices.length, (index) {
-                        final slice = slices[index];
-                        return PieChartSectionData(
-                          value: slice.value,
-                          color: _sliceColors[index % _sliceColors.length],
-                          radius: 42,
-                          showTitle: false,
-                        );
-                      }),
+                Semantics(
+                  label: _donutSummary(slices),
+                  child: ExcludeSemantics(
+                    child: SizedBox(
+                      height: 150,
+                      width: 150,
+                      child: PieChart(
+                        PieChartData(
+                          centerSpaceRadius: 42,
+                          sectionsSpace: 2,
+                          sections: List.generate(slices.length, (index) {
+                            final slice = slices[index];
+                            return PieChartSectionData(
+                              value: slice.value,
+                              color: _sliceColors[index % _sliceColors.length],
+                              radius: 42,
+                              showTitle: false,
+                            );
+                          }),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -128,5 +133,18 @@ class PnlExpenseCategoriesChart extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Text equivalent of the donut chart, for screen readers. The
+  /// per-row legend already carries this information as real `Text`
+  /// widgets, but the chart itself was previously an unlabeled node —
+  /// this gives it a sensible summary too rather than silence.
+  String _donutSummary(List<PnlCategoryItem> slices) {
+    if (_total == 0) return 'Expense categories chart, no data.';
+    final parts = slices.map((s) {
+      final percent = (s.value / _total) * 100;
+      return '${s.label} ${percent.toStringAsFixed(0)} percent';
+    });
+    return 'Expense categories: ${parts.join(', ')}.';
   }
 }

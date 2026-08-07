@@ -1,0 +1,69 @@
+{
+  "status": true,
+  "message": "P&L report fetched successfully",
+  "data": {
+    "meta": {
+      "currency_symbol": "₹",
+      "date_format": "dd MMM yyyy",
+      "periods": [
+        { "key": "today", "label": "Today" },
+        { "key": "this_week", "label": "This Week" },
+        { "key": "this_month", "label": "This Month" },
+        { "key": "3m", "label": "3M" },
+        { "key": "6m", "label": "6M" },
+        { "key": "12m", "label": "12M" },
+        { "key": "custom", "label": "Custom" }
+      ],
+      "selected_period": "today",
+      "branches": [
+        { "id": "all", "name": "All Branches" },
+        { "id": "1", "name": "MG Road Branch" },
+        { "id": "2", "name": "Andheri West Branch" },
+        { "id": "3", "name": "Connaught Place Branch" }
+      ],
+      "selected_branch_id": "all"
+    },
+    "summary": {
+      "revenue": 9500,
+      "expenses": 4900,
+      "profit": 4600
+    },
+    "trend": {
+      "title": "P&L Trend",
+      "points": [
+        { "label": "6 AM", "revenue": 800, "expense": 500 },
+        { "label": "9 AM", "revenue": 1800, "expense": 900 },
+        { "label": "12 PM", "revenue": 2400, "expense": 1200 },
+        { "label": "3 PM", "revenue": 2000, "expense": 1000 },
+        { "label": "6 PM", "revenue": 1700, "expense": 900 },
+        { "label": "9 PM", "revenue": 800, "expense": 400 }
+      ]
+    },
+    "expense_categories": {
+      "title": "Expense Categories",
+      "items": [
+        { "label": "Salary", "value": 1715 },
+        { "label": "Rent", "value": 980 },
+        { "label": "Products", "value": 882 },
+        { "label": "Marketing", "value": 490 },
+        { "label": "Utilities", "value": 392 },
+        { "label": "Others", "value": 441 }
+      ]
+    },
+    "monthly_comparison": {
+      "title": "Hourly Comparison",
+      "rows": [
+        { "month": "6 AM", "revenue": 800, "expenses": 500, "profit": 300 },
+        { "month": "9 AM", "revenue": 1800, "expenses": 900, "profit": 900 },
+        { "month": "12 PM", "revenue": 2400, "expenses": 1200, "profit": 1200 },
+        { "month": "3 PM", "revenue": 2000, "expenses": 1000, "profit": 1000 },
+        { "month": "6 PM", "revenue": 1700, "expenses": 900, "profit": 800 },
+        { "month": "9 PM", "revenue": 800, "expenses": 400, "profit": 400 }
+      ]
+    },
+    "export": {
+      "pdf_url": "https://api.yourdomain.com/reports/pnl/export.pdf",
+      "excel_url": "https://api.yourdomain.com/reports/pnl/export.xlsx"
+    }
+  }
+}

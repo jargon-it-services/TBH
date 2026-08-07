@@ -1,0 +1,67 @@
+{
+  "status": true,
+  "message": "P&L report fetched successfully",
+  "data": {
+    "meta": {
+      "currency_symbol": "₹",
+      "date_format": "dd MMM yyyy",
+      "periods": [
+        { "key": "today", "label": "Today" },
+        { "key": "this_week", "label": "This Week" },
+        { "key": "this_month", "label": "This Month" },
+        { "key": "3m", "label": "3M" },
+        { "key": "6m", "label": "6M" },
+        { "key": "12m", "label": "12M" },
+        { "key": "custom", "label": "Custom" }
+      ],
+      "selected_period": "this_month",
+      "branches": [
+        { "id": "all", "name": "All Branches" },
+        { "id": "1", "name": "MG Road Branch" },
+        { "id": "2", "name": "Andheri West Branch" },
+        { "id": "3", "name": "Connaught Place Branch" }
+      ],
+      "selected_branch_id": "all"
+    },
+    "summary": {
+      "revenue": 280000,
+      "expenses": 145000,
+      "profit": 135000
+    },
+    "trend": {
+      "title": "P&L Trend",
+      "points": [
+        { "label": "1 May", "revenue": 48000, "expense": 24000 },
+        { "label": "8 May", "revenue": 55000, "expense": 28000 },
+        { "label": "15 May", "revenue": 60000, "expense": 31000 },
+        { "label": "22 May", "revenue": 58000, "expense": 30000 },
+        { "label": "31 May", "revenue": 59000, "expense": 32000 }
+      ]
+    },
+    "expense_categories": {
+      "title": "Expense Categories",
+      "items": [
+        { "label": "Salary", "value": 50750 },
+        { "label": "Rent", "value": 29000 },
+        { "label": "Products", "value": 26100 },
+        { "label": "Marketing", "value": 14500 },
+        { "label": "Utilities", "value": 11600 },
+        { "label": "Others", "value": 13050 }
+      ]
+    },
+    "monthly_comparison": {
+      "title": "Weekly Comparison",
+      "rows": [
+        { "month": "1 May", "revenue": 48000, "expenses": 24000, "profit": 24000 },
+        { "month": "8 May", "revenue": 55000, "expenses": 28000, "profit": 27000 },
+        { "month": "15 May", "revenue": 60000, "expenses": 31000, "profit": 29000 },
+        { "month": "22 May", "revenue": 58000, "expenses": 30000, "profit": 28000 },
+        { "month": "31 May", "revenue": 59000, "expenses": 32000, "profit": 27000 }
+      ]
+    },
+    "export": {
+      "pdf_url": "https://api.yourdomain.com/reports/pnl/export.pdf",
+      "excel_url": "https://api.yourdomain.com/reports/pnl/export.xlsx"
+    }
+  }
+}

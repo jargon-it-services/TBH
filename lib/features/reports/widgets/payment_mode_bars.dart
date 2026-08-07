@@ -92,6 +92,8 @@ class _ModeRow extends StatelessWidget {
                   minHeight: 6,
                   backgroundColor: AppColors.divider,
                   valueColor: AlwaysStoppedAnimation<Color>(style.color),
+                  semanticsLabel: '${item.label} share of total payments',
+                  semanticsValue: '${item.percent.toStringAsFixed(1)} percent',
                 ),
               ),
             ],

@@ -93,6 +93,8 @@ class _ServiceRow extends StatelessWidget {
                   minHeight: 6,
                   backgroundColor: AppColors.divider,
                   valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  semanticsLabel: '${item.label} share of total revenue',
+                  semanticsValue: '${item.percent.toStringAsFixed(0)} percent',
                 ),
               ),
             ],

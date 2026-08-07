@@ -15,9 +15,9 @@ import '../../core/widgets/jargon_dropdown.dart';
 import '../../core/widgets/network_state_view.dart';
 import '../../core/widgets/segmented_toggle.dart';
 import '../../core/widgets/slide_action_button.dart';
-import 'transaction_details_page.dart';
 import 'widgets/selected_service_card.dart';
 import 'widgets/service_picker_sheet.dart';
+import 'widgets/transaction_success_overlay.dart';
 
 /// POS-style Transaction Entry — one screen, two flows:
 ///
@@ -102,6 +102,7 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
   // ---- More options ----
   bool _moreOptionsExpanded = false;
   String _remark = '';
+  String? _remarkError;
 
   // ---- Timestamps & double-submit protection ----
   late DateTime _startTime;
@@ -198,7 +199,7 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
   void _prefillFromExisting(TransactionDetails existing, TransactionBootstrapData data) {
     _remark = existing.remark ?? '';
 
-    final staffMatch = data.staff.where((s) => s.name == existing.staff.name);
+    final staffMatch = data.staff.where((s) => _sameLabel(s.name, existing.staff.name));
     if (staffMatch.isNotEmpty) {
       _staffId = staffMatch.first.id;
       _staffName = staffMatch.first.name;
@@ -206,7 +207,7 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
 
     if (existing.type == 'service') {
       _selectedServices = existing.priceBreakdown.services.map((item) {
-        final bootstrapMatch = data.services.where((s) => s.name == item.title);
+        final bootstrapMatch = data.services.where((s) => _sameLabel(s.name, item.title));
         final unitPrice = bootstrapMatch.isNotEmpty
             ? bootstrapMatch.first.price
             : (item.quantity > 0 ? item.netAmount / item.quantity : item.netAmount).toDouble();
@@ -220,11 +221,25 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
       }).toList();
     } else {
       _expenseName = existing.category;
-      final expenseMatch = data.expenses.where((e) => e.name == existing.category);
-      if (expenseMatch.isNotEmpty) _expenseId = expenseMatch.first.id;
+      final expenseMatch = data.expenses.where((e) => _sameLabel(e.name, existing.category));
+      if (expenseMatch.isNotEmpty) {
+        _expenseId = expenseMatch.first.id;
+        // Prefer the bootstrap's own casing/spelling over the
+        // transaction's stored label once we have a confirmed match.
+        _expenseName = expenseMatch.first.name;
+      }
       _expenseAmount = existing.priceBreakdown.summary.total.toStringAsFixed(0);
     }
   }
+
+  /// Case/whitespace-insensitive equality — the create/update contract
+  /// only carries numeric ids, so re-linking an existing transaction's
+  /// text labels (staff/service/expense name) back to a bootstrap id on
+  /// Edit has to match by name. A backend that's merely inconsistent
+  /// about casing or trailing spaces between two endpoints shouldn't
+  /// silently strand a required field unselected (see the "Select an
+  /// expense" bug this fixed).
+  bool _sameLabel(String a, String b) => a.trim().toLowerCase() == b.trim().toLowerCase();
 
   double get _grandTotal {
     if (_transactionType == 'service') {
@@ -250,8 +265,15 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
 
   Future<void> _openMoreServices() async {
     if (_bootstrap == null) return;
-    final picked = await ServicePickerSheet.show(context, services: _bootstrap!.services);
-    if (picked != null) _addOrIncrementService(picked);
+    final initialQuantities = {
+      for (final line in _selectedServices) line.serviceId: line.qty,
+    };
+    await ServicePickerSheet.show(
+      context,
+      services: _bootstrap!.services,
+      initialQuantities: initialQuantities,
+      onAdd: _addOrIncrementService,
+    );
   }
 
   // ================= VALIDATION =================
@@ -280,10 +302,25 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
     setState(() {
       _customerNameError = nameError;
       _customerMobileError = mobileError;
-      if (nameError != null || mobileError != null) _customerExpanded = true;
+      if (nameError != null || mobileError != null) {
+        _customerExpanded = true;
+        _moreOptionsExpanded = true;
+      }
     });
 
     return nameError == null && mobileError == null;
+  }
+
+  /// Service + Pay Later only (see the module's latest rules) — Expense
+  /// transactions never require a remark, and Service + Paid never
+  /// requires one either.
+  bool _validateRemarkForPayLater() {
+    final error = _remark.trim().isEmpty ? 'Remark is required for Pay Later' : null;
+    setState(() {
+      _remarkError = error;
+      if (error != null) _moreOptionsExpanded = true;
+    });
+    return error == null;
   }
 
   // ================= SAVE =================
@@ -293,15 +330,28 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
 
     final commonError = _validateCommon();
     if (commonError != null) {
+      if (_branchId == null || _staffId == null) {
+        setState(() => _moreOptionsExpanded = true);
+      }
       AppSnackbar.warning(context, commonError);
       return;
     }
-    if (status == 'pending' && !_validateCustomerForPayLater()) {
-      AppSnackbar.warning(
-        context,
-        'Customer Name and Mobile Number are required for Pay Later',
-      );
-      return;
+
+    // Pay Later's extra requirements differ by transaction type: a
+    // Service transaction still needs a contactable customer (money is
+    // owed) *and* a remark explaining the deferral; an Expense
+    // transaction was already logged by an accountable staff member and
+    // was never customer-facing to begin with, so neither applies.
+    if (status == 'pending' && _transactionType == 'service') {
+      final customerValid = _validateCustomerForPayLater();
+      final remarkValid = _validateRemarkForPayLater();
+      if (!customerValid || !remarkValid) {
+        AppSnackbar.warning(
+          context,
+          'Customer details and a remark are required for Pay Later',
+        );
+        return;
+      }
     }
 
     setState(() {
@@ -377,27 +427,20 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
       return;
     }
 
-    final amountLabel = '₹${result.grandTotal.toStringAsFixed(0)}';
-    final message = result.status == 'paid'
-        ? '$amountLabel · Paid'
-        : '$amountLabel · Pending'
-            '${result.customerName != null ? ' — ${result.customerName}, ${result.customerMobile ?? ''}' : ''}';
-
-    AppSnackbar.success(
-      context,
-      message,
-      duration: const Duration(seconds: 5),
-      action: SnackBarAction(
-        label: 'View',
-        textColor: Colors.white,
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => TransactionDetailsPage(transactionId: result.id)),
-        ),
-      ),
-    );
-
+    // Reset first so the screen underneath the overlay is already
+    // ready for the next transaction the instant the overlay
+    // auto-dismisses (or "View Details" is tapped) — no flash of the
+    // old, just-submitted data.
     _resetInPlace();
+
+    TransactionSuccessOverlay.show(
+      context,
+      transactionId: result.id,
+      status: result.status,
+      amount: result.grandTotal,
+      customerName: result.customerName,
+      customerMobile: result.customerMobile,
+    );
   }
 
   void _handleSaveFailure(ApiResponse<TransactionSaveResult> response, String status) {
@@ -444,6 +487,7 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
       _customerNameError = null;
       _customerMobileError = null;
       _remark = '';
+      _remarkError = null;
       _moreOptionsExpanded = false;
       _startTime = DateTime.now();
       _idempotencyKey = _generateUuidV4();
@@ -552,10 +596,6 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
               value: _paymentModeLabel(_paymentMode),
               onChanged: (v) => setState(() => _paymentMode = v.toLowerCase()),
             ),
-            const SizedBox(height: AppSpacing.verticalLarge),
-            _branchAndStaffSection(),
-            const SizedBox(height: AppSpacing.verticalLarge),
-            _customerSection(),
             const SizedBox(height: AppSpacing.verticalLarge),
             _moreOptionsSection(),
             const SizedBox(height: AppSpacing.verticalLarge),
@@ -697,58 +737,95 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
 
   // ---------------- BRANCH / STAFF ----------------
 
-  Widget _branchAndStaffSection() {
+  // ---------------- MORE OPTIONS (Branch, Staff, Customer, Remark) ----------------
+
+  Widget _moreOptionsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('Branch & Staff'),
-        _branchEditable
-            ? Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.verticalMedium),
-                child: JargonDropdown(
+        InkWell(
+          onTap: () => setState(() => _moreOptionsExpanded = !_moreOptionsExpanded),
+          child: Row(
+            children: [
+              Text('More Options', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+              const Spacer(),
+              Icon(
+                _moreOptionsExpanded ? Icons.expand_less : Icons.expand_more,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+        if (_moreOptionsExpanded) ...[
+          const SizedBox(height: AppSpacing.verticalLarge),
+          _sectionTitle('Branch & Staff'),
+          _branchEditable
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.verticalMedium),
+                  child: JargonDropdown(
+                    label: 'Branch',
+                    value: _branchName ?? 'Select Branch',
+                    icon: Icons.store_mall_directory_outlined,
+                    options: _bootstrap!.branches.map((b) => b.name).toList(),
+                    showLabel: true,
+                    onChanged: (name) {
+                      final match = _bootstrap!.branches.firstWhere((b) => b.name == name);
+                      setState(() {
+                        _branchId = match.id;
+                        _branchName = match.name;
+                      });
+                    },
+                  ),
+                )
+              : AppTextField(
                   label: 'Branch',
-                  value: _branchName ?? 'Select Branch',
                   icon: Icons.store_mall_directory_outlined,
-                  options: _bootstrap!.branches.map((b) => b.name).toList(),
+                  initialValue: _branchName ?? '',
+                  enabled: false,
+                  readOnly: true,
+                ),
+          _staffEditable
+              ? JargonDropdown(
+                  label: 'Staff',
+                  value: _staffName ?? 'Select Staff',
+                  icon: Icons.badge_outlined,
+                  options: _bootstrap!.staff.map((s) => s.name).toList(),
                   showLabel: true,
                   onChanged: (name) {
-                    final match = _bootstrap!.branches.firstWhere((b) => b.name == name);
+                    final match = _bootstrap!.staff.firstWhere((s) => s.name == name);
                     setState(() {
-                      _branchId = match.id;
-                      _branchName = match.name;
+                      _staffId = match.id;
+                      _staffName = match.name;
                     });
                   },
+                )
+              : AppTextField(
+                  label: 'Staff',
+                  icon: Icons.badge_outlined,
+                  initialValue: _staffName ?? '',
+                  enabled: false,
+                  readOnly: true,
                 ),
-              )
-            : AppTextField(
-                label: 'Branch',
-                icon: Icons.store_mall_directory_outlined,
-                initialValue: _branchName ?? '',
-                enabled: false,
-                readOnly: true,
-              ),
-        _staffEditable
-            ? JargonDropdown(
-                label: 'Staff',
-                value: _staffName ?? 'Select Staff',
-                icon: Icons.badge_outlined,
-                options: _bootstrap!.staff.map((s) => s.name).toList(),
-                showLabel: true,
-                onChanged: (name) {
-                  final match = _bootstrap!.staff.firstWhere((s) => s.name == name);
-                  setState(() {
-                    _staffId = match.id;
-                    _staffName = match.name;
-                  });
-                },
-              )
-            : AppTextField(
-                label: 'Staff',
-                icon: Icons.badge_outlined,
-                initialValue: _staffName ?? '',
-                enabled: false,
-                readOnly: true,
-              ),
+          // Customer only makes sense for a Service transaction — an
+          // Expense was already logged by an accountable staff member
+          // and was never customer-facing (see module rules).
+          if (_transactionType == 'service') ...[
+            const SizedBox(height: AppSpacing.verticalSmall),
+            _customerSection(),
+          ],
+          const SizedBox(height: AppSpacing.verticalSmall),
+          AppTextField(
+            label: 'Remark (optional)',
+            icon: Icons.notes_outlined,
+            maxLines: 3,
+            initialValue: _remark,
+            onChanged: (v) {
+              _remark = v;
+              if (_remarkError != null) setState(() => _remarkError = null);
+            },
+          ),
+          if (_remarkError != null) _inlineError(_remarkError!),
+        ],
       ],
     );
   }
@@ -770,52 +847,55 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(child: _sectionTitle('Customer (optional)')),
-            IconButton(
-              icon: const Icon(Icons.close, size: 18, color: AppColors.textSecondary),
-              onPressed: () => setState(() {
-                _customerExpanded = false;
-                _customerName = '';
-                _customerMobile = '';
-                _customerNameError = null;
-                _customerMobileError = null;
-              }),
-            ),
-          ],
-        ),
-        AppTextField(
-          label: 'Customer Name',
-          icon: Icons.person_outline,
-          initialValue: _customerName,
-          onChanged: (v) => setState(() {
-            _customerName = v;
-            _customerNameError = null;
-          }),
-        ),
-        if (_customerNameError != null) _inlineError(_customerNameError!),
-        AppTextField(
-          label: 'Mobile Number',
-          icon: Icons.phone_outlined,
-          keyboardType: TextInputType.phone,
-          initialValue: _customerMobile,
-          onChanged: (v) => setState(() {
-            _customerMobile = v;
-            _customerMobileError = null;
-          }),
-        ),
-        if (_customerMobileError != null) _inlineError(_customerMobileError!),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.verticalMedium),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: _sectionTitle('Customer (optional)')),
+              IconButton(
+                icon: const Icon(Icons.close, size: 18, color: AppColors.textSecondary),
+                onPressed: () => setState(() {
+                  _customerExpanded = false;
+                  _customerName = '';
+                  _customerMobile = '';
+                  _customerNameError = null;
+                  _customerMobileError = null;
+                }),
+              ),
+            ],
+          ),
+          AppTextField(
+            label: 'Customer Name',
+            icon: Icons.person_outline,
+            initialValue: _customerName,
+            onChanged: (v) => setState(() {
+              _customerName = v;
+              _customerNameError = null;
+            }),
+          ),
+          if (_customerNameError != null) _inlineError(_customerNameError!),
+          AppTextField(
+            label: 'Mobile Number',
+            icon: Icons.phone_outlined,
+            keyboardType: TextInputType.phone,
+            initialValue: _customerMobile,
+            onChanged: (v) => setState(() {
+              _customerMobile = v;
+              _customerMobileError = null;
+            }),
+          ),
+          if (_customerMobileError != null) _inlineError(_customerMobileError!),
+        ],
+      ),
     );
   }
 
   Widget _inlineError(String message) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 4, top: 0),
+      padding: const EdgeInsets.only(bottom: 12, left: 4, top: 4),
       child: Row(
         children: [
           const Icon(Icons.error_outline, size: 13, color: AppColors.error),
@@ -825,39 +905,6 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
           ),
         ],
       ),
-    );
-  }
-
-  // ---------------- MORE OPTIONS ----------------
-
-  Widget _moreOptionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () => setState(() => _moreOptionsExpanded = !_moreOptionsExpanded),
-          child: Row(
-            children: [
-              Text('More Options', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-              const Spacer(),
-              Icon(
-                _moreOptionsExpanded ? Icons.expand_less : Icons.expand_more,
-                color: AppColors.textSecondary,
-              ),
-            ],
-          ),
-        ),
-        if (_moreOptionsExpanded) ...[
-          const SizedBox(height: AppSpacing.verticalMedium),
-          AppTextField(
-            label: 'Remark (optional)',
-            icon: Icons.notes_outlined,
-            maxLines: 3,
-            initialValue: _remark,
-            onChanged: (v) => _remark = v,
-          ),
-        ],
-      ],
     );
   }
 

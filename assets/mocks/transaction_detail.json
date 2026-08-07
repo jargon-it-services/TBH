@@ -6,7 +6,7 @@
         "status": "paid",
         "paymentMode": "upi",
         "type": "expense",
-        "category": "Breakfast",
+        "category": "Staff Welfare",
   
         "priceBreakdown": {
           "services": [

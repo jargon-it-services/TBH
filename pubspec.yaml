@@ -119,6 +119,9 @@ flutter:
     - assets/mocks/pnl_report_6m_response.json
     - assets/mocks/pnl_report_12m_response.json
     - assets/mocks/pnl_export_response.json
+    - assets/mocks/pnl_report_today_response.json
+    - assets/mocks/pnl_report_this_week_response.json
+    - assets/mocks/pnl_report_this_month_response.json
     - assets/mocks/payment_mode_today_response.json
     - assets/mocks/payment_mode_this_week_response.json
     - assets/mocks/payment_mode_this_month_response.json

@@ -21,12 +21,12 @@ class PnlReportApi {
   /// GET /reports/pnl?period=&branch_id=&start_date=&end_date=
   ///
   /// [period] is one of the keys the response's own `meta.periods[]`
-  /// advertises (`3m` / `6m` / `12m` / `custom`). The mock has one
-  /// canned dataset per non-custom period; `custom` (and any period
-  /// key without its own dataset) falls back to the `3m` dataset —
-  /// swapping in a real backend is what makes a genuine custom-range
-  /// query possible, this just keeps the screen usable against mocks
-  /// today.
+  /// advertises (`today` / `this_week` / `this_month` / `3m` / `6m` /
+  /// `12m` / `custom`). The mock has one canned dataset per non-custom
+  /// period; `custom` (and any period key without its own dataset)
+  /// falls back to the `3m` dataset — swapping in a real backend is
+  /// what makes a genuine custom-range query possible, this just
+  /// keeps the screen usable against mocks today.
   Future<ApiResponse<PnlReportData>> fetchPnlReport({
     required String period,
     String branchId = 'all',
@@ -34,6 +34,9 @@ class PnlReportApi {
     DateTime? endDate,
   }) {
     final String mockAsset = switch (period) {
+      'today' => 'assets/mocks/pnl_report_today_response.json',
+      'this_week' => 'assets/mocks/pnl_report_this_week_response.json',
+      'this_month' => 'assets/mocks/pnl_report_this_month_response.json',
       '6m' => 'assets/mocks/pnl_report_6m_response.json',
       '12m' => 'assets/mocks/pnl_report_12m_response.json',
       _ => 'assets/mocks/pnl_report_3m_response.json',

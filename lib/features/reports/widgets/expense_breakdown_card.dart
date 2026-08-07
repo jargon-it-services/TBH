@@ -60,22 +60,27 @@ class ExpenseBreakdownCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  height: 150,
-                  width: 150,
-                  child: PieChart(
-                    PieChartData(
-                      centerSpaceRadius: 42,
-                      sectionsSpace: 2,
-                      sections: List.generate(items.length, (index) {
-                        final item = items[index];
-                        return PieChartSectionData(
-                          value: item.percent,
-                          color: _sliceColors[index % _sliceColors.length],
-                          radius: 42,
-                          showTitle: false,
-                        );
-                      }),
+                Semantics(
+                  label: _donutSummary(items),
+                  child: ExcludeSemantics(
+                    child: SizedBox(
+                      height: 150,
+                      width: 150,
+                      child: PieChart(
+                        PieChartData(
+                          centerSpaceRadius: 42,
+                          sectionsSpace: 2,
+                          sections: List.generate(items.length, (index) {
+                            final item = items[index];
+                            return PieChartSectionData(
+                              value: item.percent,
+                              color: _sliceColors[index % _sliceColors.length],
+                              radius: 42,
+                              showTitle: false,
+                            );
+                          }),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -134,5 +139,14 @@ class ExpenseBreakdownCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Text equivalent of the donut chart, for screen readers — the
+  /// legend already carries this as real `Text`, but the chart node
+  /// itself was previously unlabeled.
+  String _donutSummary(List<ExpenseBreakdownItem> items) {
+    if (items.isEmpty) return 'Expense breakdown chart, no data.';
+    final parts = items.map((i) => '${i.label} ${i.percent.toStringAsFixed(0)} percent');
+    return 'Expense breakdown: ${parts.join(', ')}.';
   }
 }

@@ -53,96 +53,112 @@ class PnlTrendChart extends StatelessWidget {
               height: 180,
             )
           else
-            SizedBox(
-              height: 220,
-              child: LineChart(
-                LineChartData(
-                  minY: 0,
-                  gridData: const FlGridData(show: true),
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        interval: 1,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index < 0 || index >= points.length) {
-                            return const SizedBox.shrink();
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              points[index].label,
-                              style: AppTextStyles.bodySmall.copyWith(fontSize: 9),
-                            ),
-                          );
-                        },
+            Semantics(
+              label: _trendSummary(points, currencySymbol),
+              child: ExcludeSemantics(
+                child: SizedBox(
+                  height: 220,
+                  child: LineChart(
+                    LineChartData(
+                      minY: 0,
+                      gridData: const FlGridData(show: true),
+                      borderData: FlBorderData(show: false),
+                      titlesData: FlTitlesData(
+                        leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            interval: 1,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index < 0 || index >= points.length) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  points[index].label,
+                                  style: AppTextStyles.bodySmall.copyWith(fontSize: 9),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
+                      lineTouchData: LineTouchData(
+                        enabled: true,
+                        touchTooltipData: LineTouchTooltipData(
+                          getTooltipColor: (touchedSpot) => AppColors.textPrimary,
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map((spot) {
+                              final isRevenue = spot.barIndex == 0;
+                              return LineTooltipItem(
+                                "${isRevenue ? 'Revenue' : 'Expense'}\n"
+                                "$currencySymbol${spot.y.toStringAsFixed(0)}",
+                                const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              );
+                            }).toList();
+                          },
+                        ),
+                      ),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: List.generate(
+                            points.length,
+                            (i) => FlSpot(i.toDouble(), points[i].revenue),
+                          ),
+                          isCurved: true,
+                          barWidth: 2.5,
+                          color: AppColors.primary,
+                          dotData: const FlDotData(show: true),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            color: AppColors.primary.withOpacity(0.08),
+                          ),
+                        ),
+                        LineChartBarData(
+                          spots: List.generate(
+                            points.length,
+                            (i) => FlSpot(i.toDouble(), points[i].expense),
+                          ),
+                          isCurved: true,
+                          barWidth: 2.5,
+                          color: AppColors.secondary,
+                          dotData: const FlDotData(show: true),
+                          belowBarData: BarAreaData(show: false),
+                        ),
+                      ],
                     ),
                   ),
-                  lineTouchData: LineTouchData(
-                    enabled: true,
-                    touchTooltipData: LineTouchTooltipData(
-                      getTooltipColor: (touchedSpot) => AppColors.textPrimary,
-                      getTooltipItems: (touchedSpots) {
-                        return touchedSpots.map((spot) {
-                          final isRevenue = spot.barIndex == 0;
-                          return LineTooltipItem(
-                            "${isRevenue ? 'Revenue' : 'Expense'}\n"
-                            "$currencySymbol${spot.y.toStringAsFixed(0)}",
-                            const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                            ),
-                          );
-                        }).toList();
-                      },
-                    ),
-                  ),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: List.generate(
-                        points.length,
-                        (i) => FlSpot(i.toDouble(), points[i].revenue),
-                      ),
-                      isCurved: true,
-                      barWidth: 2.5,
-                      color: AppColors.primary,
-                      dotData: const FlDotData(show: true),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        color: AppColors.primary.withOpacity(0.08),
-                      ),
-                    ),
-                    LineChartBarData(
-                      spots: List.generate(
-                        points.length,
-                        (i) => FlSpot(i.toDouble(), points[i].expense),
-                      ),
-                      isCurved: true,
-                      barWidth: 2.5,
-                      color: AppColors.secondary,
-                      dotData: const FlDotData(show: true),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
                 ),
               ),
             ),
         ],
       ),
     );
+  }
+
+  /// Text equivalent of the two-line chart above, for screen readers —
+  /// the trend has no separate text legend the way the donut charts
+  /// elsewhere in this feature do, so without this a screen reader
+  /// gets nothing from this card beyond its title.
+  String _trendSummary(List<PnlTrendPoint> points, String currencySymbol) {
+    final parts = points.map((p) =>
+        '${p.label}: revenue $currencySymbol${p.revenue.toStringAsFixed(0)}, '
+        'expense $currencySymbol${p.expense.toStringAsFixed(0)}');
+    return 'Revenue and expense trend. ${parts.join('. ')}.';
   }
 }
 

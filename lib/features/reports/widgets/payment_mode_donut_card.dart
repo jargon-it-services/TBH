@@ -47,19 +47,24 @@ class PaymentModeDonutCard extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    PieChart(
-                      PieChartData(
-                        centerSpaceRadius: 56,
-                        sectionsSpace: 2,
-                        sections: [
-                          for (final mode in modes)
-                            PieChartSectionData(
-                              value: mode.percent,
-                              color: PaymentModeStyle.of(mode.key).color,
-                              radius: 38,
-                              showTitle: false,
-                            ),
-                        ],
+                    Semantics(
+                      label: _donutSummary(modes),
+                      child: ExcludeSemantics(
+                        child: PieChart(
+                          PieChartData(
+                            centerSpaceRadius: 56,
+                            sectionsSpace: 2,
+                            sections: [
+                              for (final mode in modes)
+                                PieChartSectionData(
+                                  value: mode.percent,
+                                  color: PaymentModeStyle.of(mode.key).color,
+                                  radius: 38,
+                                  showTitle: false,
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     Column(
@@ -80,5 +85,16 @@ class PaymentModeDonutCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Text equivalent of the donut chart, for screen readers. Unlike
+  /// the other two donuts in this feature, this card has no adjacent
+  /// per-slice legend of its own (that detail lives in
+  /// `PaymentModeBars` further down the page instead), so this
+  /// summary is this chart's only text equivalent.
+  String _donutSummary(List<PaymentModeItem> modes) {
+    if (modes.isEmpty) return 'Payment mode distribution chart, no data.';
+    final parts = modes.map((m) => '${m.label} ${m.percent.toStringAsFixed(0)} percent');
+    return 'Payment mode distribution: ${parts.join(', ')}.';
   }
 }
