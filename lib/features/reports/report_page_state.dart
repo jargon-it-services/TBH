@@ -17,8 +17,8 @@ import '../../core/widgets/app_snackbar.dart';
 /// that into one base class means a fix like "Custom must stay
 /// tappable even while already selected" (previously fixed separately
 /// in each report's own period selector, now lives once in the shared
-/// `PaymentModeSegmentSelector`) only needs making once, not once per
-/// report screen.
+/// `ReportSegmentSelector`, used via `ReportFilterBar`) only needs
+/// making once, not once per report screen.
 ///
 /// A subclass only has to say *how* to fetch data ([fetchReport]),
 /// which period it opens on ([initialPeriod]), and what to show if the

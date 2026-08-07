@@ -7,16 +7,15 @@ import '../../core/services/DataModels/pnl_report_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/app_snackbar.dart';
-import '../../core/widgets/jargon_dropdown.dart';
 import '../../core/widgets/network_state_view.dart';
 import '../../core/widgets/shimmers/pnl_report_shimmer.dart';
 import 'report_page_state.dart';
-import 'widgets/payment_mode_segment_selector.dart';
 import 'widgets/pnl_expense_categories_chart.dart';
 import 'widgets/pnl_export_buttons.dart';
 import 'widgets/pnl_monthly_comparison_table.dart';
 import 'widgets/pnl_summary_cards.dart';
 import 'widgets/pnl_trend_chart.dart';
+import 'widgets/report_filter_bar.dart';
 import 'widgets/report_stale_banner.dart';
 
 /// Profit & Loss report — reached from Account > Report > PnL.
@@ -24,14 +23,12 @@ import 'widgets/report_stale_banner.dart';
 /// Shimmer / error / pull-to-refresh / connectivity-retry / custom
 /// date range / stale-data handling all come from [ReportPageState] —
 /// see that file for the shared behavior every report screen needs.
-/// The segment toggle (Today/This Week/This Month/3M/6M/12M/Custom)
-/// and branch-below-toggle layout are shared with Payment Mode and
-/// Revenue & Expense via [PaymentModeSegmentSelector], for full
-/// filter-bar consistency across all three report screens. This page
-/// only owns what's actually PnL-specific: which API to call, the app
-/// bar, the card layout, and Export PDF/Excel (Payment Mode doesn't
-/// have an export row, so that stays here rather than in the shared
-/// base).
+/// The filter row (segment toggle + branch selector + custom-range
+/// label) is shared with Payment Mode and Revenue & Expense via
+/// [ReportFilterBar]. This page only owns what's actually
+/// PnL-specific: which API to call, the app bar, the card layout, and
+/// Export PDF/Excel (Payment Mode doesn't have an export row, so that
+/// stays here rather than in the shared base).
 class PnlReportPage extends StatefulWidget {
   const PnlReportPage({super.key});
 
@@ -65,12 +62,6 @@ class _PnlReportPageState extends ReportPageState<PnlReportPage, PnlReportData> 
       startDate: startDate,
       endDate: endDate,
     );
-  }
-
-  void _handleBranchChange(String branchName) {
-    final branches = data?.meta.branches ?? const <PnlBranchOption>[];
-    final match = branches.where((b) => b.name == branchName);
-    handleBranchChange(match.isNotEmpty ? match.first.id : 'all');
   }
 
   Future<void> _openLink(String? url, {required String failureLabel}) async {
@@ -145,14 +136,6 @@ class _PnlReportPageState extends ReportPageState<PnlReportPage, PnlReportData> 
     final reportData = data;
     if (reportData == null) return const SizedBox.shrink();
 
-    final branches = reportData.meta.branches;
-    final selectedBranchName = branches
-        .firstWhere(
-          (b) => b.id == selectedBranchId,
-          orElse: () => const PnlBranchOption(id: 'all', name: 'All Branches'),
-        )
-        .name;
-
     return RefreshIndicator(
       onRefresh: () => loadReport(silent: true),
       color: AppColors.primary,
@@ -166,33 +149,15 @@ class _PnlReportPageState extends ReportPageState<PnlReportPage, PnlReportData> 
               const ReportStaleBanner(),
               const SizedBox(height: AppSpacing.verticalMedium),
             ],
-            PaymentModeSegmentSelector(
+            ReportFilterBar(
               periods: reportData.meta.periods,
-              selectedKey: selectedPeriod,
-              onChanged: handlePeriodChange,
+              selectedPeriod: selectedPeriod,
+              onPeriodChanged: handlePeriodChange,
+              branches: reportData.meta.branches,
+              selectedBranchId: selectedBranchId,
+              onBranchChanged: handleBranchChange,
+              customRangeLabel: customRangeLabel,
             ),
-            const SizedBox(height: AppSpacing.verticalSmall),
-            // Branch selector below the segment toggle, matching
-            // Payment Mode / Revenue & Expense's layout exactly —
-            // unlike the old 4-tab side-by-side row, a scrollable
-            // 7-segment toggle doesn't work squeezed next to a
-            // dropdown.
-            JargonDropdown(
-              label: 'Branch',
-              value: selectedBranchName,
-              icon: Icons.storefront_outlined,
-              options: branches.map((b) => b.name).toList(),
-              onChanged: (name) => _handleBranchChange(name),
-              showIconBackground: false,
-              showLabel: false,
-            ),
-            if (selectedPeriod == 'custom' && customRange != null) ...[
-              const SizedBox(height: AppSpacing.verticalSmall),
-              Text(
-                'Showing data for $customRangeLabel',
-                style: AppTextStyles.caption,
-              ),
-            ],
             const SizedBox(height: AppSpacing.verticalLarge),
             PnlSummaryCards(
               summary: reportData.summary,

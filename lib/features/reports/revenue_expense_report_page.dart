@@ -7,13 +7,12 @@ import '../../core/services/DataModels/revenue_expense_report_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/app_snackbar.dart';
-import '../../core/widgets/jargon_dropdown.dart';
 import '../../core/widgets/network_state_view.dart';
 import '../../core/widgets/shimmers/revenue_expense_report_shimmer.dart';
 import 'report_page_state.dart';
 import 'widgets/expense_breakdown_card.dart';
-import 'widgets/payment_mode_segment_selector.dart';
 import 'widgets/pnl_export_buttons.dart';
+import 'widgets/report_filter_bar.dart';
 import 'widgets/report_stale_banner.dart';
 import 'widgets/revenue_expense_summary_cards.dart';
 import 'widgets/revenue_trend_chart_card.dart';
@@ -24,14 +23,11 @@ import 'widgets/top_services_card.dart';
 ///
 /// Shimmer / error / pull-to-refresh / connectivity-retry / custom
 /// date range / stale-data handling all come from [ReportPageState].
+/// The filter row (segment toggle + branch selector + custom-range
+/// label) is shared with PnL and Payment Mode via [ReportFilterBar].
 /// This page only owns what's specific to it: which API to call, the
-/// app bar, the card layout, and Export PDF/Excel.
-///
-/// Deliberately reuses [PaymentModeSegmentSelector] and
-/// [PnlExportButtons] as-is rather than cloning near-identical
-/// widgets: both are fully generic/presentational already, and the
-/// brief was explicit about keeping the segment-toggle/branch layout
-/// consistent with Payment Mode.
+/// app bar, the card layout, and Export PDF/Excel (reusing
+/// [PnlExportButtons] as-is, since it's already fully generic).
 ///
 /// Every card (summary, trend, expense breakdown, top services) is
 /// driven by the single top segment toggle + branch selector -- there
@@ -70,12 +66,6 @@ class _RevenueExpenseReportPageState
       startDate: startDate,
       endDate: endDate,
     );
-  }
-
-  void _handleBranchChange(String branchName) {
-    final branches = data?.meta.branches ?? const <PnlBranchOption>[];
-    final match = branches.where((b) => b.name == branchName);
-    handleBranchChange(match.isNotEmpty ? match.first.id : 'all');
   }
 
   Future<void> _openLink(String? url, {required String failureLabel}) async {
@@ -150,14 +140,6 @@ class _RevenueExpenseReportPageState
     final reportData = data;
     if (reportData == null) return const SizedBox.shrink();
 
-    final branches = reportData.meta.branches;
-    final selectedBranchName = branches
-        .firstWhere(
-          (b) => b.id == selectedBranchId,
-          orElse: () => const PnlBranchOption(id: 'all', name: 'All Branches'),
-        )
-        .name;
-
     return RefreshIndicator(
       onRefresh: () => loadReport(silent: true),
       color: AppColors.primary,
@@ -171,30 +153,15 @@ class _RevenueExpenseReportPageState
               const ReportStaleBanner(),
               const SizedBox(height: AppSpacing.verticalMedium),
             ],
-            PaymentModeSegmentSelector(
+            ReportFilterBar(
               periods: reportData.meta.periods,
-              selectedKey: selectedPeriod,
-              onChanged: handlePeriodChange,
+              selectedPeriod: selectedPeriod,
+              onPeriodChanged: handlePeriodChange,
+              branches: reportData.meta.branches,
+              selectedBranchId: selectedBranchId,
+              onBranchChanged: handleBranchChange,
+              customRangeLabel: customRangeLabel,
             ),
-            const SizedBox(height: AppSpacing.verticalSmall),
-            // Branch selector below the segment toggle, matching
-            // Payment Mode's layout exactly per the brief.
-            JargonDropdown(
-              label: 'Branch',
-              value: selectedBranchName,
-              icon: Icons.storefront_outlined,
-              options: branches.map((b) => b.name).toList(),
-              onChanged: (name) => _handleBranchChange(name),
-              showIconBackground: false,
-              showLabel: false,
-            ),
-            if (selectedPeriod == 'custom' && customRange != null) ...[
-              const SizedBox(height: AppSpacing.verticalSmall),
-              Text(
-                'Showing data for $customRangeLabel',
-                style: AppTextStyles.caption,
-              ),
-            ],
             const SizedBox(height: AppSpacing.verticalLarge),
             RevenueExpenseSummaryCards(
               summary: reportData.summary,

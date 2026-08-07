@@ -5,15 +5,14 @@ import '../../core/network/apis/payment_mode_report_api.dart';
 import '../../core/services/DataModels/payment_mode_report_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
-import '../../core/widgets/jargon_dropdown.dart';
 import '../../core/widgets/network_state_view.dart';
 import '../../core/widgets/shimmers/payment_mode_report_shimmer.dart';
 import 'report_page_state.dart';
 import 'widgets/payment_mode_bars.dart';
 import 'widgets/payment_mode_donut_card.dart';
-import 'widgets/payment_mode_segment_selector.dart';
 import 'widgets/payment_mode_total_card.dart';
 import 'widgets/payment_mode_transaction_counts.dart';
+import 'widgets/report_filter_bar.dart';
 import 'widgets/report_stale_banner.dart';
 
 /// Payment Mode Breakdown — reached from Account > Report > Payment
@@ -21,12 +20,11 @@ import 'widgets/report_stale_banner.dart';
 ///
 /// Shimmer / error / pull-to-refresh / connectivity-retry / custom
 /// date range / stale-data handling all come from [ReportPageState].
-/// This page only owns what's Payment-Mode-specific: which API to
-/// call, the app bar, and the card layout -- including the two layout
-/// differences the spec calls for versus PnL: the branch selector
-/// sits in its own row *below* the segment toggle, and the segment
-/// toggle has seven options so it scrolls horizontally rather than
-/// filling the width with `Expanded` tabs.
+/// The filter row (segment toggle + branch selector + custom-range
+/// label) is shared with PnL and Revenue & Expense via
+/// [ReportFilterBar]. This page only owns what's Payment-Mode-specific:
+/// which API to call, the app bar, and the card layout below the
+/// filter row.
 class PaymentModeReportPage extends StatefulWidget {
   const PaymentModeReportPage({super.key});
 
@@ -60,12 +58,6 @@ class _PaymentModeReportPageState
     );
   }
 
-  void _handleBranchChange(String branchName) {
-    final branches = data?.meta.branches ?? const <PnlBranchOption>[];
-    final match = branches.where((b) => b.name == branchName);
-    handleBranchChange(match.isNotEmpty ? match.first.id : 'all');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,7 +72,9 @@ class _PaymentModeReportPageState
           style: AppTextStyles.h3.copyWith(color: Colors.white),
         ),
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppRadius.large)),
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(AppRadius.large),
+          ),
         ),
       ),
       body: SafeArea(child: _body()),
@@ -103,14 +97,6 @@ class _PaymentModeReportPageState
     final reportData = data;
     if (reportData == null) return const SizedBox.shrink();
 
-    final branches = reportData.meta.branches;
-    final selectedBranchName = branches
-        .firstWhere(
-          (b) => b.id == selectedBranchId,
-          orElse: () => const PnlBranchOption(id: 'all', name: 'All Branches'),
-        )
-        .name;
-
     return RefreshIndicator(
       onRefresh: () => loadReport(silent: true),
       color: AppColors.primary,
@@ -124,30 +110,15 @@ class _PaymentModeReportPageState
               const ReportStaleBanner(),
               const SizedBox(height: AppSpacing.verticalMedium),
             ],
-            PaymentModeSegmentSelector(
+            ReportFilterBar(
               periods: reportData.meta.periods,
-              selectedKey: selectedPeriod,
-              onChanged: handlePeriodChange,
+              selectedPeriod: selectedPeriod,
+              onPeriodChanged: handlePeriodChange,
+              branches: reportData.meta.branches,
+              selectedBranchId: selectedBranchId,
+              onBranchChanged: handleBranchChange,
+              customRangeLabel: customRangeLabel,
             ),
-            const SizedBox(height: AppSpacing.verticalSmall),
-            // Branch selector below the segment toggle, per spec —
-            // unlike PnL's side-by-side layout.
-            JargonDropdown(
-              label: 'Branch',
-              value: selectedBranchName,
-              icon: Icons.storefront_outlined,
-              options: branches.map((b) => b.name).toList(),
-              onChanged: (name) => _handleBranchChange(name),
-              showIconBackground: false,
-              showLabel: false,
-            ),
-            if (selectedPeriod == 'custom' && customRange != null) ...[
-              const SizedBox(height: AppSpacing.verticalSmall),
-              Text(
-                'Showing data for $customRangeLabel',
-                style: AppTextStyles.caption,
-              ),
-            ],
             const SizedBox(height: AppSpacing.verticalLarge),
             PaymentModeTotalCard(
               summary: reportData.summary,
