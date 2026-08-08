@@ -2,6 +2,9 @@
     "success": true,
     "message": "Transactions fetched successfully",
     "data": {
+      "meta":{
+        "feature_lock":["create_edit_transaction"]
+      },
       "filters": {
         "branches": ["Beauty Hub Downtown", "Beauty Hub Uptown"],
         "services": ["Hair Coloring", "Manicure", "Pedicure"],

@@ -4,18 +4,11 @@ import '../../core/network/apis/dashboard_api.dart';
 import '../../core/services/DataModels/dashboard_models.dart';
 import '../../core/services/dashboard_date_formatter.dart';
 import '../../core/services/dashboard_icon_mapper.dart';
-import '../../core/session/session_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/business_summary_card.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/revenue_trend_chart.dart';
-import '../branches/add_edit_branch_page.dart';
-import '../expenses/add_edit_expense_page.dart';
-import '../services/add_edit_service_page.dart';
-import '../staff/add_edit_staff_page.dart';
-import '../staff/staff_list_page.dart';
-import 'dashboard_quick_actions.dart';
 import 'widgets/dashboard_shared_widgets.dart';
 import 'widgets/dashboard_transaction_tile.dart';
 
@@ -110,50 +103,6 @@ class _DashboardDynamicBodyState extends State<DashboardDynamicBody> {
     setState(() => _loadingTrend = false);
   }
 
-  List<QuickActionSpec> get _quickActions =>
-      DashboardQuickActions.forRole(SessionManager.instance.role);
-
-  /// Routes a Quick Action tap to its destination screen, now that the
-  /// Branch, Service, Staff, and Expenses modules exist. Every other
-  /// key is left as a no-op, same as the previous `onActionTap: null`
-  /// behavior — their destinations still don't exist yet.
-  void _handleQuickAction(QuickActionSpec action) {
-    switch (action.key) {
-      case 'add_branch':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AddEditBranchPage()),
-        );
-        break;
-      case 'add_service':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AddEditServicePage()),
-        );
-        break;
-      case 'add_staff':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AddEditStaffPage()),
-        );
-        break;
-      case 'view_staff':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const StaffListPage()),
-        );
-        break;
-      case 'add_expenses':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AddEditExpensePage()),
-        );
-        break;
-      default:
-        break;
-    }
-  }
-
   String _selectedPeriodLabel(DashboardMeta meta) {
     for (final period in meta.periods) {
       if (period.key == widget.selectedPeriodKey) return period.label;
@@ -191,13 +140,6 @@ class _DashboardDynamicBodyState extends State<DashboardDynamicBody> {
             if (alerts != null && alerts.isNotEmpty) ...[
               importantAlertsSection(alerts),
               const SizedBox(height: AppSpacing.verticalSmall),
-            ],
-            if (_quickActions.isNotEmpty) ...[
-              QuickActionsRow(
-                actions: _quickActions,
-                onActionTap: _handleQuickAction,
-              ),
-              const SizedBox(height: AppSpacing.verticalMedium),
             ],
             if (meta.periods.isNotEmpty) ...[
               DashboardPeriodSelector(

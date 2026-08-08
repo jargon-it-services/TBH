@@ -42,6 +42,18 @@ class _TransactionsPageState extends State<TransactionsPage>
   String? _error;
   bool _isOffline = false;
 
+  /// `data.meta.feature_lock` from the last successful fetch. Drives
+  /// whether the "New Transaction" FAB is shown at all — see
+  /// [_canCreateOrEditTransactions] — independent of any per-row
+  /// `status`/`can_edit` gating on Transaction Details.
+  TransactionsMeta _meta = TransactionsMeta(featureLock: const []);
+
+  /// Whether creating/editing transactions is currently allowed for
+  /// this account, per `data.meta.feature_lock`. When locked, the FAB
+  /// is removed entirely rather than shown disabled.
+  bool get _canCreateOrEditTransactions =>
+      !_meta.isFeatureLocked('create_edit_transaction');
+
   @override
   void initState() {
     super.initState();
@@ -84,6 +96,7 @@ class _TransactionsPageState extends State<TransactionsPage>
 
     if (response.isSuccess && response.data != null) {
       allTransactions = response.data!.data.transactions;
+      _meta = response.data!.data.meta;
       _isOffline = false;
 
       // Prefer the filter option lists the API already returns; fall
@@ -162,14 +175,16 @@ class _TransactionsPageState extends State<TransactionsPage>
           ],
         ),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 0.0),
-        child: FloatingActionButton(
-          onPressed: _openNewTransaction,
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
-      ),
+      floatingActionButton: _canCreateOrEditTransactions
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 0.0),
+              child: FloatingActionButton(
+                onPressed: _openNewTransaction,
+                backgroundColor: AppColors.primary,
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
+            )
+          : null,
     );
   }
 

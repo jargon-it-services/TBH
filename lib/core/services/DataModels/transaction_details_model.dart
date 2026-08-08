@@ -44,6 +44,13 @@ class TransactionDetails {
   final DateTime? lastEditedAt;
   final int editCount;
 
+  /// Plan-driven lock list for this transaction (e.g.
+  /// `["create_edit_transaction"]`). When it contains
+  /// `create_edit_transaction`, the Edit action is hidden on
+  /// Transaction Details regardless of [canEdit]/[status] — see
+  /// `TransactionDetailsPage._shouldShowEditButton`.
+  final List<String> featureLock;
+
   TransactionDetails({
     required this.id,
     required this.status,
@@ -60,6 +67,7 @@ class TransactionDetails {
     this.lastEditedBy,
     this.lastEditedAt,
     this.editCount = 0,
+    this.featureLock = const [],
   });
 
   factory TransactionDetails.fromJson(Map<String, dynamic> json) {
@@ -83,8 +91,16 @@ class TransactionDetails {
           ? DateTime.tryParse(json['last_edited_at'])
           : null,
       editCount: (json['edit_count'] as num?)?.toInt() ?? 0,
+      featureLock: (json['feature_lock'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
+}
+
+extension TransactionDetailsX on TransactionDetails {
+  bool isFeatureLocked(String featureKey) => featureLock.contains(featureKey);
 }
 
 /* ================= PRICE BREAKDOWN ================= */

@@ -12,6 +12,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/InitialsAvatar.dart';
 import '../../core/widgets/animated_empty_state.dart';
+import '../../core/widgets/app_bar_action_button.dart';
 import '../../core/widgets/app_search_bar.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/multi_select_field.dart';
@@ -351,12 +352,9 @@ class _PayslipListPageState extends State<PayslipListPage>
         ),
         actions: [
           if (_canManage)
-            IconButton(
+            AppBarActionButton(
               tooltip: _selectionMode ? 'Cancel selection' : 'Select payslips',
-              icon: Icon(
-                _selectionMode ? Icons.close : Icons.checklist_rtl_rounded,
-                color: Colors.white,
-              ),
+              icon: _selectionMode ? Icons.close : Icons.checklist_rtl_rounded,
               onPressed: _toggleSelectionMode,
             ),
         ],

@@ -27,6 +27,7 @@ import '../../core/session/session_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/InitialsAvatar.dart';
+import '../../core/widgets/app_bar_action_button.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../auth/forgot_password/forgot_password_page.dart';
 import '../payments/payment_history_page.dart';
@@ -1319,7 +1320,9 @@ class _ProfileHeaderCard extends StatelessWidget {
   }
 }
 
-/// Info icon button — opens the contact-details bottom sheet.
+/// Info icon button — opens the contact-details bottom sheet. Thin
+/// wrapper around the shared [AppBarActionButton] look (this is the
+/// original reference style every other header action now matches).
 class _InfoButton extends StatelessWidget {
   final String mobile;
   final String email;
@@ -1333,9 +1336,9 @@ class _InfoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(22),
-      onTap: () => showModalBottomSheet(
+    return AppBarActionButton(
+      icon: Icons.info_outline,
+      onPressed: () => showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
@@ -1344,16 +1347,6 @@ class _InfoButton extends StatelessWidget {
           email: email,
           accountCode: accountCode,
         ),
-      ),
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.14),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
-        ),
-        child: const Icon(Icons.info_outline, color: Colors.white, size: 20),
       ),
     );
   }

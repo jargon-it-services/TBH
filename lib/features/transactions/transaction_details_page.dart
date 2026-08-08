@@ -5,6 +5,7 @@ import '../../core/network/apis/transaction_api.dart';
 import '../../core/services/DataModels/transaction_details_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
+import '../../core/widgets/app_bar_action_button.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/info_card.dart';
 import '../../core/widgets/app_snackbar.dart';
@@ -30,6 +31,17 @@ class _TransactionDetailsPageState extends State<TransactionDetailsPage> {
   bool _markingPaid = false;
 
   TransactionDetails? transaction;
+
+  /// Edit is hidden once a transaction is Paid, or when the account's
+  /// `create_edit_transaction` feature is locked for this transaction
+  /// — on top of the backend's own `can_edit`/edit-window gating.
+  bool get _showEditButton {
+    final t = transaction;
+    if (t == null || !t.canEdit) return false;
+    if (t.status == 'paid') return false;
+    if (t.isFeatureLocked('create_edit_transaction')) return false;
+    return true;
+  }
 
   @override
   void initState() {
@@ -132,9 +144,9 @@ class _TransactionDetailsPageState extends State<TransactionDetailsPage> {
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         actions: [
-          if (transaction != null && transaction!.canEdit)
-            IconButton(
-              icon: const Icon(Icons.edit_outlined, color: Colors.white),
+          if (_showEditButton)
+            AppBarActionButton(
+              icon: Icons.edit_outlined,
               tooltip: 'Edit Transaction',
               onPressed: _openEdit,
             ),

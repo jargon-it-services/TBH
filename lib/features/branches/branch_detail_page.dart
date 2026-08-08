@@ -5,6 +5,7 @@ import '../../core/services/DataModels/branch_detail_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
 import '../../core/widgets/InitialsAvatar.dart';
+import '../../core/widgets/app_bar_action_button.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/card_wrapper.dart';
 import '../../core/widgets/info_card.dart';
@@ -173,8 +174,9 @@ class _BranchDetailPageState extends State<BranchDetailPage> {
           ),
           actions: [
             if (_data != null)
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Colors.white),
+              AppBarActionButton(
+                icon: Icons.edit_outlined,
+                tooltip: 'Edit Branch',
                 onPressed: _openEdit,
               ),
           ],

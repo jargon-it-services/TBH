@@ -19,20 +19,40 @@ class TransactionsResponse {
 }
 
 class TransactionsData {
+  final TransactionsMeta meta;
   final TransactionFilters filters;
   final List<TransactionModel> transactions;
 
   TransactionsData({
+    required this.meta,
     required this.filters,
     required this.transactions,
   });
 
   factory TransactionsData.fromJson(Map<String, dynamic> json) {
     return TransactionsData(
+      meta: TransactionsMeta.fromJson(json['meta'] ?? {}),
       filters: TransactionFilters.fromJson(json['filters'] ?? {}),
       transactions: (json['transactions'] as List? ?? [])
           .map((e) => TransactionModel.fromJson(e))
           .toList(),
+    );
+  }
+}
+
+/// `data.meta` — currently just the plan-driven `feature_lock` list
+/// gating creation/editing of transactions app-wide (see
+/// [TransactionsX.isFeatureLocked] below and `TransactionsPage`'s FAB).
+class TransactionsMeta {
+  final List<String> featureLock;
+
+  TransactionsMeta({required this.featureLock});
+
+  factory TransactionsMeta.fromJson(Map<String, dynamic> json) {
+    return TransactionsMeta(
+      featureLock:
+          (json['feature_lock'] as List?)?.map((e) => e.toString()).toList() ??
+              const [],
     );
   }
 }
@@ -132,4 +152,8 @@ class TransactionModel {
 extension TransactionX on TransactionModel {
   bool get isPaid => status == 'paid';
   bool get isExpense => type == 'expense';
+}
+
+extension TransactionsMetaX on TransactionsMeta {
+  bool isFeatureLocked(String featureKey) => featureLock.contains(featureKey);
 }

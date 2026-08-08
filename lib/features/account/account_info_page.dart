@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/network/apis/account_info_api.dart';
+import '../../core/widgets/app_bar_action_button.dart';
 import '../../core/services/DataModels/account_info_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
@@ -83,8 +84,8 @@ class _AccountInfoPageState extends State<AccountInfoPage> {
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (_info != null)
-            IconButton(
-              icon: const Icon(Icons.edit_outlined, color: Colors.white),
+            AppBarActionButton(
+              icon: Icons.edit_outlined,
               tooltip: 'Edit Account Info',
               onPressed: _openEdit,
             ),
