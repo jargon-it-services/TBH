@@ -77,6 +77,46 @@ class NotificationPushService {
     }
   }
 
+  /// Syncs a small set of segmentation tags (role / branch / plan
+  /// status) onto the current OneSignal user, in addition to the
+  /// external-id login above.
+  ///
+  /// [registerExternalUserId] alone is enough for a backend that only
+  /// ever sends targeted, single-user notifications (e.g. "this one
+  /// account's plan just expired"), since backend already has all of
+  /// this context in its own database. These tags exist for the other
+  /// case: campaigns built and sent from OneSignal's own Segments UI
+  /// (e.g. "everyone with plan_status = expired", "everyone with
+  /// role = branch_admin") without backend writing a per-user loop.
+  ///
+  /// Values are the raw, already-available fields from [UserSession]
+  /// (`role.apiValue`, `account.branchName`, `recentPlan.status`) --
+  /// no new backend field is required for this. Empty values are
+  /// skipped rather than sent as blank tags. Safe to call as often as
+  /// these might change (login, profile refresh, app restart);
+  /// OneSignal's `addTags` just upserts, so re-sending the same value
+  /// is a no-op.
+  static Future<void> syncSegmentationTags({
+    String? role,
+    String? branchName,
+    String? planStatus,
+  }) async {
+    if (!_initialized) return;
+    final tags = <String, String>{
+      if (role != null && role.trim().isNotEmpty) 'role': role.trim(),
+      if (branchName != null && branchName.trim().isNotEmpty)
+        'branch_name': branchName.trim(),
+      if (planStatus != null && planStatus.trim().isNotEmpty)
+        'plan_status': planStatus.trim(),
+    };
+    if (tags.isEmpty) return;
+    try {
+      OneSignal.User.addTags(tags);
+    } catch (e) {
+      debugPrint('NotificationPushService: tag sync failed -- $e');
+    }
+  }
+
   /// "Remove association on logout" -- called from
   /// `SessionManager.clearSession`, covering both an explicit user
   /// logout and a forced session-expiry logout with one call, exactly

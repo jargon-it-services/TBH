@@ -178,6 +178,16 @@ class SessionManager {
           featureLock: extra.featureLock,
         );
         _status = AuthStatus.authenticated;
+        // Re-sync on every cold start too, not just fresh login/profile
+        // fetch -- e.g. a plan renewed/expired server-side while the
+        // app was closed won't be reflected on this device's OneSignal
+        // tags until something calls this, and a plain restore (no
+        // network call) is the most common thing that happens next.
+        _syncPushTags(
+          role: _session!.role,
+          account: _session!.account,
+          recentPlan: _session!.recentPlan,
+        );
       } else {
         _session = null;
         _status = AuthStatus.unauthenticated;
@@ -256,6 +266,7 @@ class SessionManager {
     // OneSignal isn't initialized.
     final pushUserId = userInfo?.id.toString() ?? token;
     NotificationPushService.registerExternalUserId(pushUserId);
+    _syncPushTags(role: role, account: account, recentPlan: recentPlan);
   }
 
   /// Updates just the token (and optionally the refresh token) of an
@@ -340,6 +351,10 @@ class SessionManager {
       featureLock: featureLock,
     );
     _status = AuthStatus.authenticated;
+    // Role/branch/plan can all change here (e.g. an admin changed this
+    // user's role, or their plan renewed) without a fresh login, so the
+    // OneSignal tags need re-syncing here too, not just in saveSession.
+    _syncPushTags(role: role, account: account, recentPlan: recentPlan);
   }
 
   /// Clears the session from both memory and secure storage. Called on
@@ -361,6 +376,23 @@ class SessionManager {
     // Logout and a forced session-expiry logout with this one call,
     // since both paths already funnel through clearSession().
     NotificationPushService.removeExternalUserId();
+  }
+
+  /// Thin wrapper around `NotificationPushService.syncSegmentationTags`
+  /// pulling the three tag values out of whatever session data is
+  /// available at the call site -- kept here (rather than inlined at
+  /// each call site) so the "which fields feed which tag" mapping
+  /// lives in exactly one place.
+  void _syncPushTags({
+    required UserRole role,
+    LoginAccountInfo? account,
+    LoginRecentPlan? recentPlan,
+  }) {
+    NotificationPushService.syncSegmentationTags(
+      role: role.apiValue,
+      branchName: account?.branchName,
+      planStatus: recentPlan?.status,
+    );
   }
 
   String _encodeExtra({
