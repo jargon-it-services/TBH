@@ -36,11 +36,20 @@ class BranchPerformanceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header: Title on left
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Icon(Icons.storefront_outlined, color: AppColors.primary),
               const SizedBox(width: AppSpacing.horizontalSmall),
               Expanded(child: Text(section.title, style: AppTextStyles.h3)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // Legend - right aligned, own row below title
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
               const _LegendDot(color: _revenueColor, label: 'Revenue'),
               const SizedBox(width: 10),
               const _LegendDot(color: _expenseColor, label: 'Expenses'),
@@ -49,16 +58,20 @@ class BranchPerformanceCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.verticalMedium),
+          // Content - centered
           if (items.isEmpty)
-            const AnimatedEmptyState(
-              icon: Icons.storefront_outlined,
-              title: 'No Branch Data Yet',
-              message:
-                  'A revenue, expense and profit breakdown per branch will appear once data is available.',
-              height: 180,
+            const SizedBox(
+              width: double.infinity,
+              child: AnimatedEmptyState(
+                icon: Icons.storefront_outlined,
+                title: 'No Branch Data Yet',
+                message:
+                    'A revenue, expense and profit breakdown per branch will appear once data is available.',
+                height: 180,
+              ),
             )
           else
-            _buildBranchRows(items),
+            SizedBox(width: double.infinity, child: _buildBranchRows(items)),
         ],
       ),
     );

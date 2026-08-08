@@ -1,8 +1,8 @@
 import 'dart:io';
 
 /// Holds every field across the 4-step registration flow (Account, Owner,
-/// Account Setup, Review). Business/firm details are collected separately
-/// in the Add Firm flow, so they don't live here.
+/// Account Setup, Review). Business/branch details are collected separately
+/// in the Add Branch flow, so they don't live here.
 class RegistrationData {
   // ---- Step 1: Account Information ----
   String accountName = '';

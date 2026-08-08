@@ -3,9 +3,7 @@
 /// Lightweight shape returned by `GET /branches` — just enough to
 /// render the Branch List screen (card/list tile + search). Full
 /// details (working hours, weekly off, services, etc.) live in
-/// [BranchDetailResponse], fetched separately per-branch, mirroring
-/// how [FirmModel] / `FirmDetailResponse` are split for the Firms
-/// feature.
+/// [BranchDetailResponse], fetched separately per-branch.
 class BranchModel {
   final int id;
   final String name;

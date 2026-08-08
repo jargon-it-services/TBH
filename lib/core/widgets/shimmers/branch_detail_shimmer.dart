@@ -5,9 +5,8 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_fonts.dart';
 
 /// Loading state for [BranchDetailPage] — a plain skeleton (header
-/// block + a handful of info rows), same visual weight as
-/// `FirmDetailShimmer` but simplified since the Branch Details screen
-/// has no chart/trend section to skeleton.
+/// block + a handful of info rows), simplified since the Branch
+/// Details screen has no chart/trend section to skeleton.
 class BranchDetailShimmer extends StatelessWidget {
   const BranchDetailShimmer({super.key});
 

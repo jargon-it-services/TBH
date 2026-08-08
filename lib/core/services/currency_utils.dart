@@ -6,8 +6,8 @@ class CurrencyUtils {
   /// with [symbol] as the only dynamic piece. Callers should pass
   /// `meta.currency_symbol` from the dashboard response instead of
   /// relying on the default; the default only exists so pre-existing
-  /// call sites that don't have a dynamic symbol handy (e.g. the Firms
-  /// list) keep compiling unchanged.
+  /// call sites that don't have a dynamic symbol handy keep compiling
+  /// unchanged.
   static String format(double value, {String symbol = '₹'}) {
     if (value >= 10000000) {
       return '$symbol${(value / 10000000).toStringAsFixed(1)}Cr';

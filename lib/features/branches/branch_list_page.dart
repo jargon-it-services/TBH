@@ -44,7 +44,7 @@ class _BranchListPageState extends State<BranchListPage>
 
   Future<void> _loadBranches({bool silent = false}) async {
     setState(() {
-      // Same rule FirmListPage uses: only take over the whole screen
+      // Only take over the whole screen
       // with the loading shimmer when there's nothing else to show yet.
       if (!silent && _branches.isEmpty) _loading = true;
       _error = null;

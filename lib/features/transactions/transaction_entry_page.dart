@@ -36,7 +36,7 @@ import 'widgets/transaction_success_overlay.dart';
 /// Note on edit pre-fill: `TransactionDetails` (the existing read model
 /// `TransactionDetailsPage` already uses) was built for *display*, not
 /// as an editable draft — it has no `customer_name`/`customer_mobile`
-/// and no numeric `branch_id` (only a display `firm{id,name,location}`
+/// and no numeric `branch_id` (only a display `branch{id,name,location}`
 /// object with a String id in a different id-space than the
 /// create/update contract's integer `branch_id`). Rather than guessing
 /// a mapping, Edit pre-fills everything that *does* map cleanly
@@ -841,7 +841,10 @@ class _TransactionEntryPageState extends State<TransactionEntryPage> {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.horizontalMedium,
+            vertical: 12,
+          ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium)),
         ),
       );

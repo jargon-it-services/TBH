@@ -503,7 +503,7 @@ class _AccountPageState extends State<AccountPage>
   Future<void> _launchExternal(String url) async {
     final uri = Uri.parse(url);
 
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
   }
 
   _openContactWebsite() => _launchExternal(AppConstantData.contact);
@@ -564,10 +564,6 @@ class _AccountPageState extends State<AccountPage>
         title: "Branch Performance Breakdown",
         onTap: _handleBranchPerformanceReport,
       ),
-      _AccountTile(
-        icon: Icons.receipt_long_outlined,
-        title: "Expense Category Breakdown",
-      ),
     ];
     const reportPayslipOnly = [
       _AccountTile(icon: Icons.receipt_long_outlined, title: "Payslip"),
@@ -598,7 +594,7 @@ class _AccountPageState extends State<AccountPage>
                   .instance
                   .currentSession
                   ?.management
-                  ?.totalFirms,
+                  ?.totalBranches,
               onTap: _handleBranches,
             ),
             _AccountTile(
@@ -879,7 +875,7 @@ class _AccountTile extends StatelessWidget {
   /// branching needed here.
   final String? featureId;
 
-  /// Optional count badge (e.g. `management.total_firms`) shown just
+  /// Optional count badge (e.g. `management.total_branches`) shown just
   /// before the trailing chevron/lock icon. Null/omitted for tiles
   /// that don't represent a countable resource.
   final int? count;

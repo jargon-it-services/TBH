@@ -11,7 +11,7 @@ import 'steps/step4_review.dart';
 
 /// Owns the shared RegistrationData and the PageView that hosts all 4
 /// steps — mirrors how LoginPage owns its own controllers/state.
-/// Business details are collected separately via the Add Firm flow.
+/// Business details are collected separately via the Add Branch flow.
 class RegistrationFlowPage extends StatefulWidget {
   const RegistrationFlowPage({super.key});
 

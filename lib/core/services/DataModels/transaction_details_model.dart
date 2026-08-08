@@ -23,7 +23,7 @@ class TransactionDetails {
 
   final PriceBreakdown priceBreakdown;
   final TransactionDateTime dateTime;
-  final FirmInfo firm;
+  final BranchInfo branch;
   final StaffInfo staff;
   final String? remark;
 
@@ -52,7 +52,7 @@ class TransactionDetails {
     required this.category,
     required this.priceBreakdown,
     required this.dateTime,
-    required this.firm,
+    required this.branch,
     required this.staff,
     this.remark,
     this.canEdit = false,
@@ -71,7 +71,7 @@ class TransactionDetails {
       category: json['category'],
       priceBreakdown: PriceBreakdown.fromJson(json['priceBreakdown']),
       dateTime: TransactionDateTime.fromJson(json['dateTime']),
-      firm: FirmInfo.fromJson(json['firm']),
+      branch: BranchInfo.fromJson(json['branch']),
       staff: StaffInfo.fromJson(json['staff']),
       remark: json['remark'],
       canEdit: json['can_edit'] ?? false,
@@ -233,21 +233,21 @@ class TransactionDateTime {
   }
 }
 
-/* ================= FIRM ================= */
+/* ================= BRANCH ================= */
 
-class FirmInfo {
+class BranchInfo {
   final String id;
   final String name;
   final String location;
 
-  FirmInfo({
+  BranchInfo({
     required this.id,
     required this.name,
     required this.location,
   });
 
-  factory FirmInfo.fromJson(Map<String, dynamic> json) {
-    return FirmInfo(
+  factory BranchInfo.fromJson(Map<String, dynamic> json) {
+    return BranchInfo(
       id: json['id'],
       name: json['name'],
       location: json['location'],

@@ -59,8 +59,6 @@ flutter:
     - assets/mocks/transactions_bootstrap_response.json
     - assets/mocks/transaction_save_response.json
     - assets/mocks/transaction_mark_paid_response.json
-    - assets/mocks/firms_response.json
-    - assets/mocks/firm_details_response.json
     - assets/mocks/razorpay_create_order_response.json
     - assets/mocks/register_response.json
     - assets/mocks/login_response.json

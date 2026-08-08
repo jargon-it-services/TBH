@@ -31,7 +31,7 @@ import '../../notifications/notification_list_page.dart';
 /// dropdown roles use.
 ///
 /// State management follows the same pattern as the rest of the app
-/// (e.g. `FirmListPage`): a plain `StatefulWidget` + `setState`, with
+/// (e.g. `BranchListPage`): a plain `StatefulWidget` + `setState`, with
 /// [ConnectivityAwareRefresh] for "retry automatically once back
 /// online" — no new architecture introduced.
 class DashboardStickyHeader extends StatefulWidget
@@ -86,7 +86,7 @@ class _DashboardStickyHeaderState extends State<DashboardStickyHeader>
   Future<void> _load({bool silent = false}) async {
     setState(() {
       // Only take over the header with the shimmer when there's
-      // nothing else to show yet — same rule FirmListPage uses, so a
+      // nothing else to show yet — same rule `BranchListPage` uses, so a
       // background retry never yanks a header the user is already
       // looking at.
       if (!silent && _header == null) _loading = true;
@@ -275,7 +275,7 @@ class _DashboardStickyHeaderState extends State<DashboardStickyHeader>
 /// `ConnectivityBanner` (see main.dart) already tells the user they're
 /// offline, so this only needs to acknowledge the header specifically
 /// failed and offer a retry — the same "don't show two offline
-/// messages at once" reasoning `FirmListPage` documents for its own
+/// messages at once" reasoning `BranchListPage` documents for its own
 /// error state.
 class _DashboardHeaderErrorBar extends StatelessWidget
     implements PreferredSizeWidget {

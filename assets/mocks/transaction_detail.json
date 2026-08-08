@@ -58,8 +58,8 @@
           "display": "December 23, 2024\n10:00 AM"
         },
   
-        "firm": {
-          "id": "FIRM001",
+        "branch": {
+          "id": "BRANCH001",
           "name": "Beauty Hub Uptown",
           "location": "Uptown"
         },

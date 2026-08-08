@@ -10,11 +10,9 @@ import '../theme/app_fonts.dart';
 /// logo, in this app so far).
 ///
 /// The picking UX (bottom sheet with Camera/Gallery tiles, remove
-/// button when an image is present) is the same one `AddFirmPage`
-/// already built for Firm Logo/Photo — generalized here into a shared
-/// widget rather than copy-pasted a third time. `AddFirmPage` itself is
-/// left untouched (it works today and isn't part of the Branch module
-/// scope), but this is the version new code should build on.
+/// button when an image is present) is the shared widget any screen
+/// needing a Branch Logo/Photo picker should build on rather than
+/// copy-pasting it again.
 class LogoPickerField extends StatelessWidget {
   const LogoPickerField({
     super.key,

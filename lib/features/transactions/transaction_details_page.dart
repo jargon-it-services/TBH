@@ -165,7 +165,7 @@ class _TransactionDetailsPageState extends State<TransactionDetailsPage> {
           const SizedBox(height: AppSpacing.verticalLarge),
           _transactionInfoCard(),
           const SizedBox(height: AppSpacing.verticalLarge),
-          _firmInfoCard(),
+          _branchInfoCard(),
           const SizedBox(height: AppSpacing.verticalLarge),
           _buildNotesCard(),
           if (transaction!.status == 'pending') ...[
@@ -359,17 +359,17 @@ class _TransactionDetailsPageState extends State<TransactionDetailsPage> {
     );
   }
 
-  Widget _firmInfoCard() {
+  Widget _branchInfoCard() {
     return InfoCard(
-      title: "Firm Information",
+      title: "Branch Information",
       titleIcon: Icons.storefront_outlined,
       isAccordion: true, // Makes it expandable
       initiallyExpanded: false, // Open by default
       rows: [
         InfoRowData(
           icon: Icons.store,
-          label: "Firm",
-          value: transaction!.firm.name,
+          label: "Branch",
+          value: transaction!.branch.name,
         ),
         InfoRowData(
           icon: Icons.person,

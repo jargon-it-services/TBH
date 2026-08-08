@@ -99,7 +99,7 @@ class _IntroductionPageState extends State<IntroductionPage> {
   List<PageViewModel> _pages() {
     return [
       _buildPage(
-        title: "Your Beauty Firm's Digital Advantage",
+        title: "Your Beauty Branch's Digital Advantage",
         points: [
           "Built exclusively for salons, spas, and beauty parlour.",
           "Mobile‑first platform designed for modern owners.",
@@ -114,7 +114,7 @@ class _IntroductionPageState extends State<IntroductionPage> {
           "Gain transparency across daily operations.",
           "Track every transaction with ease and accuracy.",
           "Generate pay slips and detailed financial reports instantly.",
-          "Scale effortlessly — from single beauty firm to multiple branches.",
+          "Scale effortlessly — from a single branch to multiple branches.",
         ],
         animation: "assets/animations/everytime_everywhere.json",
       ),

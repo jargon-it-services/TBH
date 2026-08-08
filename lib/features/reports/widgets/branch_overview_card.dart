@@ -80,15 +80,20 @@ class _Metric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: AppTextStyles.bodySmall.copyWith(fontSize: 12)),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.bodySmall.copyWith(fontSize: 12),
+        ),
         const SizedBox(height: 4),
         Text(
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
           style: AppTextStyles.h3.copyWith(fontSize: 17, color: valueColor),
         ),
         if (caption != null) ...[
@@ -97,6 +102,7 @@ class _Metric extends StatelessWidget {
             caption!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
             style: AppTextStyles.caption,
           ),
         ],

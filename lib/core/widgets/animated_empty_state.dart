@@ -7,7 +7,7 @@ import '../theme/app_fonts.dart';
 /// optional message, and an optional CTA button, with a small
 /// fade+slide-in animation.
 ///
-/// Shared across features (Firms list, Revenue trend chart, etc.) —
+/// Shared across features (Branch list, Revenue trend chart, etc.) —
 /// previously this lived inside the old dashboard feature, which meant
 /// unrelated screens had to import a dashboard file just to render an
 /// empty state. It now lives here in `core/widgets` where any feature

@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import '../../theme/app_fonts.dart';
 import 'branch_card_shimmer.dart';
 
-/// Loading state for [BranchListPage] — same
-/// `ListView.separated` + fixed item-count shape as
-/// `FirmStaffServiceListShimmer`.
+/// Loading state for [BranchListPage] — a fixed-count
+/// `ListView.separated` skeleton.
 class BranchListShimmer extends StatelessWidget {
   const BranchListShimmer({super.key});
 

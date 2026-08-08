@@ -1,8 +1,10 @@
 class AppConstantData {
   AppConstantData._();
-  static const contact = "https://yourdomain.com/contact";
-  static const terms = "https://yourdomain.com/terms-and-conditions";
-  static const privacy = "https://yourdomain.com/privacy-policy";
+  static const contact = "https://jargonits.com/";
+  static const terms =
+      "https://jargonits.com/products/the-beauty-hub/terms-and-conditions";
+  static const privacy =
+      "https://jargonits.com/products/the-beauty-hub/privacy-policy";
 
   // TODO(store-listing): Replace with the real numeric Apple App Store
   // ID once the app is published (format:

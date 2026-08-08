@@ -7,7 +7,7 @@ import '../theme/app_fonts.dart';
 /// Full-space "we couldn't load this" state — icon, title, message, and
 /// a Retry button — for when a screen's data request fails.
 ///
-/// Previously `FirmListPage` had its own private `_errorView()` doing
+/// Previously `BranchListPage` had its own private `_errorView()` doing
 /// exactly this shape by hand, and `TransactionsPage` had no error UI
 /// at all (a failed load there silently rendered as "no transactions",
 /// indistinguishable from a genuinely empty result). This is that shape

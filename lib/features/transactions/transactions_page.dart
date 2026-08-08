@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/connectivity/connectivity_aware_refresh.dart';
 import '../../core/network/apis/transaction_api.dart';
 import '../../core/services/DataModels/transaction_list_model.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_fonts.dart';
+import '../../core/widgets/animated_empty_state.dart';
+import '../../core/widgets/app_search_bar.dart';
 import '../../core/widgets/network_state_view.dart';
 import '../../core/widgets/payment_mode_chip.dart';
 import '../../core/widgets/shimmers/transaction_list_shimmer.dart';
@@ -12,6 +15,7 @@ import '../../core/widgets/status_badge.dart';
 import '../../core/widgets/transaction_type_chip.dart';
 import 'transaction_details_page.dart';
 import 'transaction_entry_page.dart';
+import 'widgets/transaction_filter_sheet.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -25,19 +29,12 @@ class _TransactionsPageState extends State<TransactionsPage>
   final TextEditingController _searchController = TextEditingController();
   final TransactionApi _api = TransactionApi();
 
-  /// ---------------- FILTER STATE ----------------
-  final List<String> firms = [];
-  final List<String> services = [];
-  final List<String> staff = [];
-  final List<String> statuses = ["paid", "pending", "cancelled"];
-  final List<String> types = ["service", "expense"];
+  /// ---------------- FILTER OPTIONS (derived from loaded data) ----------------
+  List<String> statuses = [];
+  List<String> paymentModes = [];
+  List<String> types = [];
 
-  Set<String> selectedFirms = {};
-  Set<String> selectedStatus = {};
-  Set<String> selectedTypes = {};
-  Set<String> selectedServices = {};
-  Set<String> selectedStaff = {};
-  String selectedPeriod = "all";
+  TransactionFilter _filter = const TransactionFilter();
 
   List<TransactionModel> allTransactions = [];
   List<TransactionModel> filteredTransactions = [];
@@ -54,13 +51,10 @@ class _TransactionsPageState extends State<TransactionsPage>
   @override
   Future<void> onReconnected() => _fetchTransactions(silent: true);
 
-  bool get isFilterApplied =>
-      selectedFirms.isNotEmpty ||
-      selectedStatus.isNotEmpty ||
-      selectedTypes.isNotEmpty ||
-      selectedServices.isNotEmpty ||
-      selectedStaff.isNotEmpty ||
-      selectedPeriod != "all";
+  bool get isFilterApplied => !_filter.isEmpty;
+
+  bool get _isSearchOrFilterActive =>
+      _searchController.text.trim().isNotEmpty || isFilterApplied;
 
   @override
   void dispose() {
@@ -73,7 +67,7 @@ class _TransactionsPageState extends State<TransactionsPage>
     if (!mounted) return;
 
     setState(() {
-      // Same reasoning as FirmListPage: only take over the screen with
+      // Same reasoning as BranchListPage: only take over the screen with
       // the shimmer when there's nothing else to show yet. A silent
       // reload (pull-to-refresh has its own spinner; a reconnect retry
       // should be invisible if it succeeds) never flips this.
@@ -90,23 +84,24 @@ class _TransactionsPageState extends State<TransactionsPage>
 
     if (response.isSuccess && response.data != null) {
       allTransactions = response.data!.data.transactions;
-      filteredTransactions = List.from(allTransactions);
       _isOffline = false;
 
-      firms.clear();
-      services.clear();
-      staff.clear();
-      for (var t in allTransactions) {
-        if (t.firm.isNotEmpty && !firms.contains(t.firm)) {
-          firms.add(t.firm);
-        }
-        if (t.service.isNotEmpty && !services.contains(t.service)) {
-          services.add(t.service);
-        }
-        if (t.staff.isNotEmpty && !staff.contains(t.staff)) {
-          staff.add(t.staff);
-        }
-      }
+      // Prefer the filter option lists the API already returns; fall
+      // back to deriving them from the loaded transactions (e.g. an
+      // older backend response that doesn't send `filters`) so the
+      // filter sheet never ends up empty while data is on screen.
+      final apiFilters = response.data!.data.filters;
+      statuses = apiFilters.statuses.isNotEmpty
+          ? apiFilters.statuses
+          : _distinctValues((t) => t.status);
+      paymentModes = apiFilters.paymentModes.isNotEmpty
+          ? apiFilters.paymentModes
+          : _distinctValues((t) => t.paymentMode);
+      types = apiFilters.types.isNotEmpty
+          ? apiFilters.types
+          : _distinctValues((t) => t.type);
+
+      _applyFilters();
     } else if (allTransactions.isEmpty) {
       // State preservation: only surface a blocking error state when
       // there's nothing already on screen to preserve. If a refresh
@@ -118,6 +113,15 @@ class _TransactionsPageState extends State<TransactionsPage>
     }
 
     setState(() => isLoading = false);
+  }
+
+  List<String> _distinctValues(String Function(TransactionModel) pick) {
+    final values = <String>{};
+    for (final t in allTransactions) {
+      final v = pick(t);
+      if (v.isNotEmpty) values.add(v);
+    }
+    return values.toList()..sort();
   }
 
   /// ---------------- UI ----------------
@@ -183,99 +187,75 @@ class _TransactionsPageState extends State<TransactionsPage>
   }
 
   /// ---------------- SEARCH + FILTER ----------------
+  /// Same shape as `SalaryRuleListPage`: `AppSearchBar` with a trailing
+  /// filter button that opens a bottom sheet, badge showing the active
+  /// filter count.
   Widget _searchWithFilter() {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.page,
-        vertical: 6,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          /// Search
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: (_) => _applyFilters(),
-              style: AppTextStyles.body,
-              decoration: InputDecoration(
-                hintText: "Search transactions",
-                hintStyle: AppTextStyles.bodySmall,
-                prefixIcon: const Icon(
-                  Icons.search,
-                  size: 20,
-                  color: AppColors.textSecondary,
-                ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
+    return AppSearchBar(
+      controller: _searchController,
+      hintText: "Search transactions",
+      onChanged: (_) => _applyFilters(),
+      trailing: _filterButton(),
+    );
+  }
 
-          const SizedBox(width: 12),
+  Future<void> _openFilterSheet() async {
+    FocusScope.of(context).unfocus();
+    final result = await TransactionFilterSheet.show(
+      context,
+      current: _filter,
+      statuses: statuses,
+      paymentModes: paymentModes,
+      types: types,
+    );
+    if (result != null) {
+      setState(() => _filter = result);
+      _applyFilters();
+    }
+  }
 
-          /// Filter button
-          InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {},
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isFilterApplied
-                    ? AppColors.primary.withOpacity(0.12)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isFilterApplied ? AppColors.primary : AppColors.border,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.tune,
-                    size: 18,
-                    color: isFilterApplied
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    "Filters",
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isFilterApplied
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
+  Widget _filterButton() {
+    final active = _filter.activeCount;
+    return Material(
+      color: active > 0 ? AppColors.primary : AppColors.cardBackground,
+      borderRadius: BorderRadius.circular(AppRadius.medium),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.medium),
+        onTap: _openFilterSheet,
+        child: Container(
+          height: 48,
+          width: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.medium),
+            border: Border.all(color: active > 0 ? AppColors.primary : AppColors.border),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(Icons.tune_rounded,
+                  color: active > 0 ? Colors.white : AppColors.textSecondary),
+              if (active > 0)
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: AppColors.secondary,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                    child: Text(
+                      '$active',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  if (isFilterApplied) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      height: 6,
-                      width: 6,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -298,30 +278,116 @@ class _TransactionsPageState extends State<TransactionsPage>
         color: AppColors.primary,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            Padding(
-              padding: EdgeInsets.only(top: 60),
-              child: Center(
-                child: Text(
-                  "No transactions found",
-                  style: AppTextStyles.bodySmall,
-                ),
-              ),
+          children: [
+            AnimatedEmptyState(
+              icon: _isSearchOrFilterActive
+                  ? Icons.search_off
+                  : Icons.receipt_long_outlined,
+              title: _isSearchOrFilterActive
+                  ? "No Matches Found"
+                  : "No Transactions Found",
+              message: _isSearchOrFilterActive
+                  ? "Try a different search term or adjust your filters."
+                  : "New transactions will show up here.",
+              height: MediaQuery.of(context).size.height * 0.45,
             ),
           ],
         ),
       );
     }
 
+    final sections = _groupedSections;
+
     return RefreshIndicator(
       onRefresh: () => _fetchTransactions(silent: true),
       color: AppColors.primary,
-      child: ListView.separated(
+      child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: filteredTransactions.length,
-        separatorBuilder: (_, __) =>
-            const SizedBox(height: AppSpacing.verticalMedium),
-        itemBuilder: (_, i) => _transactionCard(filteredTransactions[i]),
+        itemCount: _sectionedItemCount(sections),
+        itemBuilder: (context, index) =>
+            _buildSectionedItem(context, sections, index),
+      ),
+    );
+  }
+
+  /// ---------------- GROUPING: Today / Yesterday / Earlier ----------------
+  /// Same grouping as `NotificationListPage._groupedSections`.
+  List<MapEntry<String, List<TransactionModel>>> get _groupedSections {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    final List<TransactionModel> todayItems = [];
+    final List<TransactionModel> yesterdayItems = [];
+    final List<TransactionModel> earlierItems = [];
+
+    for (final t in filteredTransactions) {
+      final created = t.createdAt.toLocal();
+      final createdDate = DateTime(created.year, created.month, created.day);
+      if (createdDate == today) {
+        todayItems.add(t);
+      } else if (createdDate == yesterday) {
+        yesterdayItems.add(t);
+      } else {
+        earlierItems.add(t);
+      }
+    }
+
+    return [
+      if (todayItems.isNotEmpty) MapEntry('Today', todayItems),
+      if (yesterdayItems.isNotEmpty) MapEntry('Yesterday', yesterdayItems),
+      if (earlierItems.isNotEmpty) MapEntry('Earlier', earlierItems),
+    ];
+  }
+
+  int _sectionedItemCount(List<MapEntry<String, List<TransactionModel>>> sections) {
+    var count = 0;
+    for (final section in sections) {
+      count += 1 + section.value.length; // header + items
+    }
+    return count;
+  }
+
+  Widget _buildSectionedItem(
+    BuildContext context,
+    List<MapEntry<String, List<TransactionModel>>> sections,
+    int flatIndex,
+  ) {
+    var remaining = flatIndex;
+    for (final section in sections) {
+      if (remaining == 0) {
+        return _sectionHeader(section.key);
+      }
+      remaining -= 1;
+      if (remaining < section.value.length) {
+        final item = section.value[remaining];
+        final isLastInSection = remaining == section.value.length - 1;
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: isLastInSection
+                ? AppSpacing.verticalLarge
+                : AppSpacing.verticalMedium,
+          ),
+          child: _transactionCard(item),
+        );
+      }
+      remaining -= section.value.length;
+    }
+    // Unreachable given _sectionedItemCount, but keeps the method
+    // total and null-safe rather than throwing on a stray index.
+    return const SizedBox.shrink();
+  }
+
+  Widget _sectionHeader(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.verticalSmall),
+      child: Text(
+        label,
+        style: AppTextStyles.bodySmall.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AppColors.textSecondary,
+          letterSpacing: 0.3,
+        ),
       ),
     );
   }
@@ -358,6 +424,7 @@ class _TransactionsPageState extends State<TransactionsPage>
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.page),
             child: Row(
+              // crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   radius: 22,
@@ -407,7 +474,7 @@ class _TransactionsPageState extends State<TransactionsPage>
         ),
         const SizedBox(height: 4),
         Text(
-          item.firm,
+          item.branch,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyles.bodySmall,
@@ -418,6 +485,13 @@ class _TransactionsPageState extends State<TransactionsPage>
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyles.bodySmall,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          DateFormat("dd MMM yyyy, hh:mm a").format(item.createdAt.toLocal()),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 6),
         Row(
@@ -435,20 +509,16 @@ class _TransactionsPageState extends State<TransactionsPage>
 
   /// ---------------- FILTER LOGIC ----------------
   void _applyFilters() {
+    final query = _searchController.text.trim().toLowerCase();
     filteredTransactions = allTransactions.where((t) {
-      if (selectedFirms.isNotEmpty && !selectedFirms.contains(t.firm))
+      if (_filter.status != null && t.status != _filter.status) return false;
+      if (_filter.paymentMode != null && t.paymentMode != _filter.paymentMode) {
         return false;
-      if (selectedStatus.isNotEmpty && !selectedStatus.contains(t.status))
+      }
+      if (_filter.type != null && t.type != _filter.type) return false;
+      if (query.isNotEmpty && !t.title.toLowerCase().contains(query)) {
         return false;
-      if (selectedTypes.isNotEmpty && !selectedTypes.contains(t.type))
-        return false;
-      if (selectedServices.isNotEmpty && !selectedServices.contains(t.service))
-        return false;
-      if (selectedStaff.isNotEmpty && !selectedStaff.contains(t.staff))
-        return false;
-      if (_searchController.text.isNotEmpty &&
-          !t.title.toLowerCase().contains(_searchController.text.toLowerCase()))
-        return false;
+      }
       return true;
     }).toList();
 

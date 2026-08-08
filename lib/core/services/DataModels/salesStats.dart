@@ -1,4 +1,4 @@
-class FirmStats {
+class BranchStats {
   final String name;
   final String shortName;
   final double revenue;
@@ -6,7 +6,7 @@ class FirmStats {
   final double profit;
   final int transactions;
 
-  FirmStats({
+  BranchStats({
     required this.name,
     required this.shortName,
     required this.revenue,

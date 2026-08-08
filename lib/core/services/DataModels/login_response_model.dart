@@ -16,7 +16,7 @@
 // ties these together; these classes exist separately (rather than
 // inlined in `login_api.dart`) to match how every other domain in this
 // app already organizes its response models — see
-// `dashboard_header_model.dart`, `firm_model.dart`, etc.
+// `dashboard_header_model.dart`, `branch_model.dart`, etc.
 //
 // NOTE ON `account`: the migration spec that introduced this shape
 // refers to this block as `account_info`, but the actual sample
@@ -159,14 +159,14 @@ class LoginRecentPlan {
 
 /// `data.management` — account-wide usage counters.
 class LoginManagementInfo {
-  final int totalFirms;
+  final int totalBranches;
   final int totalStaff;
   final int totalServices;
   final int totalExpenses;
   final int totalSalaryRules;
 
   const LoginManagementInfo({
-    required this.totalFirms,
+    required this.totalBranches,
     required this.totalStaff,
     required this.totalServices,
     this.totalExpenses = 0,
@@ -175,7 +175,7 @@ class LoginManagementInfo {
 
   factory LoginManagementInfo.fromJson(Map<String, dynamic> json) {
     return LoginManagementInfo(
-      totalFirms: (json['total_firms'] as num?)?.toInt() ?? 0,
+      totalBranches: (json['total_branches'] as num?)?.toInt() ?? 0,
       totalStaff: (json['total_staff'] as num?)?.toInt() ?? 0,
       totalServices: (json['total_services'] as num?)?.toInt() ?? 0,
       totalExpenses: (json['total_expenses'] as num?)?.toInt() ?? 0,
@@ -184,7 +184,7 @@ class LoginManagementInfo {
   }
 
   Map<String, dynamic> toJson() => {
-    'total_firms': totalFirms,
+    'total_branches': totalBranches,
     'total_staff': totalStaff,
     'total_services': totalServices,
     'total_expenses': totalExpenses,

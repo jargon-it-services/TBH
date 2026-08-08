@@ -13,7 +13,7 @@ import '../dio_client.dart';
 ///
 /// Uses the shared [callApi] helper (mock/live branching +
 /// `ApiResponse<T>` wrapping) exactly like `ProfileApi` /
-/// `DashboardHeaderApi`, rather than `FirmsApi`'s older by-hand
+/// `DashboardHeaderApi`, rather than an older by-hand
 /// try/catch shape — this is the current preferred pattern for new
 /// API classes in this project.
 ///
@@ -120,7 +120,7 @@ class BranchesApi {
     );
   }
 
-  /// Builds the live-call request body. Mirrors `FirmsApi.createFirm`'s
+  /// Builds the live-call request body. Uses the same
   /// `FormData.fromMap` + `MultipartFile.fromFile` approach for the
   /// logo (multipart is required to actually upload a file), but only
   /// switches to `FormData` when a logo is actually involved — a plain

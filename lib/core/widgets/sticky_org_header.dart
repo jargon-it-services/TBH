@@ -33,7 +33,7 @@
 // `BranchModel` / `AllBranches` live in
 // core/services/DataModels/dashboard_header_model.dart (the project's
 // model layer) rather than in this widget file, following the existing
-// convention (e.g. FirmModel lives in DataModels, not in FirmListPage).
+// convention (e.g. BranchModel lives in DataModels, not in BranchListPage).
 //
 // Because the widget is stateless and driven entirely by props + callbacks,
 // it works with ANY state management approach without modification.

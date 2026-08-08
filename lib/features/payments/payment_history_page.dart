@@ -123,6 +123,91 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage>
   bool get _isSearchOrFilterActive =>
       _searchController.text.trim().isNotEmpty || _selectedStatus != null;
 
+  /// ---------------- GROUPING: Today / Yesterday / Earlier ----------------
+  /// Same grouping as `NotificationListPage._groupedSections`.
+  List<MapEntry<String, List<PaymentSummary>>> get _groupedSections {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    final List<PaymentSummary> todayItems = [];
+    final List<PaymentSummary> yesterdayItems = [];
+    final List<PaymentSummary> earlierItems = [];
+
+    for (final p in filteredPayments) {
+      final created = p.date?.toLocal();
+      if (created == null) {
+        earlierItems.add(p);
+        continue;
+      }
+      final createdDate = DateTime(created.year, created.month, created.day);
+      if (createdDate == today) {
+        todayItems.add(p);
+      } else if (createdDate == yesterday) {
+        yesterdayItems.add(p);
+      } else {
+        earlierItems.add(p);
+      }
+    }
+
+    return [
+      if (todayItems.isNotEmpty) MapEntry('Today', todayItems),
+      if (yesterdayItems.isNotEmpty) MapEntry('Yesterday', yesterdayItems),
+      if (earlierItems.isNotEmpty) MapEntry('Earlier', earlierItems),
+    ];
+  }
+
+  int _sectionedItemCount(List<MapEntry<String, List<PaymentSummary>>> sections) {
+    var count = 0;
+    for (final section in sections) {
+      count += 1 + section.value.length; // header + items
+    }
+    return count;
+  }
+
+  Widget _buildSectionedItem(
+    List<MapEntry<String, List<PaymentSummary>>> sections,
+    int flatIndex,
+  ) {
+    var remaining = flatIndex;
+    for (final section in sections) {
+      if (remaining == 0) {
+        return _sectionHeader(section.key);
+      }
+      remaining -= 1;
+      if (remaining < section.value.length) {
+        final item = section.value[remaining];
+        final isLastInSection = remaining == section.value.length - 1;
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: isLastInSection
+                ? AppSpacing.verticalLarge
+                : AppSpacing.verticalMedium,
+          ),
+          child: _paymentCard(item),
+        );
+      }
+      remaining -= section.value.length;
+    }
+    // Unreachable given _sectionedItemCount, but keeps the method
+    // total and null-safe rather than throwing on a stray index.
+    return const SizedBox.shrink();
+  }
+
+  Widget _sectionHeader(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.verticalSmall),
+      child: Text(
+        label,
+        style: AppTextStyles.bodySmall.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AppColors.textSecondary,
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+
   /// ---------------- UI ----------------
   @override
   Widget build(BuildContext context) {
@@ -239,15 +324,15 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage>
       );
     }
 
+    final sections = _groupedSections;
+
     return RefreshIndicator(
       onRefresh: () => _fetchPaymentHistory(silent: true),
       color: AppColors.primary,
-      child: ListView.separated(
+      child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: filteredPayments.length,
-        separatorBuilder: (_, __) =>
-            const SizedBox(height: AppSpacing.verticalMedium),
-        itemBuilder: (_, i) => _paymentCard(filteredPayments[i]),
+        itemCount: _sectionedItemCount(sections),
+        itemBuilder: (_, i) => _buildSectionedItem(sections, i),
       ),
     );
   }

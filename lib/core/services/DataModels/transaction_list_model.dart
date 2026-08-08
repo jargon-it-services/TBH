@@ -38,7 +38,7 @@ class TransactionsData {
 }
 
 class TransactionFilters {
-  final List<String> firms;
+  final List<String> branches;
   final List<String> services;
   final List<String> staff;
   final List<String> statuses;
@@ -48,7 +48,7 @@ class TransactionFilters {
   final String currency;
 
   TransactionFilters({
-    required this.firms,
+    required this.branches,
     required this.services,
     required this.staff,
     required this.statuses,
@@ -60,7 +60,7 @@ class TransactionFilters {
 
   factory TransactionFilters.fromJson(Map<String, dynamic> json) {
     return TransactionFilters(
-      firms: List<String>.from(json['firms'] ?? []),
+      branches: List<String>.from(json['branches'] ?? []),
       services: List<String>.from(json['services'] ?? []),
       staff: List<String>.from(json['staff'] ?? []),
       statuses: List<String>.from(json['statuses'] ?? []),
@@ -75,8 +75,8 @@ class TransactionFilters {
 class TransactionModel {
   final String id;
   final String title;
-  final String firm;
-  final int firmId;
+  final String branch;
+  final int branchId;
   final String service;
   final int serviceId;
   final String staff;
@@ -92,8 +92,8 @@ class TransactionModel {
   TransactionModel({
     required this.id,
     required this.title,
-    required this.firm,
-    required this.firmId,
+    required this.branch,
+    required this.branchId,
     required this.service,
     required this.serviceId,
     required this.staff,
@@ -111,8 +111,8 @@ class TransactionModel {
     return TransactionModel(
       id: json['id'] ?? '',
       title: json['title'] ?? '',
-      firm: json['firm'] ?? '',
-      firmId: json['firmId'] ?? 0,
+      branch: json['branch'] ?? '',
+      branchId: json['branchId'] ?? 0,
       service: json['service'] ?? '',
       serviceId: json['serviceId'] ?? 0,
       staff: json['staff'] ?? '',

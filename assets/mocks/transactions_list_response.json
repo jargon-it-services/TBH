@@ -3,7 +3,7 @@
     "message": "Transactions fetched successfully",
     "data": {
       "filters": {
-        "firms": ["Beauty Hub Downtown", "Beauty Hub Uptown"],
+        "branches": ["Beauty Hub Downtown", "Beauty Hub Uptown"],
         "services": ["Hair Coloring", "Manicure", "Pedicure"],
         "staff": ["Riya", "Aman", "John"],
         "statuses": ["paid", "pending", "cancelled"],
@@ -16,8 +16,8 @@
         {
           "id": "txn_001",
           "title": "Hair Coloring",
-          "firm": "Beauty Hub Downtown",
-          "firmId": 1,
+          "branch": "Beauty Hub Downtown",
+          "branchId": 1,
           "service": "Hair Coloring",
           "serviceId": 1,
           "staff": "Riya",
@@ -33,8 +33,8 @@
         {
           "id": "txn_002",
           "title": "Product Purchase",
-          "firm": "Beauty Hub Uptown",
-          "firmId": 1,
+          "branch": "Beauty Hub Uptown",
+          "branchId": 1,
           "service": "Manicure",
           "serviceId": 1,
           "staff": "John",
@@ -50,8 +50,8 @@
         ,{
             "id": "txn_002",
             "title": "Product Purchase",
-            "firm": "Beauty Hub Uptown",
-            "firmId": 1,
+            "branch": "Beauty Hub Uptown",
+            "branchId": 1,
             "service": "Manicure",
             "serviceId": 1,
             "staff": "John",
@@ -67,8 +67,8 @@
           {
             "id": "txn_002",
             "title": "Product Purchase",
-            "firm": "Beauty Hub Uptown",
-            "firmId": 1,
+            "branch": "Beauty Hub Uptown",
+            "branchId": 1,
             "service": "Manicure",
             "serviceId": 1,
             "staff": "John",
@@ -84,8 +84,8 @@
           {
             "id": "txn_002",
             "title": "Product Purchase",
-            "firm": "Beauty Hub Uptown",
-            "firmId": 1,
+            "branch": "Beauty Hub Uptown",
+            "branchId": 1,
             "service": "Manicure",
             "serviceId": 1,
             "staff": "John",

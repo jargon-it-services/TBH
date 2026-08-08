@@ -21,7 +21,7 @@ import '../auth/registration/registration_validators.dart';
 /// Pass [existing] to edit an already-loaded branch (fields pre-filled,
 /// Save calls `BranchesApi.updateBranch`); omit it to create a new one
 /// (`BranchesApi.createBranch`). Reuses the same building blocks as
-/// `AddFirmPage`/the registration flow throughout: [AppTextField],
+/// the registration flow throughout: [AppTextField],
 /// [SegmentedToggle] (Branch Type and Status — the same pill-toggle
 /// style as the Subscriptions page's Monthly/Annual switch),
 /// [PincodeLookupField] (State/City lookup, shared

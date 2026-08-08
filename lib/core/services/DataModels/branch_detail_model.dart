@@ -53,10 +53,9 @@ class BranchEmployeeItem {
 /// ================= BRANCH DETAIL =================
 ///
 /// Full branch record — backs both the Branch Details screen and the
-/// Edit Branch form (pre-filling every field). Mirrors the
-/// `FirmDetailResponse` split: [BranchModel] is the trimmed list-item
-/// shape, this is the complete one, fetched per-branch via
-/// `BranchesApi.fetchBranchDetail`.
+/// Edit Branch form (pre-filling every field). [BranchModel] is the
+/// trimmed list-item shape, this is the complete one, fetched
+/// per-branch via `BranchesApi.fetchBranchDetail`.
 class BranchDetailResponse {
   final int id;
   final String name;

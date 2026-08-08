@@ -36,8 +36,8 @@ class RegistrationStepScaffold extends StatefulWidget {
   /// step while the API call runs).
   final Future<bool> Function() onContinue;
 
-  /// Steps 1-3 use a normal "Save & Continue" button (matches Add Firm's
-  /// Save Firm button). Only the final Review step still uses the
+  /// Steps 1-3 use a normal "Save & Continue" button (matches Add
+  /// Branch's Save button). Only the final Review step still uses the
   /// slide-to-confirm action, since it's the one that actually submits.
   final bool useSlideAction;
 
@@ -227,7 +227,7 @@ class _RegistrationStepScaffoldState extends State<RegistrationStepScaffold>
   }
 
   /// Normal "Save & Continue" button — used for Steps 1-3, styled to
-  /// match the Save Firm button from the Add Firm flow.
+  /// match the Save button from the Add Branch flow.
   Widget _buildContinueButton(String label) {
     return SizedBox(
       width: double.infinity,
