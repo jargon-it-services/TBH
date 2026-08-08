@@ -5,6 +5,7 @@ import '../../../core/services/currency_utils.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_fonts.dart';
 import '../../../core/widgets/card_wrapper.dart';
+import 'report_metric_tile.dart';
 
 /// "All Branches Overview" card — the combined Revenue and Profit
 /// across every branch for the selected period, plus overall Growth
@@ -37,19 +38,19 @@ class BranchOverviewCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: _Metric(
+                child: ReportMetricTile(
                   label: 'Revenue',
                   value: CurrencyUtils.format(overview.revenue, symbol: currencySymbol),
                 ),
               ),
               Expanded(
-                child: _Metric(
+                child: ReportMetricTile(
                   label: 'Profit',
                   value: CurrencyUtils.format(overview.profit, symbol: currencySymbol),
                 ),
               ),
               Expanded(
-                child: _Metric(
+                child: ReportMetricTile(
                   label: 'Growth',
                   value: "${isPositive ? '+' : ''}${overview.growthPercent.toStringAsFixed(1)}%",
                   valueColor: deltaColor,
@@ -64,49 +65,4 @@ class BranchOverviewCard extends StatelessWidget {
   }
 }
 
-class _Metric extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color? valueColor;
-  final String? caption;
 
-  const _Metric({
-    required this.label,
-    required this.value,
-    this.valueColor,
-    this.caption,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.bodySmall.copyWith(fontSize: 12),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.h3.copyWith(fontSize: 17, color: valueColor),
-        ),
-        if (caption != null) ...[
-          const SizedBox(height: 2),
-          Text(
-            caption!,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption,
-          ),
-        ],
-      ],
-    );
-  }
-}

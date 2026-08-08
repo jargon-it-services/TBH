@@ -140,6 +140,17 @@ flutter:
     - assets/mocks/branch_performance_6m_response.json
     - assets/mocks/branch_performance_12m_response.json
     - assets/mocks/branch_performance_export_response.json
+    - assets/mocks/employee_performance_today_response.json
+    - assets/mocks/employee_performance_this_week_response.json
+    - assets/mocks/employee_performance_this_month_response.json
+    - assets/mocks/employee_performance_3m_response.json
+    - assets/mocks/employee_performance_6m_response.json
+    - assets/mocks/employee_performance_12m_response.json
+    - assets/mocks/employee_performance_export_response.json
+    - assets/mocks/payslip_list_response.json
+    - assets/mocks/payslip_detail_response.json
+    - assets/mocks/payslip_generate_response.json
+    - assets/mocks/payslip_action_response.json
 
 # ---------------------------------------------------------------------
 # flutter_launcher_icons config

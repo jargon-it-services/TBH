@@ -1,0 +1,86 @@
+{
+  "status": true,
+  "message": "Payslips fetched successfully",
+  "data": {
+    "payslips": [
+      {
+        "id": 1,
+        "employee_id": 101,
+        "employee_name": "John Doe",
+        "designation": "Senior Stylist",
+        "branch_id": 1,
+        "branch_name": "Beauty Hub Downtown",
+        "photo": null,
+        "amount": 44000,
+        "month": 5,
+        "year": 2026,
+        "status": "generated"
+      },
+      {
+        "id": 2,
+        "employee_id": 102,
+        "employee_name": "Riya Sharma",
+        "designation": "Hair Stylist",
+        "branch_id": 1,
+        "branch_name": "Beauty Hub Downtown",
+        "photo": null,
+        "amount": 32000,
+        "month": 5,
+        "year": 2026,
+        "status": "approved"
+      },
+      {
+        "id": 3,
+        "employee_id": 103,
+        "employee_name": "Aman Verma",
+        "designation": "Receptionist",
+        "branch_id": 2,
+        "branch_name": "Beauty Hub Uptown",
+        "photo": null,
+        "amount": 18000,
+        "month": 5,
+        "year": 2026,
+        "status": "paid"
+      },
+      {
+        "id": 4,
+        "employee_id": 104,
+        "employee_name": "Priya Nair",
+        "designation": "Beautician",
+        "branch_id": 2,
+        "branch_name": "Beauty Hub Uptown",
+        "photo": null,
+        "amount": 27000,
+        "month": 5,
+        "year": 2026,
+        "status": "rejected"
+      },
+      {
+        "id": 5,
+        "employee_id": 105,
+        "employee_name": "Karan Mehta",
+        "designation": "Massage Therapist",
+        "branch_id": 1,
+        "branch_name": "Beauty Hub Downtown",
+        "photo": null,
+        "amount": 30000,
+        "month": 4,
+        "year": 2026,
+        "status": "paid"
+      },
+      {
+        "id": 6,
+        "employee_id": 101,
+        "employee_name": "John Doe",
+        "designation": "Senior Stylist",
+        "branch_id": 1,
+        "branch_name": "Beauty Hub Downtown",
+        "photo": null,
+        "amount": 42000,
+        "month": 4,
+        "year": 2026,
+        "status": "paid"
+      }
+    ]
+  }
+}

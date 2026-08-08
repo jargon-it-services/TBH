@@ -8,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tbh/features/branches/branch_list_page.dart';
 import 'package:tbh/features/expenses/expense_list_page.dart';
+import 'package:tbh/features/payslips/payslip_list_page.dart';
 import 'package:tbh/features/salary_rules/salary_rule_list_page.dart';
 import 'package:tbh/features/services/service_list_page.dart';
 import 'package:tbh/features/staff/staff_list_page.dart';
@@ -30,6 +31,7 @@ import '../../core/widgets/app_snackbar.dart';
 import '../auth/forgot_password/forgot_password_page.dart';
 import '../payments/payment_history_page.dart';
 import '../reports/branch_performance_report_page.dart';
+import '../reports/employee_performance_report_page.dart';
 import '../reports/payment_mode_report_page.dart';
 import '../reports/pnl_report_page.dart';
 import '../reports/revenue_expense_report_page.dart';
@@ -177,6 +179,13 @@ class _AccountPageState extends State<AccountPage>
     );
   }
 
+  Future<void> _handlePayslips() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PayslipListPage()),
+    );
+  }
+
   Future<void> _handleSalaryRules() async {
     Navigator.push(
       context,
@@ -209,6 +218,13 @@ class _AccountPageState extends State<AccountPage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const BranchPerformanceReportPage()),
+    );
+  }
+
+  Future<void> _handleEmployeePerformanceReport() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const EmployeePerformanceReportPage()),
     );
   }
 
@@ -539,7 +555,11 @@ class _AccountPageState extends State<AccountPage>
     final isBranchAdmin = roleLabel == 'Branch Admin';
     final hasAccountSetup = isAccountAdmin || isBranchAdmin;
     final fullReports = [
-      _AccountTile(icon: Icons.receipt_long_outlined, title: "Payslip"),
+      _AccountTile(
+        icon: Icons.receipt_long_outlined,
+        title: "Payslip",
+        onTap: _handlePayslips,
+      ),
       _AccountTile(
         icon: Icons.subject_outlined,
         title: "PnL",
@@ -558,6 +578,7 @@ class _AccountPageState extends State<AccountPage>
       _AccountTile(
         icon: Icons.insights_outlined,
         title: "Employee Performance Report",
+        onTap: _handleEmployeePerformanceReport,
       ),
       _AccountTile(
         icon: Icons.storefront_outlined,
@@ -565,8 +586,12 @@ class _AccountPageState extends State<AccountPage>
         onTap: _handleBranchPerformanceReport,
       ),
     ];
-    const reportPayslipOnly = [
-      _AccountTile(icon: Icons.receipt_long_outlined, title: "Payslip"),
+    final reportPayslipOnly = [
+      _AccountTile(
+        icon: Icons.receipt_long_outlined,
+        title: "Payslip",
+        onTap: _handlePayslips,
+      ),
     ];
     final reports = hasAccountSetup ? fullReports : reportPayslipOnly;
 

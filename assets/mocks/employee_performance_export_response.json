@@ -1,0 +1,8 @@
+{
+  "status": true,
+  "message": "Export generated successfully",
+  "data": {
+    "pdf_url": "https://example.com/exports/employee-performance.pdf",
+    "excel_url": "https://example.com/exports/employee-performance.xlsx"
+  }
+}

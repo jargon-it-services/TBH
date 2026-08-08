@@ -1,0 +1,180 @@
+{
+  "status": true,
+  "message": "Employee performance report fetched successfully",
+  "data": {
+    "meta": {
+      "currency_symbol": "₹",
+      "periods": [
+        {
+          "key": "today",
+          "label": "Today"
+        },
+        {
+          "key": "this_week",
+          "label": "This Week"
+        },
+        {
+          "key": "this_month",
+          "label": "This Month"
+        },
+        {
+          "key": "3m",
+          "label": "3M"
+        },
+        {
+          "key": "6m",
+          "label": "6M"
+        },
+        {
+          "key": "12m",
+          "label": "12M"
+        },
+        {
+          "key": "custom",
+          "label": "Custom"
+        }
+      ],
+      "selected_period": "this_week",
+      "branches": [
+        {
+          "id": "all",
+          "name": "All Branches"
+        },
+        {
+          "id": "branch_1",
+          "name": "Downtown Branch"
+        },
+        {
+          "id": "branch_2",
+          "name": "Westside Branch"
+        },
+        {
+          "id": "branch_3",
+          "name": "City Center Branch"
+        },
+        {
+          "id": "branch_4",
+          "name": "Airport Branch"
+        }
+      ],
+      "selected_branch_id": "all"
+    },
+    "top_performer": {
+      "id": "emp_1",
+      "full_name": "John Doe",
+      "designation": "Senior Stylist",
+      "branch_name": "Downtown Branch",
+      "photo": null,
+      "revenue": 10800.0,
+      "services_served": 23,
+      "expenses": 2900.0,
+      "profit": 5900.0,
+      "commission": 2000.0
+    },
+    "ranking": {
+      "title": "Employee Ranking",
+      "items": [
+        {
+          "id": "emp_1",
+          "full_name": "John Doe",
+          "designation": "Senior Stylist",
+          "branch_name": "Downtown Branch",
+          "photo": null,
+          "revenue": 10800.0,
+          "services_served": 23,
+          "expenses": 2900.0,
+          "profit": 5900.0,
+          "commission": 2000.0
+        },
+        {
+          "id": "emp_2",
+          "full_name": "David Smith",
+          "designation": "Hair Stylist",
+          "branch_name": "Westside Branch",
+          "photo": null,
+          "revenue": 9200.0,
+          "services_served": 20,
+          "expenses": 2500.0,
+          "profit": 5000.0,
+          "commission": 1700.0
+        },
+        {
+          "id": "emp_3",
+          "full_name": "Alex Johnson",
+          "designation": "Colorist",
+          "branch_name": "City Center Branch",
+          "photo": null,
+          "revenue": 7700.0,
+          "services_served": 16,
+          "expenses": 2200.0,
+          "profit": 4000.0,
+          "commission": 1500.0
+        },
+        {
+          "id": "emp_4",
+          "full_name": "Michael Brown",
+          "designation": "Barber",
+          "branch_name": "Airport Branch",
+          "photo": null,
+          "revenue": 6900.0,
+          "services_served": 15,
+          "expenses": 1900.0,
+          "profit": 3700.0,
+          "commission": 1300.0
+        },
+        {
+          "id": "emp_5",
+          "full_name": "James Wilson",
+          "designation": "Junior Stylist",
+          "branch_name": "Downtown Branch",
+          "photo": null,
+          "revenue": 5400.0,
+          "services_served": 12,
+          "expenses": 1600.0,
+          "profit": 2800.0,
+          "commission": 1000.0
+        },
+        {
+          "id": "emp_6",
+          "full_name": "Priya Nair",
+          "designation": "Nail Artist",
+          "branch_name": "Westside Branch",
+          "photo": null,
+          "revenue": 4800.0,
+          "services_served": 11,
+          "expenses": 1400.0,
+          "profit": 2500.0,
+          "commission": 900.0
+        },
+        {
+          "id": "emp_7",
+          "full_name": "Rohan Mehta",
+          "designation": "Massage Therapist",
+          "branch_name": "City Center Branch",
+          "photo": null,
+          "revenue": 4200.0,
+          "services_served": 9,
+          "expenses": 1200.0,
+          "profit": 2300.0,
+          "commission": 700.0
+        },
+        {
+          "id": "emp_8",
+          "full_name": "Sara Khan",
+          "designation": "Makeup Artist",
+          "branch_name": "Airport Branch",
+          "photo": null,
+          "revenue": 3600.0,
+          "services_served": 8,
+          "expenses": 1100.0,
+          "profit": 1900.0,
+          "commission": 600.0
+        }
+      ]
+    },
+    "export": {
+      "pdf_url": "https://example.com/exports/employee-performance.pdf",
+      "excel_url": "https://example.com/exports/employee-performance.xlsx"
+    }
+  }
+}

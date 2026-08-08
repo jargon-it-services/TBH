@@ -1,0 +1,34 @@
+{
+  "status": true,
+  "message": "Payslip details fetched successfully",
+  "data": {
+    "id": 1,
+    "employee_id": 101,
+    "employee_name": "John Doe",
+    "designation": "Senior Stylist",
+    "photo": null,
+    "month": 5,
+    "year": 2026,
+    "status": "generated",
+    "earnings": [
+      { "label": "Basic Salary", "amount": 20000 },
+      { "label": "Commission", "amount": 18000 },
+      { "label": "Bonus", "amount": 4000 },
+      { "label": "Other Allowances", "amount": 2000 }
+    ],
+    "total_earnings": 44000,
+    "deductions": [
+      { "label": "PF", "amount": 1800 },
+      { "label": "Professional Tax", "amount": 200 },
+      { "label": "Advance Recovery", "amount": 0 },
+      { "label": "Other Deductions", "amount": 0 }
+    ],
+    "total_deductions": 2000,
+    "net_salary": 42000,
+    "generated_by": "John",
+    "approved_by": null,
+    "rejected_by": null,
+    "paid_by": null,
+    "download_url": null
+  }
+}
