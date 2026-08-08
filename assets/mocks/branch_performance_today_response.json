@@ -1,0 +1,119 @@
+{
+  "status": true,
+  "message": "Branch performance report fetched successfully",
+  "data": {
+    "meta": {
+      "currency_symbol": "₹",
+      "periods": [
+        {
+          "key": "today",
+          "label": "Today"
+        },
+        {
+          "key": "this_week",
+          "label": "This Week"
+        },
+        {
+          "key": "this_month",
+          "label": "This Month"
+        },
+        {
+          "key": "3m",
+          "label": "3M"
+        },
+        {
+          "key": "6m",
+          "label": "6M"
+        },
+        {
+          "key": "12m",
+          "label": "12M"
+        },
+        {
+          "key": "custom",
+          "label": "Custom"
+        }
+      ],
+      "selected_period": "today"
+    },
+    "overview": {
+      "title": "All Branches Overview",
+      "revenue": 56000.0,
+      "profit": 23500.0,
+      "growth_percent": 4.2,
+      "comparison_label": "vs yesterday"
+    },
+    "branch_performance": {
+      "title": "Branch Performance",
+      "items": [
+        {
+          "id": "branch_1",
+          "name": "Downtown Branch",
+          "revenue": 19100.0,
+          "expenses": 11100.0,
+          "profit": 8000.0
+        },
+        {
+          "id": "branch_2",
+          "name": "Westside Branch",
+          "revenue": 16200.0,
+          "expenses": 9400.0,
+          "profit": 6800.0
+        },
+        {
+          "id": "branch_3",
+          "name": "City Center Branch",
+          "revenue": 12400.0,
+          "expenses": 7200.0,
+          "profit": 5200.0
+        },
+        {
+          "id": "branch_4",
+          "name": "Airport Branch",
+          "revenue": 8300.0,
+          "expenses": 4800.0,
+          "profit": 3500.0
+        }
+      ]
+    },
+    "top_employees": {
+      "title": "Top Employee Comparison",
+      "items": [
+        {
+          "rank": 1,
+          "employee_name": "Priya Sharma",
+          "branch_name": "Downtown Branch",
+          "revenue": 8300.0
+        },
+        {
+          "rank": 2,
+          "employee_name": "Rahul Verma",
+          "branch_name": "Westside Branch",
+          "revenue": 7300.0
+        },
+        {
+          "rank": 3,
+          "employee_name": "Ayesha Khan",
+          "branch_name": "Downtown Branch",
+          "revenue": 6700.0
+        },
+        {
+          "rank": 4,
+          "employee_name": "Vikram Singh",
+          "branch_name": "City Center Branch",
+          "revenue": 5400.0
+        },
+        {
+          "rank": 5,
+          "employee_name": "Sana Iyer",
+          "branch_name": "Airport Branch",
+          "revenue": 4400.0
+        }
+      ]
+    },
+    "export": {
+      "pdf_url": "https://example.com/exports/branch-performance.pdf",
+      "excel_url": "https://example.com/exports/branch-performance.xlsx"
+    }
+  }
+}

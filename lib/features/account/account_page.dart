@@ -29,6 +29,7 @@ import '../../core/widgets/InitialsAvatar.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../auth/forgot_password/forgot_password_page.dart';
 import '../payments/payment_history_page.dart';
+import '../reports/branch_performance_report_page.dart';
 import '../reports/payment_mode_report_page.dart';
 import '../reports/pnl_report_page.dart';
 import '../reports/revenue_expense_report_page.dart';
@@ -201,6 +202,13 @@ class _AccountPageState extends State<AccountPage>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const RevenueExpenseReportPage()),
+    );
+  }
+
+  Future<void> _handleBranchPerformanceReport() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const BranchPerformanceReportPage()),
     );
   }
 
@@ -544,7 +552,7 @@ class _AccountPageState extends State<AccountPage>
       ),
       _AccountTile(
         icon: Icons.summarize_outlined,
-        title: "Revenue & Expense Summary",
+        title: "Revenue Trend, Services & Expenses Breakdown",
         onTap: _handleRevenueExpenseReport,
       ),
       _AccountTile(
@@ -553,7 +561,8 @@ class _AccountPageState extends State<AccountPage>
       ),
       _AccountTile(
         icon: Icons.storefront_outlined,
-        title: "Branch Performance Report",
+        title: "Branch Performance Breakdown",
+        onTap: _handleBranchPerformanceReport,
       ),
       _AccountTile(
         icon: Icons.receipt_long_outlined,

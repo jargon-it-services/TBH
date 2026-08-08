@@ -135,6 +135,13 @@ flutter:
     - assets/mocks/revenue_expense_6m_response.json
     - assets/mocks/revenue_expense_12m_response.json
     - assets/mocks/revenue_expense_export_response.json
+    - assets/mocks/branch_performance_today_response.json
+    - assets/mocks/branch_performance_this_week_response.json
+    - assets/mocks/branch_performance_this_month_response.json
+    - assets/mocks/branch_performance_3m_response.json
+    - assets/mocks/branch_performance_6m_response.json
+    - assets/mocks/branch_performance_12m_response.json
+    - assets/mocks/branch_performance_export_response.json
 
 # ---------------------------------------------------------------------
 # flutter_launcher_icons config
